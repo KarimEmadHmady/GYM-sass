@@ -1,3 +1,5 @@
+//  models/FinancialManagement/Revenue.js
+
 import mongoose from "mongoose";
 
 const revenueSchema = new mongoose.Schema({

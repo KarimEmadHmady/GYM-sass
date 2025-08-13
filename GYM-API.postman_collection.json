@@ -1,0 +1,1080 @@
+{
+  "info": {
+    "_postman_id": "gym-api-collection-001",
+    "name": "GYM API Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"test\",\n  \"password\": \"123456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"test\",\n  \"password\": \"123456\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", ""]
+            }
+          }
+        },
+        {
+          "name": "Get User By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Update User Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/role",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "role"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"\",\n  \"role\": \"admin\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update User By Id",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", ":id"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"email\": \"\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete User By Id",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Delete User By Id (Hard)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/:id/hard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", ":id", "hard"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attendance Records",
+      "item": [
+        {
+          "name": "Create Attendance Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/attendance/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "attendance", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"<userId>\",\n  \"date\": \"2024-01-01\",\n  \"status\": \"present\",\n  \"notes\": \"\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Attendance Records By User",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/attendance/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "attendance", ":userId"]
+            }
+          }
+        },
+        {
+          "name": "Update Attendance Record",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/attendance/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "attendance", ":id"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"date\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Attendance Record",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/attendance/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "attendance", ":id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Create Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payments", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"<userId>\",\n  \"amount\": 100,\n  \"date\": \"2024-01-01\",\n  \"method\": \"cash\",\n  \"notes\": \"اختياري\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Payments By User",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payments", ":userId"]
+            }
+          }
+        },
+        {
+          "name": "Update Payment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payments", ":id"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": 0\n}" }
+          }
+        },
+        {
+          "name": "Delete Payment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/payments/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payments", ":id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Purchases",
+      "item": [
+        {
+          "name": "Create Purchase",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/purchases/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "purchases", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"<userId>\",\n  \"itemName\": \"منتج\",\n  \"price\": 50,\n  \"date\": \"2024-01-01\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Purchases",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/purchases/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "purchases", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Purchase By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/purchases/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "purchases", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Update Purchase",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/purchases/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "purchases", ":id"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"item\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Purchase",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/purchases/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "purchases", ":id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Workout Plans",
+      "item": [
+        {
+          "name": "Create Workout Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/workout-plans/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "workout-plans", ":userId"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"<userId>\",\n  \"planName\": \"خطة تمارين\",\n  \"description\": \"اختياري\",\n  \"startDate\": \"2024-01-01\",\n  \"endDate\": \"2024-01-31\",\n  \"exercises\": [\n    {\n      \"name\": \"تمرين ضغط\",\n      \"reps\": 10,\n      \"sets\": 3,\n      \"notes\": \"اختياري\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Workout Plans By User",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/workout-plans/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "workout-plans", ":userId"]
+            }
+          }
+        },
+        {
+          "name": "Update Workout Plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/workout-plans/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "workout-plans", ":id"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"plan\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Workout Plan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/workout-plans/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "workout-plans", ":id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Workout Plan API",
+        "description": "اختبار كل المسارات الخاصة بخطط التمارين",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+      },
+      "item": [
+        {
+          "name": "Create Workout Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/workout-plans",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"تمارين كارديو\",\n  \"description\": \"خطة لحرق الدهون\",\n  \"durationWeeks\": 6,\n  \"exercises\": [\n    { \"name\": \"جري\", \"sets\": 3, \"reps\": 15, \"restTime\": 60 },\n    { \"name\": \"قفز حبل\", \"sets\": 4, \"reps\": 20, \"restTime\": 45 }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Workout Plans by User",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/workout-plans"
+          }
+        },
+        {
+          "name": "Get Workout Plan by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/workout-plans/{{planId}}"
+          }
+        },
+        {
+          "name": "Update Workout Plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/workout-plans/{{planId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"تمارين قوة\",\n  \"description\": \"خطة لزيادة الكتلة العضلية\",\n  \"durationWeeks\": 8\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Workout Plan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/workout-plans/{{planId}}"
+          }
+        },
+        {
+          "name": "Add Exercise to Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/workout-plans/{{planId}}/exercises",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"ضغط صدر\",\n  \"sets\": 4,\n  \"reps\": 12,\n  \"restTime\": 90\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Exercise in Plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/workout-plans/{{planId}}/exercises/{{exerciseIndex}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"سكوات\",\n  \"sets\": 5,\n  \"reps\": 10,\n  \"restTime\": 120\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Exercise from Plan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/workout-plans/{{planId}}/exercises/{{exerciseIndex}}"
+          }
+        }
+      ]
+    },
+    
+    {
+      "name": "Diet Plans",
+      "item": [
+        {
+          "name": "Create Diet Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/diet-plans/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "diet-plans", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"<userId>\",\n  \"planName\": \"نظام غذائي\",\n  \"description\": \"وصف اختياري\",\n  \"startDate\": \"2024-01-01\",\n  \"endDate\": \"2024-01-31\",\n  \"meals\": [\n    {\n      \"mealName\": \"فطور\",\n      \"calories\": 350,\n      \"notes\": \"اختياري\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Diet Plans By User",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/diet-plans/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "diet-plans", ":userId"]
+            }
+          }
+        },
+        {
+          "name": "Update Diet Plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/diet-plans/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "diet-plans", ":id"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"plan\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Diet Plan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/diet-plans/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "diet-plans", ":id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Diet Plan API",
+        "_postman_id": "12345678-abcd-1234-abcd-1234567890ab",
+        "description": "Endpoints for managing diet plans and meals",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+      },
+      "item": [
+        {
+          "name": "Create Diet Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"name\": \"My Plan\",\n  \"description\": \"Custom diet plan\",\n  \"startDate\": \"2025-08-15\",\n  \"endDate\": \"2025-08-20\",\n  \"meals\": []\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/diet", "host": ["{{baseUrl}}"], "path": ["diet"] }
+          }
+        },
+        {
+          "name": "Get All Diet Plans for User",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/diet/{{userId}}", "host": ["{{baseUrl}}"], "path": ["diet", "{{userId}}"] }
+          }
+        },
+        {
+          "name": "Get Single Diet Plan",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/diet/plan/{{planId}}", "host": ["{{baseUrl}}"], "path": ["diet", "plan", "{{planId}}"] }
+          }
+        },
+        {
+          "name": "Update Diet Plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Plan\",\n  \"description\": \"Updated description\",\n  \"startDate\": \"2025-08-15\",\n  \"endDate\": \"2025-08-25\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/diet/{{planId}}", "host": ["{{baseUrl}}"], "path": ["diet", "{{planId}}"] }
+          }
+        },
+        {
+          "name": "Delete Diet Plan",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/diet/{{planId}}", "host": ["{{baseUrl}}"], "path": ["diet", "{{planId}}"] }
+          }
+        },
+        {
+          "name": "Duplicate Diet Plan",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/diet/{{planId}}/duplicate", "host": ["{{baseUrl}}"], "path": ["diet", "{{planId}}", "duplicate"] }
+          }
+        },
+        {
+          "name": "Filter Diet Plans",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/diet?userId={{userId}}&startDate=2025-08-01&endDate=2025-08-15",
+              "host": ["{{baseUrl}}"],
+              "path": ["diet"],
+              "query": [
+                { "key": "userId", "value": "{{userId}}" },
+                { "key": "startDate", "value": "2025-08-01" },
+                { "key": "endDate", "value": "2025-08-15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Meal to Diet Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mealName\": \"Breakfast\",\n  \"calories\": 500,\n  \"notes\": \"Add more protein\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/diet/{{planId}}/meals", "host": ["{{baseUrl}}"], "path": ["diet", "{{planId}}", "meals"] }
+          }
+        },
+        {
+          "name": "Update Meal in Diet Plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mealName\": \"Updated Breakfast\",\n  \"calories\": 450,\n  \"notes\": \"Less sugar\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/diet/{{planId}}/meals/{{mealId}}", "host": ["{{baseUrl}}"], "path": ["diet", "{{planId}}", "meals", "{{mealId}}"] }
+          }
+        },
+        {
+          "name": "Delete Meal from Diet Plan",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/diet/{{planId}}/meals/{{mealId}}", "host": ["{{baseUrl}}"], "path": ["diet", "{{planId}}", "meals", "{{mealId}}"] }
+          }
+        },
+        {
+          "name": "Get Single Meal",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/diet/meal/{{mealId}}", "host": ["{{baseUrl}}"], "path": ["diet", "meal", "{{mealId}}"] }
+          }
+        }
+      ],
+      "variable": [
+        { "key": "baseUrl", "value": "http://localhost:3000/api" },
+        { "key": "userId", "value": "" },
+        { "key": "planId", "value": "" },
+        { "key": "mealId", "value": "" }
+      ]
+    },
+    
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Create Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"<userId>\",\n  \"fromUserId\": \"<userId>\",\n  \"message\": \"مرحبا!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Messages For User",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", ":userId"]
+            }
+          }
+        },
+        {
+          "name": "Update Message Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/:id/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", ":id", "read"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"read\": true\n}" }
+          }
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/messages/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", ":id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Client Progress",
+      "item": [
+        {
+          "name": "Create Client Progress",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/progress/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "progress", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"<userId>\",\n  \"date\": \"2024-01-01\",\n  \"weight\": 80,\n  \"bodyFatPercentage\": 20,\n  \"notes\": \"\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Client Progress By User",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/progress/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "progress", ":userId"]
+            }
+          }
+        },
+        {
+          "name": "Update Client Progress",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/progress/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "progress", ":id"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"progress\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Client Progress",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/progress/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "progress", ":id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Session Schedules",
+      "item": [
+        {
+          "name": "Create Session Schedule",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/schedules/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "schedules", ":userId"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"<userId>\",\n  \"date\": \"2024-01-01\",\n  \"startTime\": \"10:00\",\n  \"endTime\": \"11:00\",\n  \"description\": \"تمرين صباحي\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Session Schedules By User",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/schedules/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "schedules", ":userId"]
+            }
+          }
+        },
+        {
+          "name": "Update Session Schedule",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/schedules/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "schedules", ":id"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"schedule\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Session Schedule",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/schedules/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "schedules", ":id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Feedback",
+      "item": [
+        {
+          "name": "Create Feedback",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/feedback/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "feedback", ""]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toUserId\": \"<userId>\",\n  \"fromUserId\": \"<userId>\",\n  \"rating\": 5,\n  \"comment\": \"ممتاز\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Feedback For User",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/feedback/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "feedback", ":userId"]
+            }
+          }
+        },
+        {
+          "name": "Update Feedback",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/feedback/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "feedback", ":id"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"feedback\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Feedback",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/feedback/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "feedback", ":id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rewards",
+      "item": [
+        {
+          "name": "Create Reward",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/rewards/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rewards", ":userId"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"<userId>\",\n  \"points\": 100,\n  \"redeemedFor\": \"هدية\",\n  \"date\": \"2024-01-01\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Rewards By User",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/rewards/:userId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rewards", ":userId"]
+            }
+          }
+        },
+        {
+          "name": "Update Reward",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/rewards/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rewards", ":id"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"reward\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Reward",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/rewards/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rewards", ":id"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

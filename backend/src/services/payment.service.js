@@ -2,7 +2,12 @@ import Payment from '../models/userMangment/Payment.model.js';
 
 // ➕ إنشاء دفعة جديدة
 export const createPaymentService = async (data) => {
-  return await Payment.create(data);
+  const { userId, amount, date, method, notes } = data;
+  if (!userId || !amount || !date) {
+    throw new Error('userId, amount, and date are required');
+  }
+  const allowed = { userId, amount, date, method, notes };
+  return await Payment.create(allowed);
 };
 
 // 📄 جلب جميع الدفعات لمستخدم معين

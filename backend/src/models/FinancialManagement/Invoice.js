@@ -1,3 +1,5 @@
+//  models/FinancialManagement/Invoice.js
+
 import mongoose from "mongoose";
 
 const invoiceSchema = new mongoose.Schema({

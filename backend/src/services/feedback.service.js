@@ -2,7 +2,12 @@ import Feedback from '../models/userMangment/Feedback.model.js';
 
 // إنشاء تقييم جديد
 export const createFeedbackService = async (data) => {
-  return await Feedback.create(data);
+  const { toUserId, fromUserId, rating, comment, date } = data;
+  if (!toUserId || !rating) {
+    throw new Error('toUserId and rating are required');
+  }
+  const allowed = { toUserId, fromUserId, rating, comment, date };
+  return await Feedback.create(allowed);
 };
 
 // جلب التقييمات الخاصة بمستخدم معين

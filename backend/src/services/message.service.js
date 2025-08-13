@@ -2,7 +2,12 @@ import Message from '../models/userMangment/Message.model.js';
 
 // إنشاء رسالة جديدة
 export const createMessageService = async (data) => {
-  return await Message.create(data);
+  const { userId, fromUserId, message } = data;
+  if (!userId || !fromUserId || !message) {
+    throw new Error('userId, fromUserId, and message are required');
+  }
+  const allowed = { userId, fromUserId, message };
+  return await Message.create(allowed);
 };
 
 // جلب الرسائل الخاصة بمستخدم معين (كمستلم أو كمرسل)

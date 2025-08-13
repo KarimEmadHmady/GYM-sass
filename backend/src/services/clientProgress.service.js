@@ -2,7 +2,12 @@ import ClientProgress from '../models/userMangment/ClientProgress.model.js';
 
 // إنشاء سجل جديد
 export const createClientProgressService = async (data) => {
-  return await ClientProgress.create(data);
+  const { userId, date, weight, bodyFatPercentage, notes } = data;
+  if (!userId || !date) {
+    throw new Error('userId and date are required');
+  }
+  const allowed = { userId, date, weight, bodyFatPercentage, notes };
+  return await ClientProgress.create(allowed);
 };
 
 // جلب السجلات لمستخدم معين

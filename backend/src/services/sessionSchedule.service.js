@@ -1,21 +1,26 @@
 import SessionSchedule from "../models/userMangment/SessionSchedule.model.js";
 
 // إنشاء حصة جديدة
-export const createSessionSchedule = async (data) => {
-  return await SessionSchedule.create(data);
+export const createSessionScheduleService = async (data) => { 
+  const { userId, date, startTime, endTime, description } = data;
+  if (!userId || !date || !startTime || !endTime) {
+    throw new Error('userId, date, startTime, and endTime are required');
+  }
+  const allowed = { userId, date, startTime, endTime, description };
+  return await SessionSchedule.create(allowed);
 };
 
 // جلب جميع الحصص لمستخدم
-export const getSessionSchedulesByUser = async (userId) => {
+export const getSessionSchedulesByUserService = async (userId) => {
   return await SessionSchedule.find({ userId }).sort({ date: 1 });
 };
 
 // تحديث بيانات حصة
-export const updateSessionSchedule = async (id, data) => {
+export const updateSessionScheduleService = async (id, data) => {
   return await SessionSchedule.findByIdAndUpdate(id, data, { new: true });
 };
 
 // حذف حصة
-export const deleteSessionSchedule = async (id) => {
+export const deleteSessionScheduleService = async (id) => {
   return await SessionSchedule.findByIdAndDelete(id);
 };

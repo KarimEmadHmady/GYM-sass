@@ -11,6 +11,7 @@ const mealSchema = new mongoose.Schema({
   },
   mealName: { type: String, required: true }, // اسم الوجبة - إجباري
   calories: { type: Number, required: true }, // عدد السعرات - إجباري
+  quantity: { type: String, required: true, default: 1 }, // الكمية - إجباري
   notes: { type: String }, // ملاحظات - اختياري
 });
 

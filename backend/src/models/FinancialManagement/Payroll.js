@@ -1,3 +1,5 @@
+//  models/FinancialManagement/Payroll.js
+
 import mongoose from "mongoose";
 
 const payrollSchema = new mongoose.Schema({

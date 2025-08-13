@@ -2,7 +2,12 @@ import AttendanceRecord from '../models/userMangment/AttendanceRecord.model.js';
 
 // إنشاء سجل جديد
 export const createAttendanceRecordService = async (data) => {
-  return await AttendanceRecord.create(data);
+  const { userId, date, status, notes } = data;
+  if (!userId || !date) {
+    throw new Error('userId and date are required');
+  }
+  const allowed = { userId, date, status, notes };
+  return await AttendanceRecord.create(allowed);
 };
 // جلب كل السجلات لمستخدم معين
 export const getAttendanceRecordsByUserService = async (userId) => {

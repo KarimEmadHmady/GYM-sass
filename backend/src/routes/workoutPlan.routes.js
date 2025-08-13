@@ -4,21 +4,26 @@ import {
   createWorkoutPlan,
   getWorkoutPlansByUser,
   updateWorkoutPlan,
-  deleteWorkoutPlan
+  deleteWorkoutPlan,
+  getWorkoutPlanById,
+  addExerciseToPlan,
+  updateExerciseInPlan,
+  deleteExerciseFromPlan
 } from "../controllers/workoutPlan.controller.js";
 
 const router = express.Router();
 
-// إنشاء خطة تمرين جديدة
+//  خطة  
 router.post("/:userId", authenticate, authorizeAdmin, createWorkoutPlan);
-
-// جلب جميع الخطط لمستخدم
 router.get("/:userId", authenticate, authorizeAdmin, getWorkoutPlansByUser);
-
-// تعديل خطة تمرين
+router.get('/plan/:id', authenticate, authorizeAdmin, getWorkoutPlanById);
 router.put("/:id", authenticate, authorizeAdmin, updateWorkoutPlan);
-
-// حذف خطة تمرين
 router.delete("/:id", authenticate, authorizeAdmin, deleteWorkoutPlan);
+
+//  تمرين
+router.post("/:planId/exercises", authenticate, authorizeAdmin, addExerciseToPlan);
+router.put("/:planId/exercises/:exerciseIndex", authenticate, authorizeAdmin, updateExerciseInPlan);
+router.delete("/:planId/exercises/:exerciseIndex", authenticate, authorizeAdmin, deleteExerciseFromPlan);
+
 
 export default router;
