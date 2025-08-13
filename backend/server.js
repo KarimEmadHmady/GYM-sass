@@ -10,7 +10,7 @@ import userRoutes from './src/routes/users.routes.js';
 import attendanceRecordRoutes from './src/routes/attendanceRecords.route.js';
 import paymentRoutes from './src/routes/payment.route.js';
 import purchaseRoutes from './src/routes/Purchase.routes.js';
-import workoutPlanRoutes from './src/routes/WorkoutPlan.routes.js';
+import workoutPlanRoutes from './src/routes/workoutPlan.routes.js';
 import dietPlanRoutes from './src/routes/dietPlan.route.js';
 import messageRoutes from './src/routes/message.route.js';
 import clientProgressRoutes from './src/routes/clientProgress.route.js';
