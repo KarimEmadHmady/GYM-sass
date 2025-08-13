@@ -4,9 +4,20 @@ import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import connectDB from './src/config/index.js'; 
+import errorHandler from './src/middlewares/error.middleware.js';
 import authRoutes from './src/routes/auth.routes.js';
 import userRoutes from './src/routes/users.routes.js';
-import errorHandler from './src/middlewares/error.middleware.js';
+import attendanceRecordRoutes from './src/routes/attendanceRecords.route.js';
+import paymentRoutes from './src/routes/payment.route.js';
+import purchaseRoutes from './src/routes/Purchase.routes.js';
+import workoutPlanRoutes from './src/routes/WorkoutPlan.routes.js';
+import dietPlanRoutes from './src/routes/dietPlan.route.js';
+import messageRoutes from './src/routes/message.route.js';
+import clientProgressRoutes from './src/routes/clientProgress.route.js';
+import sessionScheduleRoutes from './src/routes/SessionSchedule.routes.js';
+import feedbackRoutes from './src/routes/feedback.route.js';
+import rewardRoutes from './src/routes/Reward.routes.js';
+
 
 
 dotenv.config();
@@ -23,6 +34,16 @@ app.use(express.urlencoded({ extended: true })); // لدعم البيانات ا
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/attendance', attendanceRecordRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/purchases', purchaseRoutes);
+app.use('/api/workout-plans', workoutPlanRoutes);
+app.use('/api/diet-plans', dietPlanRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/progress', clientProgressRoutes);
+app.use('/api/schedules', sessionScheduleRoutes);
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/rewards', rewardRoutes);
 
 app.use(errorHandler);
 

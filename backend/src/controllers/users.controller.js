@@ -1,4 +1,11 @@
-import { getAllUsersService, updateUserRoleService , updateUserByIdService} from '../services/users.service.js';
+import { 
+  getAllUsersService,
+  getUserByIdService,
+  updateUserRoleService,
+  updateUserByIdService,
+  deleteUserByIdService,
+  deleteUserByIdHardService
+ } from '../services/users.service.js';
 
 export const getAllUsers = async (req, res) => {
   try {
@@ -6,6 +13,16 @@ export const getAllUsers = async (req, res) => {
     res.status(200).json(users);
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+export const getUserById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await getUserByIdService(userId);
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(404).json({ message: err.message });
   }
 };
 
@@ -19,18 +36,34 @@ export const updateUserRole = async (req, res) => {
   }
 };
 
-// الدالة الجديدة لتحديث بيانات أي يوزر
 export const updateUserById = async (req, res) => {
     try {
       const userId = req.params.id;
       const updateData = req.body;
-  
-      // منع تحديث بعض الحقول الحساسة لو تحب (اختياري)
-      delete updateData.passwordHash; // لو حابب تمنع تحديث الباسورد من هنا
-  
+      delete updateData.passwordHash; 
       const user = await updateUserByIdService(userId, updateData);
       res.status(200).json({ message: 'User updated successfully.', user });
     } catch (err) {
       res.status(400).json({ message: err.message });
     }
   };
+
+export const deleteUserById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await deleteUserByIdService(userId);
+    res.status(200).json({ message: 'User deleted successfully.', user });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+export const deleteUserByIdHard = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await deleteUserByIdHardService(userId);
+    res.status(200).json({ message: 'User permanently deleted successfully.', user });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};

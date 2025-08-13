@@ -1,15 +1,45 @@
+// 📄 هذا الموديل خاص بتخزين بيانات المدفوعات (Payments) لكل عميل
+// يحتوي على قيمة الدفع، تاريخ الدفع، طريقة الدفع، ملاحظات، وربط الدفع بالمستخدم (userId)
+
 import mongoose from "mongoose";
 
 const paymentSchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    amount: { type: Number, required: true }, // قيمة الدفعة
-    date: { type: Date, required: true }, // تاريخ الدفعة
-    method: { type: String, default: "cash" }, // طريقة الدفع (نقدي، بطاقة..)
-    notes: { type: String, default: "" },
+    // 🔗 معرف المستخدم صاحب الدفعة
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    // 💰 قيمة الدفعة
+    amount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    // 📅 تاريخ الدفع
+    date: {
+      type: Date,
+      required: true,
+    },
+
+    // 💳 طريقة الدفع (نقدي، بطاقة، تحويل...)
+    method: {
+      type: String,
+      enum: ["cash", "card", "bank_transfer", "other"], // طرق الدفع المسموحة
+      default: "cash",
+    },
+
+    // 📝 ملاحظات إضافية عن الدفع
+    notes: {
+      type: String,
+      default: "",
+      trim: true,
+    },
   },
   { timestamps: true }
 );
 
-const Payment = mongoose.model("Payment", paymentSchema);
-export default Payment;
+export default mongoose.model("Payment", paymentSchema);
