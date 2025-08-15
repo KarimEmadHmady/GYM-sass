@@ -164,6 +164,20 @@
           }
         },
         {
+          "name": "Get All Attendance Records",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/attendance/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "attendance", ""]
+            }
+          }
+        },
+        {
           "name": "Get Attendance Records By User",
           "request": {
             "method": "GET",
@@ -602,6 +616,94 @@
               "path": ["api", "diet-plans", ":id"]
             }
           }
+        },
+        {
+          "name": "Get Diet Plan By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/diet-plans/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "diet-plans", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Get Meals By Plan Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/diet-plans/:planId/meals",
+              "host": ["{{base_url}}"],
+              "path": ["api", "diet-plans", ":planId", "meals"]
+            }
+          }
+        },
+        {
+          "name": "Add Meal To Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/diet-plans/:planId/meals",
+              "host": ["{{base_url}}"],
+              "path": ["api", "diet-plans", ":planId", "meals"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"mealName\": \"\",\n  \"calories\": 0\n}" }
+          }
+        },
+        {
+          "name": "Update Meal In Plan",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/diet-plans/:planId/meals/:mealId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "diet-plans", ":planId", "meals", ":mealId"]
+            },
+            "body": { "mode": "raw", "raw": "{\n  \"mealName\": \"\",\n  \"calories\": 0\n}" }
+          }
+        },
+        {
+          "name": "Delete Meal From Plan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/diet-plans/:planId/meals/:mealId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "diet-plans", ":planId", "meals", ":mealId"]
+            }
+          }
+        },
+        {
+          "name": "Get Meal By Id",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/diet-plans/meal/:mealId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "diet-plans", "meal", ":mealId"]
+            }
+          }
         }
       ]
     },
@@ -823,6 +925,20 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"userId\": \"<userId>\",\n  \"date\": \"2024-01-01\",\n  \"weight\": 80,\n  \"bodyFatPercentage\": 20,\n  \"notes\": \"\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Client Progress Records",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/progress/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "progress", ""]
             }
           }
         },
