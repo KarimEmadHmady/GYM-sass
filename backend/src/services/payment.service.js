@@ -15,6 +15,11 @@ export const getPaymentsByUserService = async (userId) => {
   return await Payment.find({ userId }).sort({ date: -1 });
 };
 
+// جلب جميع الدفعات
+export const getAllpaymentsService = async () => {
+  return await Payment.find().sort({date: -1});   
+};
+
 // ✏️ تعديل دفعة
 export const updatePaymentService = async (id, data) => {
   const payment = await Payment.findByIdAndUpdate(id, data, { new: true });

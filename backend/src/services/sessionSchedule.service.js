@@ -15,6 +15,11 @@ export const getSessionSchedulesByUserService = async (userId) => {
   return await SessionSchedule.find({ userId }).sort({ date: 1 });
 };
 
+// جلب جميع الحصص
+export const getAllSessionSchedulesService = async () => {
+  return await SessionSchedule.find().sort({ date: 1 });
+};
+
 // تحديث بيانات حصة
 export const updateSessionScheduleService = async (id, data) => {
   return await SessionSchedule.findByIdAndUpdate(id, data, { new: true });

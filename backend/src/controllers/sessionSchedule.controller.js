@@ -2,7 +2,8 @@ import {
   createSessionScheduleService,
   getSessionSchedulesByUserService,
   updateSessionScheduleService,
-  deleteSessionScheduleService
+  deleteSessionScheduleService,
+  getAllSessionSchedulesService
 } from "../services/sessionSchedule.service.js";
 
 // إنشاء حصة جديدة
@@ -22,6 +23,16 @@ export const createSessionSchedule = async (req, res) => {
 export const getSessionSchedulesByUser = async (req, res) => {
   try {
     const sessions = await getSessionSchedulesByUserService(req.params.userId);
+    res.json(sessions);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// جلب جميع الحصص
+export const getAllSessionSchedules = async (req, res) => {
+  try {
+    const sessions = await getAllSessionSchedulesService();
     res.json(sessions);
   } catch (error) {
     res.status(500).json({ message: error.message });

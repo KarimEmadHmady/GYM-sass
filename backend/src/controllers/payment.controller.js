@@ -2,7 +2,8 @@ import {
     createPaymentService,
     getPaymentsByUserService,
     updatePaymentService,
-    deletePaymentService
+    deletePaymentService,
+    getAllpaymentsService
   } from '../services/payment.service.js';
   
   // ➕ إنشاء دفعة جديدة
@@ -22,6 +23,16 @@ import {
       res.status(200).json(payments);
     } catch (err) {
       res.status(404).json({ message: err.message });
+    }
+  };
+
+  // جلب جميع الدفعات
+  export const getAllPayments = async (req, res) => {
+    try {
+      const payments = await getAllpaymentsService();
+      res.status(200).json(payments);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
     }
   };
   

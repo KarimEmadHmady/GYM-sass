@@ -4,13 +4,18 @@ import {
   createPayment,
   getPaymentsByUser,
   updatePayment,
-  deletePayment
+  deletePayment,
+  getAllPayments
 } from '../controllers/payment.controller.js';
 
 const router = express.Router();
+ششش
 
 // ➕ إنشاء دفعة جديدة
 router.post('/', authenticate, authorizeAdmin, createPayment);
+
+// جلب جميع الدفعات
+router.get('/', authenticate, authorizeAdmin, getAllPayments);
 
 // 📄 جلب جميع الدفعات لمستخدم معين
 router.get('/:userId', authenticate, authorizeAdmin, getPaymentsByUser);

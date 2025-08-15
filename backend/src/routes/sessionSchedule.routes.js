@@ -4,7 +4,8 @@ import {
   createSessionSchedule,
   getSessionSchedulesByUser,
   updateSessionSchedule,
-  deleteSessionSchedule
+  deleteSessionSchedule,
+  getAllSessionSchedules
 } from "../controllers/sessionSchedule.controller.js";
 
 const router = express.Router();
@@ -14,6 +15,9 @@ router.post("/:userId", authenticate, authorizeAdmin, createSessionSchedule);
 
 // جلب جميع الحصص لمستخدم
 router.get("/:userId", authenticate, authorizeAdmin, getSessionSchedulesByUser);
+
+// جلب جميع الحصص
+router.get("/", authenticate, authorizeAdmin, getAllSessionSchedules);
 
 // تعديل حصة
 router.put("/:id", authenticate, authorizeAdmin, updateSessionSchedule);
