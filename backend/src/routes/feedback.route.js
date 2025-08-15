@@ -4,13 +4,17 @@ import {
   createFeedback,
   getFeedbackForUser,
   updateFeedback,
-  deleteFeedback
+  deleteFeedback,
+  getAllFeedback
 } from '../controllers/feedback.controller.js';
 
 const router = express.Router();
 
 // إضافة تقييم جديد
 router.post('/', authenticate,  createFeedback);
+
+// جلب جميع التقييمات
+router.get('/', authenticate, getAllFeedback);
 
 // جلب جميع التقييمات الخاصة بمستخدم معين
 router.get('/:userId', authenticate,  getFeedbackForUser);

@@ -4,13 +4,17 @@ import {
   createReward,
   getRewardsByUser,
   updateReward,
-  deleteReward
+  deleteReward,
+  getAllRewards
 } from "../controllers/reward.controller.js";
 
 const router = express.Router();
 
 // إنشاء مكافأة جديدة لمستخدم
 router.post("/:userId", authenticate, authorizeAdmin, createReward);
+
+// جلب جميع المكافآت
+router.get("/", authenticate, authorizeAdmin, getAllRewards);
 
 // جلب جميع المكافآت لمستخدم
 router.get("/:userId", authenticate, authorizeAdmin, getRewardsByUser);

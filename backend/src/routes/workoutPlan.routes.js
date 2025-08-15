@@ -8,7 +8,9 @@ import {
   getWorkoutPlanById,
   addExerciseToPlan,
   updateExerciseInPlan,
-  deleteExerciseFromPlan
+  deleteExerciseFromPlan,
+  getAllWorkoutPlans,
+  getExercisesByPlanId
 } from "../controllers/workoutPlan.controller.js";
 
 const router = express.Router();
@@ -20,8 +22,12 @@ router.get('/plan/:id', authenticate, authorizeAdmin, getWorkoutPlanById);
 router.put("/:id", authenticate, authorizeAdmin, updateWorkoutPlan);
 router.delete("/:id", authenticate, authorizeAdmin, deleteWorkoutPlan);
 
+// جلب جميع خطط التمرين
+router.get('/', authenticate, authorizeAdmin, getAllWorkoutPlans);
+
 //  تمرين
 router.post("/:planId/exercises", authenticate, authorizeAdmin, addExerciseToPlan);
+router.get('/:planId/exercises', authenticate, authorizeAdmin, getExercisesByPlanId);
 router.put("/:planId/exercises/:exerciseIndex", authenticate, authorizeAdmin, updateExerciseInPlan);
 router.delete("/:planId/exercises/:exerciseIndex", authenticate, authorizeAdmin, deleteExerciseFromPlan);
 

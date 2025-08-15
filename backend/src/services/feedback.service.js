@@ -15,6 +15,11 @@ export const getFeedbackForUserService = async (userId) => {
   return await Feedback.find({ toUserId: userId }).sort({ createdAt: -1 });
 };
 
+// جلب جميع التقييمات
+export const getAllFeedbackService = async () => {
+  return await Feedback.find().sort({ createdAt: -1 });
+};
+
 // تعديل تقييم
 export const updateFeedbackService = async (id, data) => {
   const feedback = await Feedback.findByIdAndUpdate(id, data, { new: true });

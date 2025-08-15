@@ -9,13 +9,15 @@ import {
   getMealsByPlanId,
   addMealToPlan,
   updateMealInPlan,
-  deleteMealFromPlan
+  deleteMealFromPlan,
+  getDietPlanById
 } from '../controllers/dietPlan.controller.js';
 
 const router = express.Router();
 
 // الخطط الغذائية
 router.post('/', authenticate, authorizeAdmin, createDietPlan);
+router.get('/:id', authenticate, authorizeAdmin, getDietPlanById);
 router.get('/:userId', authenticate, authorizeAdmin, getDietPlansByUser);
 router.put('/:id', authenticate, authorizeAdmin, updateDietPlan);
 router.delete('/:id', authenticate, authorizeAdmin, deleteDietPlan);

@@ -15,6 +15,18 @@ export const getWorkoutPlansByUserService = async (userId) => {
   return await WorkoutPlan.find({ userId }).sort({ startDate: 1 });
 };
 
+// جلب جميع خطط التمرين
+export const getAllWorkoutPlansService = async () => {
+  return await WorkoutPlan.find().sort({ createdAt: -1 });
+};
+
+// جلب جميع التمارين لخطة معينة
+export const getExercisesByPlanIdService = async (planId) => {
+  const plan = await WorkoutPlan.findById(planId);
+  if (!plan) throw new Error('الخطة غير موجودة');
+  return plan.exercises || [];
+};
+
 // تعديل خطة تمرين
 export const updateWorkoutPlanService = async (id, data) => {
   return await WorkoutPlan.findByIdAndUpdate(id, data, { new: true });

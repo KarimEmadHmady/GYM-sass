@@ -15,6 +15,11 @@ export const getClientProgressByUserService = async (userId) => {
   return await ClientProgress.find({ userId }).sort({ date: -1 });
 };
 
+// جلب كل السجلات
+export const getAllClientProgressService = async () => {
+  return await ClientProgress.find().sort({ date: -1 });
+};
+
 // تعديل سجل
 export const updateClientProgressService = async (id, data) => {
   const progress = await ClientProgress.findByIdAndUpdate(id, data, { new: true });

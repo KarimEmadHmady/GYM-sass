@@ -2,7 +2,8 @@ import {
     createAttendanceRecordService,
     getAttendanceRecordsByUserService,
     updateAttendanceRecordService,
-    deleteAttendanceRecordService
+    deleteAttendanceRecordService,
+    getAllAttendanceRecordsService
   } from '../services/attendanceRecords.service.js';
   
   // إنشاء سجل حضور جديد
@@ -40,6 +41,16 @@ import {
     try {
       await deleteAttendanceRecordService(req.params.id);
       res.status(204).send();
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  };
+
+  // جلب كل سجلات الحضور
+  export const getAllAttendanceRecords = async (req, res) => {
+    try {
+      const records = await getAllAttendanceRecordsService();
+      res.status(200).json(records);
     } catch (err) {
       res.status(400).json({ message: err.message });
     }

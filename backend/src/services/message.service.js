@@ -17,6 +17,11 @@ export const getMessagesForUserService = async (userId) => {
   }).sort({ createdAt: -1 });
 };
 
+// جلب جميع الرسائل
+export const getAllMessagesService = async () => {
+  return await Message.find().sort({ createdAt: -1 });
+};
+
 // تحديث حالة قراءة الرسالة
 export const updateMessageStatusService = async (id, readStatus) => {
   const message = await Message.findByIdAndUpdate(

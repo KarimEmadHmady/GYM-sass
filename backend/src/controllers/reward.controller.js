@@ -2,7 +2,8 @@ import {
   createRewardService,
   getRewardsByUserService,
   updateRewardService,
-  deleteRewardService
+  deleteRewardService,
+  getAllRewardsService
 } from "../services/reward.service.js";
 
 // إنشاء مكافأة جديدة
@@ -22,6 +23,16 @@ export const createReward = async (req, res) => {
 export const getRewardsByUser = async (req, res) => {
   try {
     const rewards = await getRewardsByUserService(req.params.userId);
+    res.json(rewards);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// جلب جميع المكافآت
+export const getAllRewards = async (req, res) => {
+  try {
+    const rewards = await getAllRewardsService();
     res.json(rewards);
   } catch (error) {
     res.status(500).json({ message: error.message });

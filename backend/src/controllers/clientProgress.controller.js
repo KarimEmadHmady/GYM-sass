@@ -2,7 +2,8 @@ import {
     createClientProgressService,
     getClientProgressByUserService,
     updateClientProgressService,
-    deleteClientProgressService
+    deleteClientProgressService,
+    getAllClientProgressService
   } from '../services/clientProgress.service.js';
   
   // إنشاء سجل تقدم جديد
@@ -22,6 +23,16 @@ import {
       res.status(200).json(progress);
     } catch (err) {
       res.status(404).json({ message: err.message });
+    }
+  };
+  
+  // جلب كل سجلات التقدم
+  export const getAllClientProgress = async (req, res) => {
+    try {
+      const progress = await getAllClientProgressService();
+      res.status(200).json(progress);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
     }
   };
   

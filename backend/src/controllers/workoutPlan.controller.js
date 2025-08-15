@@ -6,7 +6,9 @@ import {
   getWorkoutPlanByIdService,
   addExerciseToPlanService,
   updateExerciseInPlanService,
-  deleteExerciseFromPlanService
+  deleteExerciseFromPlanService,
+  getAllWorkoutPlansService,
+  getExercisesByPlanIdService
 } from "../services/workoutPlan.service.js";
 
 // إنشاء خطة تمرين جديدة
@@ -101,5 +103,25 @@ export const deleteExerciseFromPlan = async (req, res) => {
     res.status(200).json(plan);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// جلب جميع خطط التمرين
+export const getAllWorkoutPlans = async (req, res) => {
+  try {
+    const plans = await getAllWorkoutPlansService();
+    res.json(plans);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// جلب جميع التمارين لخطة معينة
+export const getExercisesByPlanId = async (req, res) => {
+  try {
+    const exercises = await getExercisesByPlanIdService(req.params.planId);
+    res.json(exercises);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
   }
 };

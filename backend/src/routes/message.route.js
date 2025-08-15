@@ -4,13 +4,17 @@ import {
   createMessage,
   getMessagesForUser,
   updateMessageStatus,
-  deleteMessage
+  deleteMessage,
+  getAllMessages
 } from '../controllers/message.controller.js';
 
 const router = express.Router();
 
 // إرسال رسالة جديدة
 router.post('/', authenticate,  createMessage);
+
+// جلب جميع الرسائل
+router.get('/', authenticate, getAllMessages);
 
 // جلب جميع الرسائل الخاصة بمستخدم معين
 router.get('/:userId', authenticate, getMessagesForUser);

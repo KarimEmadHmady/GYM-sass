@@ -7,7 +7,8 @@ import {
   getMealsByPlanIdService,
   addMealToPlanService,
   updateMealInPlanService,
-  deleteMealFromPlanService
+  deleteMealFromPlanService,
+  getDietPlanByIdService
   } from '../services/dietPlan.service.js';
   
   // إنشاء خطة غذائية جديدة
@@ -99,5 +100,15 @@ export const deleteMealFromPlan = async (req, res) => {
     res.status(204).send();
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+};
+
+// جلب خطة غذائية واحدة بالـ ID
+export const getDietPlanById = async (req, res) => {
+  try {
+    const plan = await getDietPlanByIdService(req.params.id);
+    res.status(200).json(plan);
+  } catch (err) {
+    res.status(404).json({ message: err.message });
   }
 };

@@ -2,7 +2,8 @@ import {
     createFeedbackService,
     getFeedbackForUserService,
     updateFeedbackService,
-    deleteFeedbackService
+    deleteFeedbackService,
+    getAllFeedbackService
   } from '../services/feedback.service.js';
   
   // إنشاء تقييم جديد
@@ -40,6 +41,16 @@ import {
     try {
       await deleteFeedbackService(req.params.id);
       res.status(204).send();
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  };
+
+  // جلب جميع التقييمات
+  export const getAllFeedback = async (req, res) => {
+    try {
+      const feedbacks = await getAllFeedbackService();
+      res.status(200).json(feedbacks);
     } catch (err) {
       res.status(400).json({ message: err.message });
     }

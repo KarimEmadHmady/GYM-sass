@@ -15,6 +15,11 @@ export const getRewardsByUserService = async (userId) => {
   return await Reward.find({ userId }).sort({ createdAt: -1 });
 };
 
+// جلب جميع المكافآت
+export const getAllRewardsService = async () => {
+  return await Reward.find().sort({ createdAt: -1 });
+};
+
 // تحديث مكافأة
 export const updateRewardService = async (id, data) => {
   return await Reward.findByIdAndUpdate(id, data, { new: true });

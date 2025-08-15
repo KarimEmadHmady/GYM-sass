@@ -4,13 +4,17 @@ import {
   createAttendanceRecord,
   getAttendanceRecordsByUser,
   updateAttendanceRecord,
-  deleteAttendanceRecord
+  deleteAttendanceRecord,
+  getAllAttendanceRecords
 } from '../controllers/attendanceRecords.controller.js';
 
 const router = express.Router();
 
 // إنشاء سجل حضور جديد
 router.post('/', authenticate, authorizeAdmin, createAttendanceRecord);
+
+// جلب كل سجلات الحضور
+router.get('/', authenticate, authorizeAdmin, getAllAttendanceRecords);
 
 // جلب كل سجلات مستخدم معين
 router.get('/:userId', authenticate, authorizeAdmin, getAttendanceRecordsByUser);

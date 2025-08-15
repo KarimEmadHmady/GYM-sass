@@ -89,3 +89,10 @@ export const getMealByIdService = async (mealId) => {
   return meal || null;
 };
 
+// جلب خطة غذائية واحدة بالـ ID
+export const getDietPlanByIdService = async (id) => {
+  const plan = await DietPlan.findById(id);
+  if (!plan) throw new Error('Diet plan not found');
+  return plan;
+};
+

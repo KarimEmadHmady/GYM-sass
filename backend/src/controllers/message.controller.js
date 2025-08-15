@@ -2,7 +2,8 @@ import {
     createMessageService,
     getMessagesForUserService,
     updateMessageStatusService,
-    deleteMessageService
+    deleteMessageService,
+    getAllMessagesService
   } from '../services/message.service.js';
   
   // إنشاء رسالة جديدة
@@ -40,6 +41,16 @@ import {
     try {
       await deleteMessageService(req.params.id);
       res.status(204).send();
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  };
+
+  // جلب جميع الرسائل
+  export const getAllMessages = async (req, res) => {
+    try {
+      const messages = await getAllMessagesService();
+      res.status(200).json(messages);
     } catch (err) {
       res.status(400).json({ message: err.message });
     }
