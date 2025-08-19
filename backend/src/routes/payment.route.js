@@ -9,7 +9,6 @@ import {
 } from '../controllers/payment.controller.js';
 
 const router = express.Router();
-ششش
 
 // ➕ إنشاء دفعة جديدة
 router.post('/', authenticate, authorizeAdmin, createPayment);

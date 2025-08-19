@@ -9,14 +9,19 @@ import authRoutes from './src/routes/auth.routes.js';
 import userRoutes from './src/routes/users.routes.js';
 import attendanceRecordRoutes from './src/routes/attendanceRecords.route.js';
 import paymentRoutes from './src/routes/payment.route.js';
-import purchaseRoutes from './src/routes/Purchase.routes.js';
+import purchaseRoutes from './src/routes/purchase.routes.js';
 import workoutPlanRoutes from './src/routes/workoutPlan.routes.js';
 import dietPlanRoutes from './src/routes/dietPlan.route.js';
 import messageRoutes from './src/routes/message.route.js';
 import clientProgressRoutes from './src/routes/clientProgress.route.js';
-import sessionScheduleRoutes from './src/routes/SessionSchedule.routes.js';
+import sessionScheduleRoutes from './src/routes/sessionSchedule.routes.js';
 import feedbackRoutes from './src/routes/feedback.route.js';
-import rewardRoutes from './src/routes/Reward.routes.js';
+import rewardRoutes from './src/routes/reward.routes.js';
+import financialRoutes from './src/routes/financial.routes.js';
+import revenueRoutes from './src/routes/revenue.routes.js';
+import expenseRoutes from './src/routes/expense.routes.js';
+import invoiceRoutes from './src/routes/invoice.routes.js';
+import payrollRoutes from './src/routes/payroll.routes.js';
 
 
 
@@ -44,6 +49,11 @@ app.use('/api/progress', clientProgressRoutes);
 app.use('/api/schedules', sessionScheduleRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/rewards', rewardRoutes);
+app.use('/api/financial', financialRoutes);
+app.use('/api/finance/revenues', revenueRoutes);
+app.use('/api/finance/expenses', expenseRoutes);
+app.use('/api/finance/invoices', invoiceRoutes);
+app.use('/api/finance/payrolls', payrollRoutes);
 
 app.use(errorHandler);
 

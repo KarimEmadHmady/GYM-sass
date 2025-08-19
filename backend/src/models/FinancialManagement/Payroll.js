@@ -11,4 +11,7 @@ const payrollSchema = new mongoose.Schema({
   notes: { type: String },
 }, { timestamps: true });
 
+payrollSchema.index({ paymentDate: 1 });
+payrollSchema.index({ employeeId: 1 });
+
 export default mongoose.model("Payroll", payrollSchema);

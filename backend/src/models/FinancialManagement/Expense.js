@@ -10,4 +10,7 @@ const expenseSchema = new mongoose.Schema({
   notes: { type: String },
 }, { timestamps: true });
 
+expenseSchema.index({ date: 1 });
+expenseSchema.index({ category: 1 });
+
 export default mongoose.model("Expense", expenseSchema);

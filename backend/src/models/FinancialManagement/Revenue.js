@@ -11,4 +11,8 @@ const revenueSchema = new mongoose.Schema({
   notes: { type: String },
 }, { timestamps: true });
 
+revenueSchema.index({ date: 1 });
+revenueSchema.index({ userId: 1 });
+revenueSchema.index({ sourceType: 1 });
+
 export default mongoose.model("Revenue", revenueSchema);

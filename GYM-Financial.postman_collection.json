@@ -1,0 +1,439 @@
+{
+  "info": {
+    "name": "GYM Financial API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "8f0a4ef6-9a9e-4b60-bbcb-gymsaas-financial"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000/api" },
+    { "key": "token", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "employeeId", "value": "" },
+    { "key": "revenueId", "value": "" },
+    { "key": "expenseId", "value": "" },
+    { "key": "invoiceId", "value": "" },
+    { "key": "payrollId", "value": "" },
+    { "key": "fromDate", "value": "2025-01-01" },
+    { "key": "toDate", "value": "2025-12-31" }
+  ],
+  "item": [
+    {
+      "name": "Financial - Unified",
+      "item": [
+        {
+          "name": "Search (all types)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/financial/search?from={{fromDate}}&to={{toDate}}&type=all&sort=desc",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "financial", "search" ],
+              "query": [
+                { "key": "from", "value": "{{fromDate}}" },
+                { "key": "to", "value": "{{toDate}}" },
+                { "key": "type", "value": "all" },
+                { "key": "sort", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Summary (Revenue/Expense Net by Month)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/financial/summary?from={{fromDate}}&to={{toDate}}&sort=asc",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "financial", "summary" ],
+              "query": [
+                { "key": "from", "value": "{{fromDate}}" },
+                { "key": "to", "value": "{{toDate}}" },
+                { "key": "sort", "value": "asc" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Revenue",
+      "item": [
+        {
+          "name": "Create Revenue",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1500,\n  \"date\": \"{{fromDate}}\",\n  \"paymentMethod\": \"cash\",\n  \"sourceType\": \"subscription\",\n  \"userId\": \"{{userId}}\",\n  \"notes\": \"Monthly subscription payment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/finance/revenues",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "finance", "revenues" ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Created', function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "var id = pm.response.json() && pm.response.json()._id; if (id) { pm.collectionVariables.set('revenueId', id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Revenues (filters)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{baseUrl}}/finance/revenues?from={{fromDate}}&to={{toDate}}&userId={{userId}}&sourceType=subscription&sort=desc",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "finance", "revenues" ],
+              "query": [
+                { "key": "from", "value": "{{fromDate}}" },
+                { "key": "to", "value": "{{toDate}}" },
+                { "key": "userId", "value": "{{userId}}" },
+                { "key": "sourceType", "value": "subscription" },
+                { "key": "sort", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Revenue Summary (monthly)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{baseUrl}}/finance/revenues/summary?from={{fromDate}}&to={{toDate}}&sort=asc",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "finance", "revenues", "summary" ],
+              "query": [
+                { "key": "from", "value": "{{fromDate}}" },
+                { "key": "to", "value": "{{toDate}}" },
+                { "key": "sort", "value": "asc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Revenue by Id",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{baseUrl}}/finance/revenues/{{revenueId}}",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "finance", "revenues", "{{revenueId}}" ]
+            }
+          }
+        },
+        {
+          "name": "Update Revenue",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Updated revenue note\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/finance/revenues/{{revenueId}}",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "finance", "revenues", "{{revenueId}}" ]
+            }
+          }
+        },
+        {
+          "name": "Delete Revenue",
+          "request": {
+            "method": "DELETE",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{baseUrl}}/finance/revenues/{{revenueId}}",
+              "host": [ "{{baseUrl}}" ],
+              "path": [ "finance", "revenues", "{{revenueId}}" ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Expense",
+      "item": [
+        {
+          "name": "Create Expense",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 600,\n  \"date\": \"{{fromDate}}\",\n  \"category\": \"rent\",\n  \"paidTo\": \"Landlord\",\n  \"notes\": \"Monthly rent\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/finance/expenses", "host": ["{{baseUrl}}"], "path": ["finance","expenses"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Created', function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "var id = pm.response.json() && pm.response.json()._id; if (id) { pm.collectionVariables.set('expenseId', id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Expenses (filters)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{baseUrl}}/finance/expenses?from={{fromDate}}&to={{toDate}}&category=rent&sort=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["finance","expenses"],
+              "query": [
+                { "key": "from", "value": "{{fromDate}}" },
+                { "key": "to", "value": "{{toDate}}" },
+                { "key": "category", "value": "rent" },
+                { "key": "sort", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Expense Summary (monthly)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "{{baseUrl}}/finance/expenses/summary?from={{fromDate}}&to={{toDate}}&sort=asc", "host": ["{{baseUrl}}"], "path": ["finance","expenses","summary"], "query": [ {"key":"from","value":"{{fromDate}}"},{"key":"to","value":"{{toDate}}"},{"key":"sort","value":"asc"} ] }
+          }
+        },
+        {
+          "name": "Get Expense by Id",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "{{baseUrl}}/finance/expenses/{{expenseId}}", "host": ["{{baseUrl}}"], "path": ["finance","expenses","{{expenseId}}"] }
+          }
+        },
+        {
+          "name": "Update Expense",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"notes\": \"Updated expense note\"\n}" },
+            "url": { "raw": "{{baseUrl}}/finance/expenses/{{expenseId}}", "host": ["{{baseUrl}}"], "path": ["finance","expenses","{{expenseId}}"] }
+          }
+        },
+        {
+          "name": "Delete Expense",
+          "request": {
+            "method": "DELETE",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "{{baseUrl}}/finance/expenses/{{expenseId}}", "host": ["{{baseUrl}}"], "path": ["finance","expenses","{{expenseId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoice",
+      "item": [
+        {
+          "name": "Create Invoice",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoiceNumber\": \"INV-1001\",\n  \"userId\": \"{{userId}}\",\n  \"amount\": 2000,\n  \"issueDate\": \"{{fromDate}}\",\n  \"dueDate\": \"{{toDate}}\",\n  \"status\": \"pending\",\n  \"items\": [{ \"description\": \"Plan A\", \"quantity\": 1, \"price\": 2000 }]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/finance/invoices", "host": ["{{baseUrl}}"], "path": ["finance","invoices"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Created', function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "var id = pm.response.json() && pm.response.json()._id; if (id) { pm.collectionVariables.set('invoiceId', id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Invoices (filters)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{baseUrl}}/finance/invoices?from={{fromDate}}&to={{toDate}}&userId={{userId}}&status=pending&sort=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["finance","invoices"],
+              "query": [
+                { "key": "from", "value": "{{fromDate}}" },
+                { "key": "to", "value": "{{toDate}}" },
+                { "key": "userId", "value": "{{userId}}" },
+                { "key": "status", "value": "pending" },
+                { "key": "sort", "value": "desc" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Invoice Summary (monthly + status)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{baseUrl}}/finance/invoices/summary?from={{fromDate}}&to={{toDate}}&sort=asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["finance","invoices","summary"],
+              "query": [
+                {"key":"from","value":"{{fromDate}}"},
+                {"key":"to","value":"{{toDate}}"},
+                {"key":"sort","value":"asc"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Invoice by Id",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "{{baseUrl}}/finance/invoices/{{invoiceId}}", "host": ["{{baseUrl}}"], "path": ["finance","invoices","{{invoiceId}}"] }
+          }
+        },
+        {
+          "name": "Update Invoice",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"paid\"\n}" },
+            "url": { "raw": "{{baseUrl}}/finance/invoices/{{invoiceId}}", "host": ["{{baseUrl}}"], "path": ["finance","invoices","{{invoiceId}}"] }
+          }
+        },
+        {
+          "name": "Delete Invoice",
+          "request": {
+            "method": "DELETE",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "{{baseUrl}}/finance/invoices/{{invoiceId}}", "host": ["{{baseUrl}}"], "path": ["finance","invoices","{{invoiceId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payroll",
+      "item": [
+        {
+          "name": "Create Payroll",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"{{employeeId}}\",\n  \"salaryAmount\": 3000,\n  \"paymentDate\": \"{{fromDate}}\",\n  \"bonuses\": 200,\n  \"deductions\": 50,\n  \"notes\": \"Monthly salary\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/finance/payrolls", "host": ["{{baseUrl}}"], "path": ["finance","payrolls"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Created', function () { pm.expect(pm.response.code).to.be.oneOf([200,201]); });",
+                  "var id = pm.response.json() && pm.response.json()._id; if (id) { pm.collectionVariables.set('payrollId', id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Payrolls (filters)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{baseUrl}}/finance/payrolls?from={{fromDate}}&to={{toDate}}&employeeId={{employeeId}}&sort=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["finance","payrolls"],
+              "query": [ {"key":"from","value":"{{fromDate}}"},{"key":"to","value":"{{toDate}}"},{"key":"employeeId","value":"{{employeeId}}"},{"key":"sort","value":"desc"} ]
+            }
+          }
+        },
+        {
+          "name": "Payroll Summary (monthly)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": {
+              "raw": "{{baseUrl}}/finance/payrolls/summary?from={{fromDate}}&to={{toDate}}&sort=asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["finance","payrolls","summary"],
+              "query": [
+                {"key":"from","value":"{{fromDate}}"},
+                {"key":"to","value":"{{toDate}}"},
+                {"key":"sort","value":"asc"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Payroll by Id",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "{{baseUrl}}/finance/payrolls/{{payrollId}}", "host": ["{{baseUrl}}"], "path": ["finance","payrolls","{{payrollId}}"] }
+          }
+        },
+        {
+          "name": "Update Payroll",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"bonuses\": 300\n}" },
+            "url": { "raw": "{{baseUrl}}/finance/payrolls/{{payrollId}}", "host": ["{{baseUrl}}"], "path": ["finance","payrolls","{{payrollId}}"] }
+          }
+        },
+        {
+          "name": "Delete Payroll",
+          "request": {
+            "method": "DELETE",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "{{baseUrl}}/finance/payrolls/{{payrollId}}", "host": ["{{baseUrl}}"], "path": ["finance","payrolls","{{payrollId}}"] }
+          }
+        }
+      ]
+    }
+  ]
+}
+
+
