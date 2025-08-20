@@ -50,19 +50,37 @@ export const addExerciseToPlanService = async (planId, exercise) => {
   return plan;
 };
 
-// تعديل تمرين معين في الخطة
-export const updateExerciseInPlanService = async (planId, exerciseIndex, updatedExercise) => {
+// جلب تمرين معين من الخطة بواسطة الـ ID
+export const getExerciseByIdService = async (planId, exerciseId) => {
   const plan = await WorkoutPlan.findById(planId);
-  if (!plan || !plan.exercises[exerciseIndex]) return null;
-  plan.exercises[exerciseIndex] = { ...plan.exercises[exerciseIndex]._doc, ...updatedExercise };
+  if (!plan) return null;
+
+  const exercise = plan.exercises.find(exercise => exercise._id.toString() === exerciseId);
+  return exercise || null;
+};
+
+// تعديل تمرين معين في الخطة
+export const updateExerciseInPlanService = async (planId, exerciseId, updatedExercise) => {
+  const plan = await WorkoutPlan.findById(planId);
+  if (!plan) return null;
+
+  const exerciseIndex = plan.exercises.findIndex(exercise => exercise._id.toString() === exerciseId);
+  if (exerciseIndex === -1) return null;
+
+  // Update the specific exercise
+  Object.assign(plan.exercises[exerciseIndex], updatedExercise);
   await plan.save();
   return plan;
 };
 
 // حذف تمرين معين من الخطة
-export const deleteExerciseFromPlanService = async (planId, exerciseIndex) => {
+export const deleteExerciseFromPlanService = async (planId, exerciseId) => {
   const plan = await WorkoutPlan.findById(planId);
-  if (!plan || !plan.exercises[exerciseIndex]) return null;
+  if (!plan) return null;
+
+  const exerciseIndex = plan.exercises.findIndex(exercise => exercise._id.toString() === exerciseId);
+  if (exerciseIndex === -1) return null;
+
   plan.exercises.splice(exerciseIndex, 1);
   await plan.save();
   return plan;

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import DietPlan from '../models/userMangment/DietPlan.model.js';
 // إنشاء خطة غذائية جديدة
 export const createDietPlanService = async (data) => {
@@ -41,11 +42,13 @@ export const addMealToPlanService = async (planId, mealData) => {
   const plan = await DietPlan.findById(planId);
   if (!plan) throw new Error('Diet plan not found');
 
-  plan.meals.push({
-    mealId: new mongoose.Types.ObjectId(),
-    ...mealData
-  });
+  // Validate required fields
+  const { mealName, calories, quantity } = mealData;
+  if (!mealName || !calories || !quantity) {
+    throw new Error('mealName, calories, and quantity are required');
+  }
 
+  plan.meals.push(mealData);
   await plan.save();
   return plan;
 };

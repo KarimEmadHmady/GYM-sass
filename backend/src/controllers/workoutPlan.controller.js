@@ -8,7 +8,8 @@ import {
   updateExerciseInPlanService,
   deleteExerciseFromPlanService,
   getAllWorkoutPlansService,
-  getExercisesByPlanIdService
+  getExercisesByPlanIdService,
+  getExerciseByIdService
 } from "../services/workoutPlan.service.js";
 
 // إنشاء خطة تمرين جديدة
@@ -85,7 +86,7 @@ export const updateExerciseInPlan = async (req, res) => {
   try {
     const plan = await updateExerciseInPlanService(
       req.params.planId,
-      req.params.exerciseIndex,
+      req.params.exerciseId,
       req.body
     );
     if (!plan) return res.status(404).json({ message: "الخطة أو التمرين غير موجود" });
@@ -98,7 +99,7 @@ export const updateExerciseInPlan = async (req, res) => {
 // حذف تمرين
 export const deleteExerciseFromPlan = async (req, res) => {
   try {
-    const plan = await deleteExerciseFromPlanService(req.params.planId, req.params.exerciseIndex);
+    const plan = await deleteExerciseFromPlanService(req.params.planId, req.params.exerciseId);
     if (!plan) return res.status(404).json({ message: "الخطة أو التمرين غير موجود" });
     res.status(200).json(plan);
   } catch (error) {
@@ -123,5 +124,16 @@ export const getExercisesByPlanId = async (req, res) => {
     res.json(exercises);
   } catch (error) {
     res.status(404).json({ message: error.message });
+  }
+};
+
+// جلب تمرين معين من الخطة بواسطة الـ ID
+export const getExerciseById = async (req, res) => {
+  try {
+    const exercise = await getExerciseByIdService(req.params.planId, req.params.exerciseId);
+    if (!exercise) return res.status(404).json({ message: "التمرين غير موجود" });
+    res.json(exercise);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

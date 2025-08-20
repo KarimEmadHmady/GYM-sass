@@ -10,7 +10,8 @@ import {
   updateExerciseInPlan,
   deleteExerciseFromPlan,
   getAllWorkoutPlans,
-  getExercisesByPlanId
+  getExercisesByPlanId,
+  getExerciseById
 } from "../controllers/workoutPlan.controller.js";
 
 const router = express.Router();
@@ -26,8 +27,9 @@ router.delete("/:id", authenticate, authorizeAdmin, deleteWorkoutPlan);
 router.get('/', authenticate, authorizeAdmin, getAllWorkoutPlans);
 router.post("/:planId/exercises", authenticate, authorizeAdmin, addExerciseToPlan);
 router.get('/:planId/exercises', authenticate, authorizeAdmin, getExercisesByPlanId);
-router.put("/:planId/exercises/:exerciseIndex", authenticate, authorizeAdmin, updateExerciseInPlan);
-router.delete("/:planId/exercises/:exerciseIndex", authenticate, authorizeAdmin, deleteExerciseFromPlan);
+router.get('/:planId/exercises/:exerciseId', authenticate, authorizeAdmin, getExerciseById);
+router.put("/:planId/exercises/:exerciseId", authenticate, authorizeAdmin, updateExerciseInPlan);
+router.delete("/:planId/exercises/:exerciseId", authenticate, authorizeAdmin, deleteExerciseFromPlan);
 
 
 export default router;
