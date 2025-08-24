@@ -1,0 +1,16 @@
+{
+  "Home": {
+    "title": "Welcome to our store!",
+    "welcome": "We are glad to have you here. Enjoy browsing our products!"
+  },
+  "Navigation": {
+    "home": "Home",
+    "services": "Services",
+    "pricing": "Pricing",
+    "trainers": "Trainers",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "language": "عربي"
+  }
+} 

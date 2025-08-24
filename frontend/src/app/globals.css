@@ -1,0 +1,197 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-cairo: var(--font-cairo);
+  --font-roboto: var(--font-roboto);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.language-ar {
+  font-family: var(--font-cairo);
+}
+
+.language-en {
+  font-family: var(--font-roboto);
+}
+
+/* CSS Variables for Background Gradient Animation */
+:root {
+  --gradient-background-start: rgb(108, 0, 162);
+  --gradient-background-end: rgb(0, 17, 82);
+  --first-color: 18, 113, 255;
+  --second-color: 221, 74, 255;
+  --third-color: 100, 220, 255;
+  --fourth-color: 200, 50, 50;
+  --fifth-color: 180, 180, 50;
+  --pointer-color: 140, 100, 255;
+  --size: 80%;
+  --blending-value: hard-light;
+}
+
+/* Custom Scrollbar Styling */
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, 
+    rgba(108, 0, 162, 0.1), 
+    rgba(0, 17, 82, 0.1)
+  );
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, 
+  rgb(18, 113, 255), 
+  rgb(221, 74, 255), 
+  rgb(100, 220, 255), 
+    rgb(200, 50, 50)
+  );
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, 
+    rgb(18, 113, 255), 
+    rgb(221, 74, 255), 
+    rgb(100, 220, 255), 
+    rgb(200, 50, 50), 
+    rgb(180, 180, 50)
+  );
+  transform: scale(1.05);
+}
+
+::-webkit-scrollbar-corner {
+  background: linear-gradient(45deg, 
+    rgba(108, 0, 162, 0.2), 
+    rgba(0, 17, 82, 0.2)
+  );
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(18, 113, 255) rgba(108, 0, 162, 0.1);
+}
+
+/* Custom scrollbar for specific elements */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, 
+    rgba(108, 0, 162, 0.05), 
+    rgba(0, 17, 82, 0.05)
+  );
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, 
+    rgb(18, 113, 255), 
+    rgb(221, 74, 255), 
+    rgb(100, 220, 255)
+  );
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, 
+    rgb(18, 113, 255), 
+    rgb(221, 74, 255), 
+    rgb(100, 220, 255), 
+    rgb(200, 50, 50)
+  );
+}
+
+/* Keyframe Animations for Background Gradient */
+@keyframes first {
+  0%, 50% {
+    transform: rotate(0deg) scale(1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1.1);
+  }
+}
+
+@keyframes second {
+  0%, 50% {
+    transform: rotate(0deg) scale(1);
+  }
+  100% {
+    transform: rotate(-360deg) scale(0.9);
+  }
+}
+
+@keyframes third {
+  0%, 50% {
+    transform: rotate(0deg) scale(1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1.2);
+  }
+}
+
+@keyframes fourth {
+  0%, 50% {
+    transform: rotate(0deg) scale(1);
+  }
+  100% {
+    transform: rotate(-360deg) scale(0.8);
+  }
+}
+
+@keyframes fifth {
+  0%, 50% {
+    transform: rotate(0deg) scale(1);
+  }
+  100% {
+    transform: rotate(360deg) scale(1.3);
+  }
+}
+
+/* Animation Classes */
+.animate-first {
+  animation: first 20s infinite linear;
+}
+
+.animate-second {
+  animation: second 25s infinite linear;
+}
+
+.animate-third {
+  animation: third 30s infinite linear;
+}
+
+.animate-fourth {
+  animation: fourth 35s infinite linear;
+}
+
+.animate-fifth {
+  animation: fifth 40s infinite linear;
+}
