@@ -1,4 +1,5 @@
 import Payment from '../models/userMangment/Payment.model.js';
+import { addPointsFromPayment } from './loyaltyPoints.service.js';
 
 // ➕ إنشاء دفعة جديدة
 export const createPaymentService = async (data) => {
@@ -7,7 +8,20 @@ export const createPaymentService = async (data) => {
     throw new Error('userId, amount, and date are required');
   }
   const allowed = { userId, amount, date, method, notes };
-  return await Payment.create(allowed);
+  
+  // إنشاء الدفعة
+  const payment = await Payment.create(allowed);
+  
+  // إضافة نقاط الولاء تلقائياً
+  try {
+    const paymentType = notes || 'دفع اشتراك';
+    await addPointsFromPayment(userId, amount, paymentType);
+  } catch (error) {
+    console.error('خطأ في إضافة نقاط الولاء:', error.message);
+    // لا نوقف العملية إذا فشلت إضافة النقاط
+  }
+  
+  return payment;
 };
 
 // 📄 جلب جميع الدفعات لمستخدم معين
