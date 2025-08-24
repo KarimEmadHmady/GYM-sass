@@ -1,0 +1,371 @@
+{
+  "info": {
+    "name": "Loyalty Points API",
+    "description": "مجموعة اختبارات API لنظام نقاط الولاء",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "YOUR_ADMIN_JWT_TOKEN",
+      "type": "string"
+    },
+    {
+      "key": "user_token",
+      "value": "YOUR_USER_JWT_TOKEN",
+      "type": "string"
+    },
+    {
+      "key": "test_user_id",
+      "value": "USER_ID_FOR_TESTING",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "item": [
+        {
+          "name": "Login Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"user123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 User Points",
+      "item": [
+        {
+          "name": "Get My Points",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/loyalty-points/my-points",
+              "host": ["{{base_url}}"],
+              "path": ["api", "loyalty-points", "my-points"]
+            }
+          }
+        },
+        {
+          "name": "Get User Points by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/loyalty-points/user/{{test_user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "loyalty-points", "user", "{{test_user_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "➕ Add Points (Admin Only)",
+      "item": [
+        {
+          "name": "Add Points to User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{test_user_id}}\",\n  \"points\": 50,\n  \"reason\": \"مكافأة خاصة للعميل المميز\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/loyalty-points/add",
+              "host": ["{{base_url}}"],
+              "path": ["api", "loyalty-points", "add"]
+            }
+          }
+        },
+        {
+          "name": "Add Points from Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{test_user_id}}\",\n  \"amount\": 200,\n  \"paymentType\": \"دفع اشتراك شهري\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/loyalty-points/payment-points",
+              "host": ["{{base_url}}"],
+              "path": ["api", "loyalty-points", "payment-points"]
+            }
+          }
+        },
+        {
+          "name": "Add Attendance Points",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{test_user_id}}\",\n  \"attendanceStreak\": 7\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/loyalty-points/attendance-points",
+              "host": ["{{base_url}}"],
+              "path": ["api", "loyalty-points", "attendance-points"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔄 Redeem Points",
+      "item": [
+        {
+          "name": "Redeem Points",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{test_user_id}}\",\n  \"points\": 100,\n  \"reward\": \"جلسة تدريب شخصي مجانية\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/loyalty-points/redeem",
+              "host": ["{{base_url}}"],
+              "path": ["api", "loyalty-points", "redeem"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Statistics (Admin Only)",
+      "item": [
+        {
+          "name": "Get Loyalty Points Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/loyalty-points/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "loyalty-points", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Top Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/loyalty-points/top-users?limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "loyalty-points", "top-users"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧪 Test Scenarios",
+      "item": [
+        {
+          "name": "Complete User Journey",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// اختبار رحلة المستخدم الكاملة",
+                  "console.log('بدء اختبار رحلة المستخدم...');",
+                  "",
+                  "// 1. جلب النقاط الحالية",
+                  "pm.test('Get current points', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.user).to.have.property('loyaltyPoints');",
+                  "    console.log('النقاط الحالية:', response.user.loyaltyPoints);",
+                  "});",
+                  "",
+                  "// 2. إضافة نقاط",
+                  "pm.test('Add points successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.message).to.include('تم إضافة النقاط بنجاح');",
+                  "});",
+                  "",
+                  "// 3. استبدال نقاط",
+                  "pm.test('Redeem points successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.message).to.include('تم استبدال النقاط بنجاح');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/loyalty-points/my-points",
+              "host": ["{{base_url}}"],
+              "path": ["api", "loyalty-points", "my-points"]
+            }
+          }
+        },
+        {
+          "name": "Error Handling Test",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// اختبار معالجة الأخطاء",
+                  "pm.test('Error handling', function () {",
+                  "    if (pm.response.code === 400 || pm.response.code === 500) {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response).to.have.property('message');",
+                  "        console.log('خطأ تم التعامل معه:', response.message);",
+                  "    } else {",
+                  "        pm.response.to.have.status(200);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{user_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"invalid_user_id\",\n  \"points\": -10,\n  \"reward\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/loyalty-points/redeem",
+              "host": ["{{base_url}}"],
+              "path": ["api", "loyalty-points", "redeem"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
