@@ -146,7 +146,6 @@ export default function GymNavbar() {
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-lg">GYM</span>
           </div>
-          <span className="font-bold text-xl text-gray-900 dark:text-white font-cairo">GYM Pro</span>
         </Link>
 
         {/* Navigation Items */}

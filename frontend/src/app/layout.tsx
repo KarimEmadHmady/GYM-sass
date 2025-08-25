@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cairo, Roboto } from "next/font/google"; // ✅ ضفنا Cairo و Roboto
 import "./globals.css";
+import SplashCursor from "@/components/ui/SplashCursor";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -28,6 +29,7 @@ export default function RootLayout({
     <html lang="en">
       {/* ✅ Cairo + Roboto */}
       <body className={`${cairo.variable} ${roboto.variable} antialiased`}>
+        <SplashCursor />
         {children}
       </body>
     </html>
