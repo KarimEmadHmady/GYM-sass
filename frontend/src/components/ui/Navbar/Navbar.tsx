@@ -181,7 +181,7 @@ export default function GymNavbar() {
             className="relative z-40 px-2 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer text-xs font-medium"
             title={`Switch to ${locale === 'ar' ? 'English' : 'العربية'}`}
           >
-            {locale === 'ar' ? 'EN' : 'عربي'}
+            {locale === 'ar' ? 'EN' : 'ar'}
           </button>
 
           {/* Auth Button */}
@@ -231,7 +231,7 @@ export default function GymNavbar() {
               className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer text-xs font-medium"
               title={`Switch to ${locale === 'ar' ? 'English' : 'العربية'}`}
             >
-              {locale === 'ar' ? 'EN' : 'عربي'}
+              {locale === 'ar' ? 'EN' : 'ar'}
             </button>
             <MobileNavToggle
               isOpen={isMobileMenuOpen}
@@ -244,23 +244,97 @@ export default function GymNavbar() {
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-x-0 top-16 z-50 flex w-full flex-col items-start justify-start gap-4 rounded-lg bg-white px-4 py-8 shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset] dark:bg-neutral-950"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="absolute inset-x-0 top-16 z-50 w-full"
             >
-              <div className="flex flex-col space-y-4 w-full">
-                {mobileNavigationItems.map((item, index) => (
-                  <Link
-                    key={index}
-                    href={item.link}
-                    className={cn("text-lg font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors", locale === 'ar' ? 'font-cairo' : '')}
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/20 backdrop-blur-sm"
+                onClick={handleMobileMenuClose}
+              />
+              
+              {/* Menu Container */}
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="relative mx-4 rounded-2xl bg-white/95 dark:bg-neutral-900/95 backdrop-blur-xl border border-white/20 dark:border-neutral-700/50 shadow-2xl"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-neutral-800">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {locale === 'ar' ? 'القائمة' : 'Menu'}
+                  </h3>
+                  <button
                     onClick={handleMobileMenuClose}
+                    className="p-2 rounded-full bg-gray-100 dark:bg-neutral-800 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
                   >
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
+                    <IconX className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  </button>
+                </div>
+
+                {/* Navigation Items */}
+                <div className="p-6">
+                  <div className="flex flex-col space-y-3">
+                    {mobileNavigationItems.map((item, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1, duration: 0.3 }}
+                      >
+                        <Link
+                          href={item.link}
+                          className={cn(
+                            "flex items-center px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 font-medium",
+                            locale === 'ar' ? 'font-cairo' : ''
+                          )}
+                          onClick={handleMobileMenuClose}
+                        >
+                          <span className="text-lg">{item.name}</span>
+                          <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Additional Actions */}
+                  <div className="mt-8 pt-6 border-t border-gray-100 dark:border-neutral-800">
+                    <div className="flex flex-col space-y-3">
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4, duration: 0.3 }}
+                      >
+                        <button className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg">
+                          {locale === 'ar' ? 'ابدأ الآن' : 'Get Started'}
+                        </button>
+                      </motion.div>
+                      
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5, duration: 0.3 }}
+                      >
+                        <button className="w-full px-4 py-3 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-800 transition-all duration-200">
+                          {locale === 'ar' ? 'تواصل معنا' : 'Contact Us'}
+                        </button>
+                      </motion.div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -324,10 +398,32 @@ const MobileNavToggle = ({
   isOpen: boolean;
   onClick: () => void;
 }) => {
-  return isOpen ? (
-    <IconX className="text-black dark:text-white w-6 h-6 cursor-pointer" onClick={onClick} />
-  ) : (
-    <IconMenu2 className="text-black dark:text-white w-6 h-6 cursor-pointer" onClick={onClick} />
+  return (
+    <button
+      onClick={onClick}
+      className="relative w-8 h-8 flex flex-col justify-center items-center group cursor-pointer"
+      aria-label="Toggle mobile menu"
+    >
+      {/* Animated hamburger lines */}
+      <span
+        className={`w-6 h-0.5 bg-black dark:bg-white rounded-full transition-all duration-300 ease-in-out transform ${
+          isOpen ? 'rotate-45 translate-y-2' : ''
+        }`}
+      />
+      <span
+        className={`w-6 h-0.5 bg-black dark:bg-white rounded-full transition-all duration-300 ease-in-out my-1 ${
+          isOpen ? 'opacity-0 scale-0' : ''
+        }`}
+      />
+      <span
+        className={`w-6 h-0.5 bg-black dark:bg-white rounded-full transition-all duration-300 ease-in-out transform ${
+          isOpen ? '-rotate-45 -translate-y-2' : ''
+        }`}
+      />
+      
+      {/* Hover effect */}
+      <div className="absolute inset-0 rounded-lg bg-gray-100 dark:bg-gray-800 opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10" />
+    </button>
   );
 };
 

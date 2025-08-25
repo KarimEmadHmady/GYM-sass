@@ -3,6 +3,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --animation-duration: 40s;
+  --animation-direction: forwards;
 }
 
 @theme inline {
@@ -173,6 +175,17 @@ body {
   100% {
     transform: rotate(360deg) scale(1.3);
   }
+}
+
+/* Scroll Animation for InfiniteMovingCards */
+@keyframes scroll {
+  to {
+    transform: translate(calc(-50% - 0.5rem));
+  }
+}
+
+.animate-scroll {
+  animation: scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite;
 }
 
 /* Animation Classes */
