@@ -128,7 +128,7 @@ import {
   
     return (
       <div
-        className="min-h-[30vh] flex items-center justify-center w-full mb-[150px ] "
+        className="min-h-[30vh] flex items-center justify-center w-full mb-[150px ] font-cairo "
         style={{ visibility: ready ? "visible" : "hidden", cursor: cursorStyle }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}

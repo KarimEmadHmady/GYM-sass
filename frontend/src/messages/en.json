@@ -12,5 +12,16 @@
     "login": "Login",
     "register": "Register",
     "language": "عربي"
+  },
+  "CalculatorsSection": {
+    "title": "Fitness Calculators",
+    "subtitle": "Calculate your health and fitness metrics",
+    "bmi": "BMI Calculator",
+    "bodyFat": "Body Fat Calculator",
+    "calories": "Calories Calculator",
+    "protein": "Protein Calculator",
+    "water": "Water Calculator",
+    "workout": "Workout Recommendations",
+    "clickToOpen": "Click to open {name} "
   }
 } 

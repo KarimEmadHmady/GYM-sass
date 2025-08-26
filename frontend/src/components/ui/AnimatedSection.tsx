@@ -13,7 +13,7 @@ const AnimatedSection: React.FC = () => {
   };
 
   return (
-    <section className="flex items-center justify-center bg-[#000] flex-col">
+    <section className="flex items-center justify-center bg-[#000] flex-col font-cairo">
       <BlurText
         text={content.blurText}
         delay={150}

@@ -7,6 +7,10 @@ import AnimatedSection from '@/components/ui/AnimatedSection';
 import ContactSection from '@/components/ui/ContactSection';
 import SocialSidebar from '@/components/ui/SocialSidebar';
 import FooterSection from '@/components/ui/FooterSection';
+import FloatingActions from '@/components/ui/FloatingActions';
+
+import CalculatorsSection from '@/components/ui/calculators/CalculatorsSection';
+
 import { VortexDemo } from '@/components/ui/VortexDemo';
 import { SparklesPreview } from '@/components/ui/SparklesPreview';
 import { InfiniteMovingCardsDemo } from '@/components/ui/InfiniteMovingCardsDemo';
@@ -20,6 +24,7 @@ export default function HomePage() {
       <AnnouncementBar />
       <HeroSection />
       <AnimatedSection />
+      <CalculatorsSection />
       <InfiniteMovingCardsDemo />
       <CompareDemo/>
       <LayoutGridDemo />
@@ -29,6 +34,7 @@ export default function HomePage() {
       <CardSpotlightDemo />
       <VortexDemo />
       <FooterSection />
+      <FloatingActions />
     </>
   );
 }
