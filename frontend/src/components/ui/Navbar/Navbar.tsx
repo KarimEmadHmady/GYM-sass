@@ -143,9 +143,8 @@ export default function GymNavbar() {
           href="/"
           className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
         >
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-lg">GYM</span>
-          </div>
+            <span className="font-bold text-[25px] text-gray-900 dark:text-white font-cairo">Coach Gym</span>
+
         </Link>
 
         {/* Navigation Items */}
@@ -218,10 +217,8 @@ export default function GymNavbar() {
             href="/"
             className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-sm">GYM</span>
-            </div>
-            <span className="font-bold text-lg text-gray-900 dark:text-white font-cairo">GYM Pro</span>
+
+            <span className="font-bold text-lg text-gray-900 dark:text-white font-cairo">Coach Gym</span>
           </Link>
 
           {/* Language Toggle and Mobile Menu Button */}
@@ -401,7 +398,7 @@ const MobileNavToggle = ({
   return (
     <button
       onClick={onClick}
-      className="relative w-8 h-8 flex flex-col justify-center items-center group cursor-pointer"
+      className="relative w-8 h-8 flex flex-col justify-center items-star group cursor-pointer "
       aria-label="Toggle mobile menu"
     >
       {/* Animated hamburger lines */}
@@ -411,7 +408,7 @@ const MobileNavToggle = ({
         }`}
       />
       <span
-        className={`w-6 h-0.5 bg-black dark:bg-white rounded-full transition-all duration-300 ease-in-out my-1 ${
+        className={`w-[50%] h-0.5 bg-black dark:bg-white rounded-full transition-all duration-300 ease-in-out my-1 ${
           isOpen ? 'opacity-0 scale-0' : ''
         }`}
       />

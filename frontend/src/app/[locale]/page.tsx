@@ -14,7 +14,6 @@ import CalculatorsSection from '@/components/ui/calculators/CalculatorsSection';
 import { VortexDemo } from '@/components/ui/VortexDemo';
 import { SparklesPreview } from '@/components/ui/SparklesPreview';
 import { InfiniteMovingCardsDemo } from '@/components/ui/InfiniteMovingCardsDemo';
-import { LayoutGridDemo } from '@/components/ui/LayoutGridDemo';
 import { CardSpotlightDemo } from '@/components/ui/CardSpotlightDemo';
 import { CompareDemo } from '@/components/ui/CompareDemo';
 
@@ -27,7 +26,6 @@ export default function HomePage() {
       <CalculatorsSection />
       <InfiniteMovingCardsDemo />
       <CompareDemo/>
-      <LayoutGridDemo />
       <ContactSection />
       <SparklesPreview />
       <SocialSidebar />
