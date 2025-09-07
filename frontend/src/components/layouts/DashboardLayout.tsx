@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname } from '@/i18n/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigation } from '@/hooks/useNavigation';
 import { usePermissions } from '@/hooks/usePermissions';
 import { DASHBOARD_CONFIGS } from '@/lib/constants';
+import { useTranslations, useLocale } from 'next-intl';
 import type { UserRole } from '@/types';
 
 interface DashboardLayoutProps {
@@ -19,6 +20,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   const { hasPermission } = usePermissions();
   const router = useRouter();
   const pathname = usePathname();
+  const locale = useLocale();
+  const t = useTranslations('DashboardLayout');
 
   const userRole = user?.role as UserRole;
   const dashboardConfig = DASHBOARD_CONFIGS[userRole];
@@ -30,6 +33,15 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
+  };
+
+  // زر تبديل اللغة
+  const otherLocale = locale === 'ar' ? 'en' : 'ar';
+  const handleLocaleSwitch = () => {
+    console.log('DashboardLayout - Current pathname:', pathname);
+    console.log('DashboardLayout - Current locale:', locale);
+    console.log('DashboardLayout - Other locale:', otherLocale);
+    router.push(pathname, { locale: otherLocale });
   };
 
   return (
@@ -129,7 +141,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             className="w-full flex items-center px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
           >
             <span className="mr-2">🚪</span>
-            Logout
+            {t('Logout.btn')}
           </button>
         </div>
       </div>
@@ -177,6 +189,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             </div>
 
             <div className="flex items-center space-x-4">
+              {/* Language Switch */}
+              <button
+                onClick={handleLocaleSwitch}
+                className="px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+              >
+                {t('Language.btn')}
+              </button>
+              
               {/* Notifications */}
               <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

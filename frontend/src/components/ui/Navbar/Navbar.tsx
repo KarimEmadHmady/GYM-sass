@@ -1,28 +1,22 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import { IconMenu2, IconX, IconLanguage } from "@tabler/icons-react";
 import {
   motion,
   AnimatePresence,
-  useScroll,
-  useMotionValueEvent,
 } from "motion/react";
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { Link } from '@/i18n/navigation';
 import { useLocale } from 'next-intl';
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/navigation';
 
 export default function GymNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hovered, setHovered] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollY } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
   const [visible, setVisible] = useState<boolean>(false);
 
   // next-intl hooks
@@ -48,13 +42,19 @@ export default function GymNavbar() {
   console.log('Should show navbar:', shouldShowNavbar);
   console.log('Router:', router);
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    if (latest > 100) {
-      setVisible(true);
-    } else {
-      setVisible(false);
-    }
-  });
+  // Handle scroll visibility with useEffect instead of useScroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        setVisible(true);
+      } else {
+        setVisible(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleMobileMenuToggle = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -82,28 +82,11 @@ export default function GymNavbar() {
     }
     
     try {
-      // Try using router.replace first
-      console.log('Attempting router.replace...');
-      const result = router.replace(pathname, { locale: newLocale });
-      console.log('Router replace result:', result);
-      
-      // If router.replace doesn't work immediately, try manual redirect
-      setTimeout(() => {
-        if (window.location.pathname.includes(`/${locale}`)) {
-          console.log('Router.replace failed, using manual redirect...');
-          const newPath = pathname.replace(`/${locale}`, `/${newLocale}`);
-          console.log('Redirecting to:', newPath);
-          window.location.href = newPath;
-        }
-      }, 100);
-      
+      // Use router.push for proper i18n navigation
+      console.log('Switching language using router.push...');
+      router.push(pathname, { locale: newLocale });
     } catch (error) {
       console.error('Error switching language with router:', error);
-      // Use manual redirect immediately
-      console.log('Using manual redirect due to error...');
-      const newPath = pathname.replace(`/${locale}`, `/${newLocale}`);
-      console.log('Redirecting to:', newPath);
-      window.location.href = newPath;
     }
   };
 
@@ -130,32 +113,18 @@ export default function GymNavbar() {
     return null;
   }
 
-  // زر اللغة: إذا في داشبورد استخدم window.location.href، إذا لا استخدم Link
+  // زر اللغة: استخدام router.push للتنقل الصحيح
   const LanguageToggle = () => {
-    if (dashboardRoutes.some(route => cleanPathname.startsWith(route))) {
-      return (
-        <button
-          onClick={() => {
-            const restPath = pathname.split('/').slice(2).join('/') || '';
-            window.location.href = `/${otherLocale}/${restPath}`;
-          }}
-          className="relative z-40 px-2 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer text-xs font-medium"
-          title={`Switch to ${locale === 'ar' ? 'English' : 'العربية'}`}
-        >
-          {locale === 'ar' ? 'EN' : 'عربي'}
-        </button>
-      );
-    }
     return (
-      <Link
-        href={pathname}
-        locale={otherLocale}
+      <button
+        onClick={() => {
+          router.push(pathname, { locale: otherLocale });
+        }}
         className="relative z-40 px-2 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer text-xs font-medium"
         title={`Switch to ${locale === 'ar' ? 'English' : 'العربية'}`}
-        prefetch={false}
       >
         {locale === 'ar' ? 'EN' : 'عربي'}
-      </Link>
+      </button>
     );
   };
 

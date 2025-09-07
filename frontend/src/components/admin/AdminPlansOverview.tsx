@@ -1,17 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const AdminPlansOverview = () => {
   const [activeTab, setActiveTab] = useState('workout');
+  const t = useTranslations();
 
   const workoutPlans = [
     {
       id: 1,
-      name: 'خطة التخسيس للمبتدئين',
+      name: t('AdminPlansOverview.workoutPlans.plan1.name'),
       type: 'weight_loss',
       difficulty: 'beginner',
-      duration: '8 أسابيع',
+      duration: t('AdminPlansOverview.workoutPlans.plan1.duration'),
       exercises: 12,
       members: 25,
       status: 'active',
@@ -21,10 +23,10 @@ const AdminPlansOverview = () => {
     },
     {
       id: 2,
-      name: 'خطة بناء العضلات',
+      name: t('AdminPlansOverview.workoutPlans.plan2.name'),
       type: 'muscle_gain',
       difficulty: 'intermediate',
-      duration: '12 أسبوع',
+      duration: t('AdminPlansOverview.workoutPlans.plan2.duration'),
       exercises: 18,
       members: 15,
       status: 'active',
@@ -34,10 +36,10 @@ const AdminPlansOverview = () => {
     },
     {
       id: 3,
-      name: 'خطة اللياقة العامة',
+      name: t('AdminPlansOverview.workoutPlans.plan3.name'),
       type: 'general_fitness',
       difficulty: 'beginner',
-      duration: '6 أسابيع',
+      duration: t('AdminPlansOverview.workoutPlans.plan3.duration'),
       exercises: 10,
       members: 30,
       status: 'active',
@@ -50,7 +52,7 @@ const AdminPlansOverview = () => {
   const dietPlans = [
     {
       id: 1,
-      name: 'خطة التخسيس الغذائية',
+      name: t('AdminPlansOverview.dietPlans.plan1.name'),
       type: 'weight_loss',
       calories: 1500,
       meals: 5,
@@ -62,7 +64,7 @@ const AdminPlansOverview = () => {
     },
     {
       id: 2,
-      name: 'خطة بناء العضلات الغذائية',
+      name: t('AdminPlansOverview.dietPlans.plan2.name'),
       type: 'muscle_gain',
       calories: 2500,
       meals: 6,
@@ -74,7 +76,7 @@ const AdminPlansOverview = () => {
     },
     {
       id: 3,
-      name: 'خطة الصحة العامة',
+      name: t('AdminPlansOverview.dietPlans.plan3.name'),
       type: 'general_health',
       calories: 2000,
       meals: 4,
@@ -87,13 +89,7 @@ const AdminPlansOverview = () => {
   ];
 
   const getTypeText = (type: string) => {
-    const types = {
-      weight_loss: 'تخسيس',
-      muscle_gain: 'بناء عضلات',
-      general_fitness: 'لياقة عامة',
-      general_health: 'صحة عامة'
-    };
-    return types[type as keyof typeof types] || type;
+    return t(`AdminPlansOverview.types.${type}`);
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -106,12 +102,7 @@ const AdminPlansOverview = () => {
   };
 
   const getDifficultyText = (difficulty: string) => {
-    const texts = {
-      beginner: 'مبتدئ',
-      intermediate: 'متوسط',
-      advanced: 'متقدم'
-    };
-    return texts[difficulty as keyof typeof texts] || difficulty;
+    return t(`AdminPlansOverview.difficulties.${difficulty}`);
   };
 
   const getStatusColor = (status: string) => {
@@ -124,12 +115,7 @@ const AdminPlansOverview = () => {
   };
 
   const getStatusText = (status: string) => {
-    const texts = {
-      active: 'نشط',
-      inactive: 'غير نشط',
-      draft: 'مسودة'
-    };
-    return texts[status as keyof typeof texts] || status;
+    return t(`AdminPlansOverview.statuses.${status}`);
   };
 
   const currentPlans = activeTab === 'workout' ? workoutPlans : dietPlans;
@@ -141,19 +127,23 @@ const AdminPlansOverview = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 sm:mb-0">
-            إدارة الخطط - الإدارة
+            {t('AdminPlansOverview.title')}
           </h3>
           <div className="flex items-center space-x-4">
             <div className="text-right">
-              <p className="text-sm text-gray-600 dark:text-gray-400">إجمالي الإيرادات</p>
-              <p className="text-xl font-bold text-green-600 dark:text-green-400">ج.م{totalRevenue}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {t('AdminPlansOverview.totalRevenue')}
+              </p>
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">
+                ج.م{totalRevenue}
+              </p>
             </div>
             <div className="flex space-x-2">
               <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
-                إضافة خطة جديدة
+                {t('AdminPlansOverview.addNewPlan')}
               </button>
               <button className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                تصدير البيانات
+                {t('AdminPlansOverview.exportData')}
               </button>
             </div>
           </div>
@@ -165,8 +155,8 @@ const AdminPlansOverview = () => {
         <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex space-x-8 px-6">
             {[
-              { id: 'workout', name: 'خطط التمرين', count: workoutPlans.length, icon: '🏋️' },
-              { id: 'diet', name: 'الخطط الغذائية', count: dietPlans.length, icon: '🍎' }
+              { id: 'workout', name: t('AdminPlansOverview.tabs.workout'), count: workoutPlans.length, icon: '🏋️' },
+              { id: 'diet', name: t('AdminPlansOverview.tabs.diet'), count: dietPlans.length, icon: '🍎' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -206,66 +196,67 @@ const AdminPlansOverview = () => {
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">النوع:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('AdminPlansOverview.labels.type')}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {getTypeText(plan.type)}
                     </span>
                   </div>
 
-                  {activeTab === 'workout' ? (
+                  {activeTab === 'workout' && (
                     <>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">المستوى:</span>
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyColor(plan.difficulty)}`}>
-                          {getDifficultyText(plan.difficulty)}
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{t('AdminPlansOverview.labels.difficulty')}</span>
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyColor((plan as any).difficulty)}`}>
+                          {getDifficultyText((plan as any).difficulty)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">المدة:</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{t('AdminPlansOverview.labels.duration')}</span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {plan.duration}
+                          {(plan as any).duration}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">التمارين:</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{t('AdminPlansOverview.labels.exercises')}</span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {plan.exercises} تمرين
+                          {(plan as any).exercises} {t('AdminPlansOverview.exerciseUnit')}
                         </span>
                       </div>
                     </>
-                  ) : (
+                  )}
+                  {activeTab === 'diet' && (
                     <>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">السعرات:</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{t('AdminPlansOverview.labels.calories')}</span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {plan.calories} سعرة
+                          {(plan as any).calories} {t('AdminPlansOverview.calorieUnit')}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">الوجبات:</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{t('AdminPlansOverview.labels.meals')}</span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {plan.meals} وجبة
+                          {(plan as any).meals} {t('AdminPlansOverview.mealUnit')}
                         </span>
                       </div>
                     </>
                   )}
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">الأعضاء:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('AdminPlansOverview.labels.members')}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {plan.members} عضو
+                      {plan.members} {t('AdminPlansOverview.memberUnit')}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">المنشئ:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('AdminPlansOverview.labels.createdBy')}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {plan.createdBy}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">الإيرادات:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('AdminPlansOverview.labels.revenue')}</span>
                     <span className="text-sm font-bold text-green-600 dark:text-green-400">
                       ج.م{plan.revenue}
                     </span>
@@ -274,10 +265,10 @@ const AdminPlansOverview = () => {
 
                 <div className="mt-6 flex space-x-2">
                   <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md text-sm hover:bg-blue-700 transition-colors">
-                    عرض التفاصيل
+                    {t('AdminPlansOverview.viewDetails')}
                   </button>
                   <button className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                    تعديل
+                    {t('AdminPlansOverview.edit')}
                   </button>
                 </div>
               </div>

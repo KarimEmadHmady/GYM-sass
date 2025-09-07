@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from '@/i18n/navigation';
+import { useTranslations, useLocale } from 'next-intl';
 
 // Components
 import ManagerStatsCards from '@/components/manager/ManagerStatsCards';
@@ -15,6 +16,9 @@ import ManagerPlansOverview from '@/components/manager/ManagerPlansOverview';
 const ManagerDashboard = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = useLocale();
+  const t = useTranslations('ManagerDashboard');
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
@@ -35,6 +39,7 @@ const ManagerDashboard = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+        <span className="ml-4 text-white text-lg">{t('Loading.message')}</span>
       </div>
     );
   }
@@ -44,13 +49,22 @@ const ManagerDashboard = () => {
   }
 
   const tabs = [
-    { id: 'overview', name: 'نظرة عامة', icon: '📊' },
-    { id: 'users', name: 'إدارة المستخدمين', icon: '👥' },
-    { id: 'sessions', name: 'الحصص', icon: '🏋️' },
-    { id: 'plans', name: 'الخطط', icon: '📋' },
-    { id: 'reports', name: 'التقارير', icon: '📈' },
-    { id: 'settings', name: 'الإعدادات', icon: '⚙️' }
+    { id: 'overview', name: t('Tabs.overview'), icon: '📊' },
+    { id: 'users', name: t('Tabs.users'), icon: '👥' },
+    { id: 'sessions', name: t('Tabs.sessions'), icon: '🏋️' },
+    { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
+    { id: 'reports', name: t('Tabs.reports'), icon: '📈' },
+    { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' }
   ];
+
+  // زر تبديل اللغة
+  const otherLocale = locale === 'ar' ? 'en' : 'ar';
+  const handleLocaleSwitch = () => {
+    console.log('Manager - Current pathname:', pathname);
+    console.log('Manager - Current locale:', locale);
+    console.log('Manager - Other locale:', otherLocale);
+    router.push(pathname, { locale: otherLocale });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
@@ -60,10 +74,10 @@ const ManagerDashboard = () => {
           <div className="flex justify-between items-center py-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                لوحة تحكم المدير
+                {t('Header.title')}
               </h1>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                مرحباً {user?.name}، إدارة شاملة لجميع عمليات الجيم
+                {t('Header.welcome', { name: user?.name })}
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -72,7 +86,7 @@ const ManagerDashboard = () => {
                   {user?.name}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  مدير
+                  {t('Header.role')}
                 </p>
               </div>
               <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
@@ -85,7 +99,13 @@ const ManagerDashboard = () => {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                <span>تسجيل الخروج</span>
+                <span>{t('Logout.btn')}</span>
+              </button>
+              <button
+                onClick={handleLocaleSwitch}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors ml-2"
+              >
+                {t('Language.btn')}
               </button>
             </div>
           </div>

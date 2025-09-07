@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useCallback, useEffect } from 'react';
 import { RootState, AppDispatch } from '@/redux/store';
 import { loginUser, registerUser, logout, clearError, getCurrentUser } from '@/redux/features/auth/authSlice';
@@ -73,9 +73,9 @@ export const useAuth = () => {
   // Logout function
   const handleLogout = useCallback(() => {
     dispatch(logout());
-    // Force reload to clear any cached state
-    window.location.href = '/login';
-  }, [dispatch]);
+    // Navigate to login page
+    router.push('/login');
+  }, [dispatch, router]);
 
   // Clear error function
   const clearAuthError = useCallback(() => {

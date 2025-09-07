@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useTranslations } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
+import { useRouter, usePathname } from '@/i18n/navigation';
 
 // Components
 import AdminStatsCards from '@/components/admin/AdminStatsCards';
@@ -21,6 +21,7 @@ const AdminDashboard = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const locale = useLocale();
   const t = useTranslations('AdminDashboard');
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -62,11 +63,9 @@ const AdminDashboard = () => {
   ];
 
   // زر تبديل اللغة
-  const currentLocale = pathname.split('/')[1];
-  const otherLocale = currentLocale === 'ar' ? 'en' : 'ar';
+  const otherLocale = locale === 'ar' ? 'en' : 'ar';
   const handleLocaleSwitch = () => {
-    const restPath = pathname.split('/').slice(2).join('/') || '';
-    window.location.href = `/${otherLocale}/${restPath}`;
+    router.push(pathname, { locale: otherLocale });
   };
 
   return (

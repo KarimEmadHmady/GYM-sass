@@ -1,11 +1,13 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 const AdminStatsCards = () => {
+  const t = useTranslations('AdminDashboard.Stats');
   const stats = [
     {
-      title: 'إجمالي الأعضاء',
+      title: t('totalMembers'),
       value: '1,234',
       change: '+12%',
       changeType: 'positive',
@@ -13,7 +15,7 @@ const AdminStatsCards = () => {
       color: 'blue'
     },
     {
-      title: 'المدربين النشطين',
+      title: t('activeTrainers'),
       value: '45',
       change: '+3',
       changeType: 'positive',
@@ -21,7 +23,7 @@ const AdminStatsCards = () => {
       color: 'green'
     },
     {
-      title: 'الحصص اليومية',
+      title: t('dailySessions'),
       value: '89',
       change: '+15%',
       changeType: 'positive',
@@ -29,7 +31,7 @@ const AdminStatsCards = () => {
       color: 'purple'
     },
     {
-      title: 'الإيرادات الشهرية',
+      title: t('monthlyRevenue'),
       value: 'ج.م45,678',
       change: '+8%',
       changeType: 'positive',
@@ -37,7 +39,7 @@ const AdminStatsCards = () => {
       color: 'yellow'
     },
     {
-      title: 'المصروفات الشهرية',
+      title: t('monthlyExpenses'),
       value: 'ج.م12,345',
       change: '+5%',
       changeType: 'negative',
@@ -45,7 +47,7 @@ const AdminStatsCards = () => {
       color: 'red'
     },
     {
-      title: 'الربح الصافي',
+      title: t('netProfit'),
       value: 'ج.م33,333',
       change: '+12%',
       changeType: 'positive',
@@ -53,7 +55,7 @@ const AdminStatsCards = () => {
       color: 'green'
     },
     {
-      title: 'نقاط الولاء الموزعة',
+      title: t('loyaltyPoints'),
       value: '12,456',
       change: '+8%',
       changeType: 'positive',
@@ -61,7 +63,7 @@ const AdminStatsCards = () => {
       color: 'indigo'
     },
     {
-      title: 'التقييمات الجديدة',
+      title: t('newReviews'),
       value: '67',
       change: '+5',
       changeType: 'positive',
@@ -109,7 +111,7 @@ const AdminStatsCards = () => {
                   {stat.change}
                 </span>
                 <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
-                  من الشهر الماضي
+                  {t('sinceLastMonth')}
                 </span>
               </div>
             </div>
