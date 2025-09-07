@@ -13,28 +13,28 @@ type CompareCard = {
 export function CompareDemo({
   cards = [
     {
-      firstImage: "https://assets.aceternity.com/code-problem.png",
-      secondImage: "https://assets.aceternity.com/code-solution.png",
+      firstImage: "/1.png",
+      secondImage: "/2.png",
     },
     {
-      firstImage: "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?q=80&w=1200",
-      secondImage: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b?q=80&w=1200",
+      firstImage: "/3.png",
+      secondImage: "/4.png",
     },
     {
-      firstImage: "https://images.unsplash.com/photo-1520975954732-35dd22437a43?q=80&w=1200",
-      secondImage: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?q=80&w=1200",
+      firstImage: "/5.png",
+      secondImage: "/6.png",
     },
     {
-        firstImage: "https://images.unsplash.com/photo-1520975954732-35dd22437a43?q=80&w=1200",
-        secondImage: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?q=80&w=1200",
+        firstImage: "/7.png",
+        secondImage: "/8.png",
       },
       {
-        firstImage: "https://images.unsplash.com/photo-1520975954732-35dd22437a43?q=80&w=1200",
-        secondImage: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?q=80&w=1200",
+        firstImage: "/9.png",
+        secondImage: "/10.png",
       },
       {
-        firstImage: "https://images.unsplash.com/photo-1520975954732-35dd22437a43?q=80&w=1200",
-        secondImage: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?q=80&w=1200",
+        firstImage: "/11.png",
+        secondImage: "/12.png",
       },
   ],
 }: {
