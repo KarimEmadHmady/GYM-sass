@@ -1,6 +1,8 @@
 import { BaseService } from './baseService';
 import { API_ENDPOINTS } from '@/lib/constants';
 import type { User, PaginationParams, PaginatedResponse } from '@/types';
+import { AuthService } from './authService';
+import { apiRequest } from '@/lib/api';
 
 export type CreateUserPayload = {
   name: string;
@@ -24,9 +26,13 @@ export class UserService extends BaseService {
     return this.getById<User>(id);
   }
 
-  // Create new user
+  // Create new user (admin)
   async createUser(userData: CreateUserPayload): Promise<User> {
-    return this.create<User>(userData);
+    const response = await apiRequest(API_ENDPOINTS.auth.register, {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+    return response.json();
   }
 
   // Update user
@@ -37,6 +43,19 @@ export class UserService extends BaseService {
   // Delete user
   async deleteUser(id: string): Promise<void> {
     return this.delete(id);
+  }
+
+  // Hard delete user (admin only)
+  async hardDeleteUser(id: string): Promise<void> {
+    return this.apiCall<void>(API_ENDPOINTS.users.deleteHard(id), { method: 'DELETE' });
+  }
+
+  // Update role (admin only)
+  async updateRole(userId: string, role: 'admin' | 'trainer' | 'member' | 'manager'): Promise<User> {
+    return this.apiCall<User>(API_ENDPOINTS.users.role, {
+      method: 'PUT',
+      body: JSON.stringify({ userId, role })
+    });
   }
 
   // Get users by role

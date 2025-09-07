@@ -17,19 +17,19 @@ import {
 const router = express.Router();
 
 //  خطة  
-router.post("/:userId", authenticate, authorizeAdmin, createWorkoutPlan);
-router.get("/:userId", authenticate, authorizeAdmin, getWorkoutPlansByUser);
-router.get('/plan/:id', authenticate, authorizeAdmin, getWorkoutPlanById);
-router.put("/:id", authenticate, authorizeAdmin, updateWorkoutPlan);
-router.delete("/:id", authenticate, authorizeAdmin, deleteWorkoutPlan);
+router.post("/:userId", authenticate,  authorizeRole(['admin','manager', 'trainer']), createWorkoutPlan);
+router.get("/:userId", authenticate,  authorizeRole(['admin','manager', 'trainer','member']), getWorkoutPlansByUser);
+router.get('/plan/:id', authenticate,  authorizeRole(['admin','manager', 'trainer']), getWorkoutPlanById);
+router.put("/:id", authenticate,  authorizeRole(['admin','manager', 'trainer']), updateWorkoutPlan);
+router.delete("/:id", authenticate,  authorizeRole(['admin','manager', 'trainer']), deleteWorkoutPlan);
 
 //  تمرين
-router.get('/', authenticate, authorizeAdmin, getAllWorkoutPlans);
-router.post("/:planId/exercises", authenticate, authorizeAdmin, addExerciseToPlan);
-router.get('/:planId/exercises', authenticate, authorizeAdmin, getExercisesByPlanId);
-router.get('/:planId/exercises/:exerciseId', authenticate, authorizeAdmin, getExerciseById);
-router.put("/:planId/exercises/:exerciseId", authenticate, authorizeAdmin, updateExerciseInPlan);
-router.delete("/:planId/exercises/:exerciseId", authenticate, authorizeAdmin, deleteExerciseFromPlan);
+router.get('/', authenticate,  authorizeRole(['admin','manager', 'trainer']), getAllWorkoutPlans);
+router.post("/:planId/exercises", authenticate,  authorizeRole(['admin','manager', 'trainer']), addExerciseToPlan);
+router.get('/:planId/exercises', authenticate,  authorizeRole(['admin','manager', 'trainer', 'member']), getExercisesByPlanId);
+router.get('/:planId/exercises/:exerciseId', authenticate, authorizeRole(['admin','manager', 'trainer', 'member']), getExerciseById);
+router.put("/:planId/exercises/:exerciseId", authenticate, authorizeRole(['admin','manager', 'trainer', 'member']), updateExerciseInPlan);
+router.delete("/:planId/exercises/:exerciseId", authenticate, authorizeRole(['admin','manager', 'trainer', 'member']), deleteExerciseFromPlan);
 
 
 export default router;

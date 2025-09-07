@@ -17,7 +17,7 @@ router.post("/:userId", authenticate, authorizeAdmin, createReward);
 router.get("/", authenticate, authorizeAdmin, getAllRewards);
 
 // جلب جميع المكافآت لمستخدم
-router.get("/:userId", authenticate, authorizeAdmin, getRewardsByUser);
+router.get("/:userId", authenticate,  authorizeRole(['admin','manager', 'trainer','member']), getRewardsByUser);
 
 // تعديل مكافأة
 router.put("/:id", authenticate, authorizeAdmin, updateReward);

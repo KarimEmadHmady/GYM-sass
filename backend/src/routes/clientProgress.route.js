@@ -11,18 +11,18 @@ import {
 const router = express.Router();
 
 // إنشاء سجل تقدم جديد
-router.post('/', authenticate, authorizeAdmin, createClientProgress);
+router.post('/', authenticate,  authorizeRole(['admin','manager', 'trainer']), createClientProgress);
 
 // جلب كل سجلات التقدم
-router.get('/', authenticate, authorizeAdmin, getAllClientProgress);
+router.get('/', authenticate,  authorizeRole(['admin','manager', 'trainer']), getAllClientProgress);
 
 // جلب كل سجلات تقدم مستخدم
-router.get('/:userId', authenticate, authorizeAdmin, getClientProgressByUser);
+router.get('/:userId', authenticate,  authorizeRole(['admin','manager', 'trainer', 'member']), getClientProgressByUser);
 
 // تعديل سجل تقدم
-router.put('/:id', authenticate, authorizeAdmin, updateClientProgress);
+router.put('/:id', authenticate,  authorizeRole(['admin','manager', 'trainer']), updateClientProgress);
 
 // حذف سجل تقدم
-router.delete('/:id', authenticate, authorizeAdmin, deleteClientProgress);
+router.delete('/:id', authenticate,  authorizeRole(['admin','manager', 'trainer']), deleteClientProgress);
 
 export default router;

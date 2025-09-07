@@ -14,15 +14,15 @@ const router = express.Router();
 router.post('/', authenticate,  createFeedback);
 
 // جلب جميع التقييمات
-router.get('/', authenticate, getAllFeedback);
+router.get('/', authenticate,  authorizeRole(['admin','manager', 'trainer']), getAllFeedback);
 
 // جلب جميع التقييمات الخاصة بمستخدم معين
-router.get('/:userId', authenticate,  getFeedbackForUser);
+router.get('/:userId', authenticate,  authorizeRole(['admin','manager', 'trainer', 'member']), getFeedbackForUser);
 
 // تعديل تقييم
-router.put('/:id', authenticate,  updateFeedback);
+router.put('/:id', authenticate,  authorizeRole(['admin','manager', 'trainer']), updateFeedback);
 
 // حذف تقييم
-router.delete('/:id', authenticate,  deleteFeedback);
+router.delete('/:id', authenticate,  authorizeRole(['admin','manager']), deleteFeedback);
 
 export default router;

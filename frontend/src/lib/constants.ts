@@ -301,7 +301,9 @@ export const API_ENDPOINTS = {
     create: '/users',
     update: (id: string) => `/users/${id}`,
     delete: (id: string) => `/users/${id}`,
-    get: (id: string) => `/users/${id}`
+    get: (id: string) => `/users/${id}`,
+    role: '/role',
+    deleteHard: (id: string) => `/users/${id}/hard`
   },
   // Attendance
   attendance: {

@@ -11,18 +11,18 @@ import {
 const router = express.Router();
 
 // إنشاء حصة جديدة
-router.post("/:userId", authenticate, authorizeAdmin, createSessionSchedule);
+router.post("/:userId", authenticate,  authorizeRole(['admin','manager', 'trainer']), createSessionSchedule);
 
 // جلب جميع الحصص لمستخدم
-router.get("/:userId", authenticate, authorizeAdmin, getSessionSchedulesByUser);
+router.get("/:userId", authenticate,  authorizeRole(['admin','manager', 'trainer']), getSessionSchedulesByUser);
 
 // جلب جميع الحصص
-router.get("/", authenticate, authorizeAdmin, getAllSessionSchedules);
+router.get("/", authenticate,  authorizeRole(['admin','manager']), getAllSessionSchedules);
 
 // تعديل حصة
-router.put("/:id", authenticate, authorizeAdmin, updateSessionSchedule);
+router.put("/:id", authenticate,  authorizeRole(['admin','manager']), updateSessionSchedule);
 
 // حذف حصة
-router.delete("/:id", authenticate, authorizeAdmin, deleteSessionSchedule);
+router.delete("/:id", authenticate,  authorizeRole(['admin','manager']), deleteSessionSchedule);
 
 export default router;

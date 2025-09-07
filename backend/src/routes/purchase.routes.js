@@ -11,13 +11,13 @@ import {
 const router = express.Router();
 
 // إنشاء عملية شراء جديدة
-router.post("/", authenticate, authorizeAdmin, createPurchase);
+router.post("/", authenticate,  authorizeRole(['admin','manager']), createPurchase);
 
 // جلب كل المشتريات
-router.get("/", authenticate, authorizeAdmin, getPurchases);
+router.get("/", authenticate,  authorizeRole(['admin','manager']), getPurchases);
 
 // جلب عملية شراء واحدة
-router.get("/:id", authenticate, authorizeAdmin, getPurchase);
+router.get("/:id", authenticate,  authorizeRole(['admin','manager']), getPurchase);
 
 // تحديث عملية شراء
 router.put("/:id", authenticate, authorizeAdmin, updatePurchase);
