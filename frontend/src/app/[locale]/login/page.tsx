@@ -11,15 +11,15 @@ const LoginPage: React.FC = () => {
   });
   const [localError, setLocalError] = useState<string | null>(null);
   
-  const { login, isLoading, error, isAuthenticated, clearError } = useAuth();
+  const { login, isLoading, error, isAuthenticated, user, clearError } = useAuth();
   const router = useRouter();
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user && !isLoading) {
       router.push('/dashboard');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, isLoading, router]);
 
   // Clear errors when component mounts or form changes
   useEffect(() => {
@@ -65,6 +65,15 @@ const LoginPage: React.FC = () => {
       setLocalError('An unexpected error occurred');
     }
   };
+
+  // Show loading while checking authentication
+  if (isLoading && !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">

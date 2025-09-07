@@ -18,3 +18,33 @@ export type {
   SelectOption,
   FormField,
 } from './common';
+
+// Roles and permissions types
+export type {
+  UserRole,
+  SubscriptionStatus,
+  MembershipLevel,
+  UserStatus,
+  AttendanceStatus,
+  RolePermissions,
+  NavigationItem,
+  RoleNavigation,
+  DashboardConfig,
+} from './roles';
+
+// Database models types
+export type {
+  AttendanceRecord,
+  Exercise,
+  WorkoutPlan,
+  Meal,
+  DietPlan,
+  Reward,
+  Payment,
+  Expense,
+  Revenue,
+  Payroll,
+  Feedback,
+  Message,
+  ClientProgress,
+} from './models';

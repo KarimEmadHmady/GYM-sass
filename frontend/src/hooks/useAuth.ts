@@ -1,9 +1,11 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { RootState, AppDispatch } from '@/redux/store';
 import { loginUser, registerUser, logout, clearError, getCurrentUser } from '@/redux/features/auth/authSlice';
-import type { LoginCredentials, RegisterData, AuthResult } from '@/types';
+import { AuthService } from '@/services/authService';
+import { getRoleBasedRedirect } from '@/middleware/auth';
+import type { LoginCredentials, RegisterData, AuthResult, UserRole } from '@/types';
 
 export const useAuth = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -13,14 +15,24 @@ export const useAuth = () => {
     (state: RootState) => state.auth
   );
 
+  // Check for existing token on app load
+  useEffect(() => {
+    const existingToken = AuthService.getToken();
+    if (existingToken && !user) {
+      // Try to get current user with existing token
+      dispatch(getCurrentUser());
+    }
+  }, [dispatch, user]);
+
   // Login function
   const login = useCallback(
     async (credentials: LoginCredentials): Promise<AuthResult> => {
       try {
         const result = await dispatch(loginUser(credentials));
         if (loginUser.fulfilled.match(result)) {
-          // Redirect to dashboard or home page after successful login
-          router.push('/dashboard');
+          // Redirect to role-specific dashboard after successful login
+          const redirectPath = getRoleBasedRedirect(result.payload.user?.role as UserRole);
+          router.push(redirectPath);
           return { success: true };
         } else {
           return { success: false, error: result.payload as string };
@@ -41,8 +53,9 @@ export const useAuth = () => {
       try {
         const result = await dispatch(registerUser(userData));
         if (registerUser.fulfilled.match(result)) {
-          // Redirect to dashboard or home page after successful registration
-          router.push('/dashboard');
+          // Redirect to role-specific dashboard after successful registration
+          const redirectPath = getRoleBasedRedirect(result.payload.user?.role as UserRole);
+          router.push(redirectPath);
           return { success: true };
         } else {
           return { success: false, error: result.payload as string };

@@ -10,7 +10,7 @@ import type {
 const initialState: AuthState = {
   user: null,
   token: AuthService.getToken(),
-  isAuthenticated: AuthService.isAuthenticated(),
+  isAuthenticated: false, // Start as false, will be set to true after successful login
   isLoading: false,
   error: null,
 };
