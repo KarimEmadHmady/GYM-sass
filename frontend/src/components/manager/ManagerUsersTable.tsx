@@ -188,14 +188,7 @@ const ManagerUsersTable = () => {
                   {user.lastLogin}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex space-x-2">
-                    <button className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                      تعديل
-                    </button>
-                    <button className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                      حذف
-                    </button>
-                  </div>
+                  <span className="text-gray-400 dark:text-gray-500">عرض فقط</span>
                 </td>
               </tr>
             ))}

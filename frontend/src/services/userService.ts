@@ -2,6 +2,13 @@ import { BaseService } from './baseService';
 import { API_ENDPOINTS } from '@/lib/constants';
 import type { User, PaginationParams, PaginatedResponse } from '@/types';
 
+export type CreateUserPayload = {
+  name: string;
+  email: string;
+  password: string;
+  role: 'admin' | 'trainer' | 'member' | 'manager';
+};
+
 export class UserService extends BaseService {
   constructor() {
     super(API_ENDPOINTS.users.list);
@@ -18,7 +25,7 @@ export class UserService extends BaseService {
   }
 
   // Create new user
-  async createUser(userData: Partial<User>): Promise<User> {
+  async createUser(userData: CreateUserPayload): Promise<User> {
     return this.create<User>(userData);
   }
 

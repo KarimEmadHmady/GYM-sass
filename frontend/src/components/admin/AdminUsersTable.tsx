@@ -1,11 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
+import { UserService } from '@/services/userService';
 
 const AdminUsersTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'member' });
+  const userService = new UserService();
 
   const users = [
     {
@@ -110,7 +116,42 @@ const AdminUsersTable = () => {
     return matchesSearch && matchesRole;
   });
 
+  const openCreate = () => {
+    setFormError(null);
+    setNewUser({ name: '', email: '', password: '', role: 'member' });
+    setIsCreateOpen(true);
+  };
+
+  const handleCreateChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setNewUser(prev => ({ ...prev, [name]: value }));
+    if (formError) setFormError(null);
+  };
+
+  const handleCreateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUser.name || !newUser.email || !newUser.password) {
+      setFormError('الرجاء ملء جميع الحقول');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await userService.createUser({
+        name: newUser.name,
+        email: newUser.email,
+        password: newUser.password,
+        role: newUser.role as any
+      });
+      setIsCreateOpen(false);
+    } catch (err) {
+      setFormError('حدث خطأ أثناء إنشاء المستخدم');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
+    <>
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -119,6 +160,12 @@ const AdminUsersTable = () => {
             إدارة المستخدمين - الإدارة
           </h3>
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+            <button
+              onClick={openCreate}
+              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
+            >
+              إضافة مستخدم
+            </button>
             <input
               type="text"
               placeholder="البحث عن مستخدم..."
@@ -252,6 +299,84 @@ const AdminUsersTable = () => {
         </div>
       </div>
     </div>
+    {isCreateOpen && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/50" onClick={() => setIsCreateOpen(false)}></div>
+        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 z-10">
+          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">إضافة مستخدم جديد</h4>
+          {formError && (
+            <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded px-3 py-2">
+              {formError}
+            </div>
+          )}
+          <form onSubmit={handleCreateSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الاسم</label>
+              <input
+                name="name"
+                value={newUser.name}
+                onChange={handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                placeholder="ادخل الاسم"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">البريد الإلكتروني</label>
+              <input
+                type="email"
+                name="email"
+                value={newUser.email}
+                onChange={handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                placeholder="email@example.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">كلمة المرور</label>
+              <input
+                type="password"
+                name="password"
+                value={newUser.password}
+                onChange={handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                placeholder="••••••••"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الدور</label>
+              <select
+                name="role"
+                value={newUser.role}
+                onChange={handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              >
+                <option value="member">عضو</option>
+                <option value="trainer">مدرب</option>
+                <option value="manager">مدير</option>
+                <option value="admin">إدارة</option>
+              </select>
+            </div>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsCreateOpen(false)}
+                className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200"
+              >
+                إلغاء
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white"
+              >
+                {isSubmitting ? 'جارٍ الإضافة...' : 'إضافة'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
+    </>
   );
 };
 

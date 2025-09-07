@@ -203,20 +203,20 @@ const ManagerPlansOverview = () => {
                     <>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600 dark:text-gray-400">المستوى:</span>
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyColor(plan.difficulty)}`}>
-                          {getDifficultyText(plan.difficulty)}
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyColor((plan as any).difficulty)}`}>
+                          {getDifficultyText((plan as any).difficulty)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600 dark:text-gray-400">المدة:</span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {plan.duration}
+                          {(plan as any).duration}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600 dark:text-gray-400">التمارين:</span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {plan.exercises} تمرين
+                          {(plan as any).exercises} تمرين
                         </span>
                       </div>
                     </>
@@ -225,13 +225,13 @@ const ManagerPlansOverview = () => {
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600 dark:text-gray-400">السعرات:</span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {plan.calories} سعرة
+                          {(plan as any).calories} سعرة
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600 dark:text-gray-400">الوجبات:</span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {plan.meals} وجبة
+                          {(plan as any).meals} وجبة
                         </span>
                       </div>
                     </>

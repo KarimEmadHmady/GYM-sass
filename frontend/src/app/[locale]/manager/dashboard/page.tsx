@@ -13,6 +13,15 @@ import ManagerRecentActivity from '@/components/manager/ManagerRecentActivity';
 import ManagerUsersTable from '@/components/manager/ManagerUsersTable';
 import ManagerSessionsOverview from '@/components/manager/ManagerSessionsOverview';
 import ManagerPlansOverview from '@/components/manager/ManagerPlansOverview';
+import AdminAttendance from '@/components/admin/AdminAttendance';
+import AdminPayments from '@/components/admin/AdminPayments';
+import AdminPurchases from '@/components/admin/AdminPurchases';
+import AdminMessages from '@/components/admin/AdminMessages';
+import AdminProgress from '@/components/admin/AdminProgress';
+import AdminFeedback from '@/components/admin/AdminFeedback';
+import AdminRewards from '@/components/admin/AdminRewards';
+import AdminLoyalty from '@/components/admin/AdminLoyalty';
+import AdminSearch from '@/components/admin/AdminSearch';
 
 const ManagerDashboard = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -64,6 +73,15 @@ const ManagerDashboard = () => {
     { id: 'sessions', name: t('Tabs.sessions'), icon: '🏋️' },
     { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
     { id: 'reports', name: t('Tabs.reports'), icon: '📈' },
+    { id: 'attendance', name: 'الحضور', icon: '📝' },
+    { id: 'payments', name: 'مدفوعات', icon: '💵' },
+    { id: 'purchases', name: 'مشتريات', icon: '🛒' },
+    { id: 'messages', name: 'رسائل', icon: '✉️' },
+    { id: 'progress', name: 'تقدم العملاء', icon: '📈' },
+    { id: 'feedback', name: 'التقييمات', icon: '⭐' },
+    { id: 'rewards', name: 'الجوائز', icon: '🏆' },
+    { id: 'loyalty', name: 'نقاط الولاء', icon: '🎯' },
+    { id: 'search', name: 'بحث', icon: '🔎' },
     { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' }
   ];
 
@@ -131,12 +149,12 @@ const ManagerDashboard = () => {
       {/* Navigation Tabs */}
       <div className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8">
+          <nav className="flex space-x-8 overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
@@ -193,6 +211,60 @@ const ManagerDashboard = () => {
                 صفحة التقارير قيد التطوير...
               </p>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'attendance' && (
+          <div className="space-y-8">
+            <AdminAttendance />
+          </div>
+        )}
+
+        {activeTab === 'payments' && (
+          <div className="space-y-8">
+            <AdminPayments />
+          </div>
+        )}
+
+        {activeTab === 'purchases' && (
+          <div className="space-y-8">
+            <AdminPurchases />
+          </div>
+        )}
+
+        {activeTab === 'messages' && (
+          <div className="space-y-8">
+            <AdminMessages />
+          </div>
+        )}
+
+        {activeTab === 'progress' && (
+          <div className="space-y-8">
+            <AdminProgress />
+          </div>
+        )}
+
+        {activeTab === 'feedback' && (
+          <div className="space-y-8">
+            <AdminFeedback />
+          </div>
+        )}
+
+        {activeTab === 'rewards' && (
+          <div className="space-y-8">
+            <AdminRewards />
+          </div>
+        )}
+
+        {activeTab === 'loyalty' && (
+          <div className="space-y-8">
+            <AdminLoyalty />
+          </div>
+        )}
+
+        {activeTab === 'search' && (
+          <div className="space-y-8">
+            <AdminSearch />
           </div>
         )}
 

@@ -14,6 +14,11 @@ import MemberSessionsHistory from '@/components/member/MemberSessionsHistory';
 import MemberPlansOverview from '@/components/member/MemberPlansOverview';
 import MemberProgressTracking from '@/components/member/MemberProgressTracking';
 import MemberLoyaltyPoints from '@/components/member/MemberLoyaltyPoints';
+import MemberAttendance from '@/components/member/MemberAttendance';
+import MemberPayments from '@/components/member/MemberPayments';
+import MemberSubscription from '@/components/member/MemberSubscription';
+import MemberPurchases from '@/components/member/MemberPurchases';
+import MemberTrainer from '@/components/member/MemberTrainer';
 
 const MemberProfile = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -61,10 +66,16 @@ const MemberProfile = () => {
 
   const tabs = [
     { id: 'overview', name: t('Tabs.overview'), icon: '📊' },
+    { id: 'attendance', name: 'الحضور', icon: '📝' },
+    { id: 'payments', name: 'مدفوعات', icon: '💵' },
+    { id: 'subscription', name: 'الاشتراك', icon: '📅' },
+    { id: 'purchases', name: 'مشتريات', icon: '🛒' },
     { id: 'sessions', name: t('Tabs.sessions'), icon: '🏋️' },
     { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
+    { id: 'trainer', name: 'مدربي', icon: '👨‍🏫' },
     { id: 'progress', name: t('Tabs.progress'), icon: '📈' },
     { id: 'loyalty', name: t('Tabs.loyalty'), icon: '⭐' },
+    { id: 'rewards', name: 'الجوائز', icon: '🏆' },
     { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' }
   ];
 
@@ -166,6 +177,30 @@ const MemberProfile = () => {
           </div>
         )}
 
+        {activeTab === 'attendance' && (
+          <div className="space-y-8">
+            <MemberAttendance />
+          </div>
+        )}
+
+        {activeTab === 'payments' && (
+          <div className="space-y-8">
+            <MemberPayments />
+          </div>
+        )}
+
+        {activeTab === 'subscription' && (
+          <div className="space-y-8">
+            <MemberSubscription />
+          </div>
+        )}
+
+        {activeTab === 'purchases' && (
+          <div className="space-y-8">
+            <MemberPurchases />
+          </div>
+        )}
+
         {activeTab === 'sessions' && (
           <div className="space-y-8">
             <MemberSessionsHistory />
@@ -178,6 +213,12 @@ const MemberProfile = () => {
           </div>
         )}
 
+        {activeTab === 'trainer' && (
+          <div className="space-y-8">
+            <MemberTrainer />
+          </div>
+        )}
+
         {activeTab === 'progress' && (
           <div className="space-y-8">
             <MemberProgressTracking />
@@ -187,6 +228,15 @@ const MemberProfile = () => {
         {activeTab === 'loyalty' && (
           <div className="space-y-8">
             <MemberLoyaltyPoints />
+          </div>
+        )}
+
+        {activeTab === 'rewards' && (
+          <div className="space-y-8">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">الجوائز</h3>
+              <p className="text-gray-500 dark:text-gray-400">جوائزك ومكافآتك ستظهر هنا.</p>
+            </div>
           </div>
         )}
 

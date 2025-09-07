@@ -14,6 +14,12 @@ import TrainerSessionsOverview from '@/components/trainer/TrainerSessionsOvervie
 import TrainerClientsOverview from '@/components/trainer/TrainerClientsOverview';
 import TrainerPlansOverview from '@/components/trainer/TrainerPlansOverview';
 import TrainerProgressOverview from '@/components/trainer/TrainerProgressOverview';
+import TrainerProfile from '@/components/trainer/TrainerProfile';
+import TrainerAttendance from '@/components/trainer/TrainerAttendance';
+import TrainerClientSessions from '@/components/trainer/TrainerClientSessions';
+import TrainerClientDetail from '@/components/trainer/TrainerClientDetail';
+import TrainerFeedback from '@/components/trainer/TrainerFeedback';
+import TrainerMessages from '@/components/trainer/TrainerMessages';
 
 const TrainerDashboard = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -65,6 +71,12 @@ const TrainerDashboard = () => {
     { id: 'clients', name: t('Tabs.clients'), icon: '👥' },
     { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
     { id: 'progress', name: t('Tabs.progress'), icon: '📈' },
+    { id: 'profile', name: 'ملفي', icon: '👤' },
+    { id: 'attendance', name: 'حضوري', icon: '📝' },
+    { id: 'clientSessions', name: 'حصص العملاء', icon: '📅' },
+    { id: 'clientDetail', name: 'تفاصيل عميل', icon: '📄' },
+    { id: 'feedback', name: 'التقييمات', icon: '⭐' },
+    { id: 'messages', name: 'الرسائل', icon: '✉️' },
     { id: 'schedule', name: t('Tabs.schedule'), icon: '📅' }
   ];
 
@@ -187,6 +199,42 @@ const TrainerDashboard = () => {
         {activeTab === 'progress' && (
           <div className="space-y-8">
             <TrainerProgressOverview />
+          </div>
+        )}
+
+        {activeTab === 'profile' && (
+          <div className="space-y-8">
+            <TrainerProfile />
+          </div>
+        )}
+
+        {activeTab === 'attendance' && (
+          <div className="space-y-8">
+            <TrainerAttendance />
+          </div>
+        )}
+
+        {activeTab === 'clientSessions' && (
+          <div className="space-y-8">
+            <TrainerClientSessions />
+          </div>
+        )}
+
+        {activeTab === 'clientDetail' && (
+          <div className="space-y-8">
+            <TrainerClientDetail />
+          </div>
+        )}
+
+        {activeTab === 'feedback' && (
+          <div className="space-y-8">
+            <TrainerFeedback />
+          </div>
+        )}
+
+        {activeTab === 'messages' && (
+          <div className="space-y-8">
+            <TrainerMessages />
           </div>
         )}
 

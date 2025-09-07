@@ -16,6 +16,15 @@ import AdminPlansOverview from '@/components/admin/AdminPlansOverview';
 import AdminFinancialOverview from '@/components/admin/AdminFinancialOverview';
 import AdminReports from '@/components/admin/AdminReports';
 import AdminSettings from '@/components/admin/AdminSettings';
+import AdminAttendance from '@/components/admin/AdminAttendance';
+import AdminPayments from '@/components/admin/AdminPayments';
+import AdminPurchases from '@/components/admin/AdminPurchases';
+import AdminMessages from '@/components/admin/AdminMessages';
+import AdminProgress from '@/components/admin/AdminProgress';
+import AdminFeedback from '@/components/admin/AdminFeedback';
+import AdminRewards from '@/components/admin/AdminRewards';
+import AdminLoyalty from '@/components/admin/AdminLoyalty';
+import AdminSearch from '@/components/admin/AdminSearch';
 
 
 const AdminDashboard = () => {
@@ -69,6 +78,15 @@ const AdminDashboard = () => {
     { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
     { id: 'financial', name: t('Tabs.financial'), icon: '💰' },
     { id: 'reports', name: t('Tabs.reports'), icon: '📈' },
+    { id: 'attendance', name: 'الحضور', icon: '📝' },
+    { id: 'payments', name: 'مدفوعات', icon: '💵' },
+    { id: 'purchases', name: 'مشتريات', icon: '🛒' },
+    { id: 'messages', name: 'رسائل', icon: '✉️' },
+    { id: 'progress', name: 'تقدم العملاء', icon: '📈' },
+    { id: 'feedback', name: 'التقييمات', icon: '⭐' },
+    { id: 'rewards', name: 'الجوائز', icon: '🏆' },
+    { id: 'loyalty', name: 'نقاط الولاء', icon: '🎯' },
+    { id: 'search', name: 'بحث', icon: '🔎' },
     { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' }
   ];
 
@@ -197,6 +215,60 @@ const AdminDashboard = () => {
         {activeTab === 'reports' && (
           <div className="space-y-8">
             <AdminReports />
+          </div>
+        )}
+
+        {activeTab === 'attendance' && (
+          <div className="space-y-8">
+            <AdminAttendance />
+          </div>
+        )}
+
+        {activeTab === 'payments' && (
+          <div className="space-y-8">
+            <AdminPayments />
+          </div>
+        )}
+
+        {activeTab === 'purchases' && (
+          <div className="space-y-8">
+            <AdminPurchases />
+          </div>
+        )}
+
+        {activeTab === 'messages' && (
+          <div className="space-y-8">
+            <AdminMessages />
+          </div>
+        )}
+
+        {activeTab === 'progress' && (
+          <div className="space-y-8">
+            <AdminProgress />
+          </div>
+        )}
+
+        {activeTab === 'feedback' && (
+          <div className="space-y-8">
+            <AdminFeedback />
+          </div>
+        )}
+
+        {activeTab === 'rewards' && (
+          <div className="space-y-8">
+            <AdminRewards />
+          </div>
+        )}
+
+        {activeTab === 'loyalty' && (
+          <div className="space-y-8">
+            <AdminLoyalty />
+          </div>
+        )}
+
+        {activeTab === 'search' && (
+          <div className="space-y-8">
+            <AdminSearch />
           </div>
         )}
 
