@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticate, authorizeAdmin } from '../middlewares/auth.middleware.js';
+import { authorizeRole } from '../middlewares/role.middleware.js';
 import { 
     getAllUsers,
     getUserById,

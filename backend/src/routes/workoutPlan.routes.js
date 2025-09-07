@@ -13,6 +13,7 @@ import {
   getExercisesByPlanId,
   getExerciseById
 } from "../controllers/workoutPlan.controller.js";
+import { authorizeRole } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 

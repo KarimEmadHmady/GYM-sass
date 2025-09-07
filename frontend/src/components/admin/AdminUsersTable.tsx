@@ -22,7 +22,32 @@ const AdminUsersTable = () => {
   const PAGE_SIZE = 10;
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editUser, setEditUser] = useState<UserModel | null>(null);
-  const [editForm, setEditForm] = useState<{ name: string; email: string; phone: string; status: string; address: string }>({ name: '', email: '', phone: '', status: 'active', address: '' });
+  const [editForm, setEditForm] = useState({
+    _id: '',
+    name: '',
+    email: '',
+    role: 'member',
+    phone: '',
+    dob: '',
+    avatarUrl: '',
+    address: '',
+    balance: 0,
+    status: 'active',
+    isEmailVerified: false,
+    subscriptionStartDate: '',
+    subscriptionEndDate: '',
+    subscriptionFreezeDays: 0,
+    subscriptionFreezeUsed: 0,
+    subscriptionStatus: 'active',
+    lastPaymentDate: '',
+    nextPaymentDueDate: '',
+    loyaltyPoints: 0,
+    membershipLevel: 'basic',
+    goals: { weightLoss: false, muscleGain: false, endurance: false },
+    trainerId: '',
+    createdAt: '',
+    updatedAt: '',
+  });
   const [isEditSubmitting, setIsEditSubmitting] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [isRoleOpen, setIsRoleOpen] = useState(false);
@@ -30,6 +55,12 @@ const AdminUsersTable = () => {
   const [roleForm, setRoleForm] = useState('member');
   const [isRoleSubmitting, setIsRoleSubmitting] = useState(false);
   const [roleError, setRoleError] = useState<string | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteType, setDeleteType] = useState<'soft' | 'hard'>('soft');
+  const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [viewUser, setViewUser] = useState<any>(null);
+  const [viewLoading, setViewLoading] = useState(false);
 
   // جلب المستخدمين من السيرفر
   useEffect(() => {
@@ -174,14 +205,43 @@ const AdminUsersTable = () => {
   const handleEdit = (id: string) => {
     const user = users.find(u => u._id === id);
     if (!user) return;
+    function dateToInputString(val: any): string {
+      if (!val) return '';
+      if (typeof val === 'string') {
+        // إذا string من نوع ISO
+        if (/^\d{4}-\d{2}-\d{2}/.test(val)) return val.substring(0, 10);
+        // إذا string تاريخ عربي أو غيره
+        return '';
+      }
+      if (val instanceof Date) return val.toISOString().substring(0, 10);
+      return '';
+    }
     setEditUser(user);
     setEditForm({
+      _id: user._id || '',
       name: user.name || '',
       email: user.email || '',
+      role: user.role || 'member',
       phone: user.phone || '',
-      status: user.status || 'active',
+      dob: dateToInputString(user.dob),
+      avatarUrl: user.avatarUrl || '',
       address: user.address || '',
-      // أضف أي حقول أخرى تريدها هنا
+      balance: user.balance ?? 0,
+      status: user.status || 'active',
+      isEmailVerified: user.isEmailVerified ?? false,
+      subscriptionStartDate: dateToInputString(user.subscriptionStartDate),
+      subscriptionEndDate: dateToInputString(user.subscriptionEndDate),
+      subscriptionFreezeDays: user.subscriptionFreezeDays ?? 0,
+      subscriptionFreezeUsed: user.subscriptionFreezeUsed ?? 0,
+      subscriptionStatus: user.subscriptionStatus || 'active',
+      lastPaymentDate: dateToInputString(user.lastPaymentDate),
+      nextPaymentDueDate: dateToInputString(user.nextPaymentDueDate),
+      loyaltyPoints: user.loyaltyPoints ?? 0,
+      membershipLevel: user.membershipLevel || 'basic',
+      goals: user.goals || { weightLoss: false, muscleGain: false, endurance: false },
+      trainerId: user.trainerId || '',
+      createdAt: user.createdAt ? (user.createdAt instanceof Date ? user.createdAt.toLocaleString('ar-EG') : user.createdAt) : '',
+      updatedAt: user.updatedAt ? (user.updatedAt instanceof Date ? user.updatedAt.toLocaleString('ar-EG') : user.updatedAt) : '',
     });
     setEditError(null);
     setIsEditOpen(true);
@@ -203,7 +263,56 @@ const AdminUsersTable = () => {
     }
     setIsEditSubmitting(true);
     try {
-      await userService.updateUser(editUser!._id, { ...editForm });
+      // فقط الحقول القابلة للتعديل
+      const {
+        _id, createdAt, updatedAt, // نستثنيهم
+        ...toSend
+      } = editForm;
+      // تحويل القيم الرقمية
+      toSend.balance = Number(toSend.balance) || 0;
+      toSend.subscriptionFreezeDays = Number(toSend.subscriptionFreezeDays) || 0;
+      toSend.subscriptionFreezeUsed = Number(toSend.subscriptionFreezeUsed) || 0;
+      toSend.loyaltyPoints = Number(toSend.loyaltyPoints) || 0;
+      // تجهيز submitData مع تحويل الحقول الفارغة إلى null
+      const dateKeys: (keyof typeof toSend)[] = [
+        'dob',
+        'subscriptionStartDate',
+        'subscriptionEndDate',
+        'lastPaymentDate',
+        'nextPaymentDueDate',
+      ];
+      const submitData: any = { ...toSend };
+      dateKeys.forEach((key) => {
+        if (submitData[key] === '') submitData[key] = null;
+      });
+      // حذف الحقول التي قيمتها null
+      Object.keys(submitData).forEach((key) => {
+        if (submitData[key] === null) {
+          delete submitData[key];
+        }
+      });
+      // فلترة الحقول المسموحة فقط حسب schema
+      const allowedKeys = [
+        'name', 'email', 'role', 'phone', 'avatarUrl', 'address', 'balance', 'status',
+        'isEmailVerified', 'failedLoginAttempts', 'metadata', 'isDeleted',
+        'subscriptionFreezeDays', 'subscriptionFreezeUsed', 'subscriptionStatus',
+        'loyaltyPoints', 'membershipLevel', 'goals'
+      ];
+      const filteredData: any = {};
+      for (const key of allowedKeys) {
+        if (typeof submitData[key] !== 'undefined') {
+          filteredData[key] = submitData[key];
+        }
+      }
+      // لا ترسل null أو undefined
+      Object.keys(filteredData).forEach((key) => {
+        if (filteredData[key] === null || filteredData[key] === undefined) {
+          delete filteredData[key];
+        }
+      });
+      // سجل البيانات المرسلة
+      console.log('editForm sent:', filteredData);
+      await userService.updateUser(editUser!._id, filteredData);
       setIsEditOpen(false);
       setRefresh(r => !r);
       window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'تم تعديل المستخدم بنجاح' } }));
@@ -242,11 +351,68 @@ const AdminUsersTable = () => {
     }
   };
 
+  // فتح مودال الحذف
+  const openDeleteModal = (id: string, type: 'soft' | 'hard') => {
+    setDeleteUserId(id);
+    setDeleteType(type);
+    setIsDeleteOpen(true);
+  };
+  // تنفيذ الحذف بعد التأكيد
+  const confirmDelete = async () => {
+    if (!deleteUserId) return;
+    setIsDeleteOpen(false);
+    if (deleteType === 'soft') {
+      await handleDelete(deleteUserId);
+    } else {
+      await handleHardDelete(deleteUserId);
+    }
+    setDeleteUserId(null);
+  };
+
+  // جلب بيانات المستخدم بالتفصيل
+  const openViewUser = async (id: string) => {
+    setIsViewOpen(true);
+    setViewUser(null);
+    setViewLoading(true);
+    try {
+      const user = await userService.getUser(id);
+      setViewUser(user);
+    } catch {
+      setViewUser({ error: 'تعذر جلب بيانات المستخدم' });
+    } finally {
+      setViewLoading(false);
+    }
+  };
+
   // فلترة الأزرار حسب الصلاحيات
   const canEdit = hasPermission('users:write');
   const canChangeRole = hasPermission('users:write');
   const canDelete = hasPermission('users:delete');
   const canHardDelete = currentUser?.role === 'admin';
+
+  // ترتيب الحقول المهمة للعرض
+  const userViewFields: { key: string; label: string; type?: 'object' }[] = [
+    { key: 'name', label: 'الاسم' },
+    { key: 'email', label: 'البريد الإلكتروني' },
+    { key: 'role', label: 'الدور' },
+    { key: 'phone', label: 'رقم الهاتف' },
+    { key: 'avatarUrl', label: 'رابط الصورة' },
+    { key: 'address', label: 'العنوان' },
+    { key: 'balance', label: 'الرصيد' },
+    { key: 'status', label: 'الحالة' },
+    { key: 'isEmailVerified', label: 'تم التحقق من البريد' },
+    { key: 'failedLoginAttempts', label: 'محاولات الدخول الفاشلة' },
+    { key: 'isDeleted', label: 'محذوف؟' },
+    { key: 'subscriptionFreezeDays', label: 'أيام تجميد الاشتراك' },
+    { key: 'subscriptionFreezeUsed', label: 'أيام التجميد المستخدمة' },
+    { key: 'subscriptionStatus', label: 'حالة الاشتراك' },
+    { key: 'loyaltyPoints', label: 'نقاط الولاء' },
+    { key: 'membershipLevel', label: 'مستوى العضوية' },
+    { key: 'goals', label: 'الأهداف', type: 'object' },
+    { key: 'metadata', label: 'بيانات إضافية', type: 'object' },
+    { key: 'createdAt', label: 'تاريخ الإنشاء' },
+    { key: 'updatedAt', label: 'آخر تعديل' },
+  ];
 
   return (
     <>
@@ -320,7 +486,7 @@ const AdminUsersTable = () => {
             ) : safeUsers.length === 0 ? (
               <tr><td colSpan={8} className="text-center py-8">لا يوجد مستخدمين</td></tr>
             ) : safeUsers.map((user) => (
-              <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onClick={() => openViewUser(user._id)}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
@@ -357,19 +523,43 @@ const AdminUsersTable = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString('ar-EG') : '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex space-x-2">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium relative z-30">
+                  <div className="flex space-x-2 relative z-30">
                     {canEdit && (
-                      <button onClick={() => handleEdit(user._id)} className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">تعديل</button>
+                      <button
+                        onClick={e => { e.stopPropagation(); handleEdit(user._id); }}
+                        className="relative z-30 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 group p-3 cursor-pointer  rounded-md"
+                      >
+                        <span className="relative z-30">تعديل</span>
+                        <span className="absolute inset-0 bg-blue-600/10 group-hover:bg-blue-600/20 rounded transition-all z-20 pointer-events-none"></span>
+                      </button>
                     )}
                     {canChangeRole && (
-                      <button onClick={() => handleChangeRole(user._id, user.role)} className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300">تغيير دور</button>
+                      <button
+                        onClick={e => { e.stopPropagation(); handleChangeRole(user._id, user.role); }}
+                        className="relative z-30 text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 group p-3 cursor-pointer  rounded-md"
+                      >
+                        <span className="relative z-30">تغيير دور</span>
+                        <span className="absolute inset-0 bg-yellow-400/10 group-hover:bg-yellow-400/20 rounded transition-all z-20 pointer-events-none"></span>
+                      </button>
                     )}
                     {canDelete && (
-                      <button onClick={() => handleDelete(user._id)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">حذف</button>
+                      <button
+                        onClick={e => { e.stopPropagation(); openDeleteModal(user._id, 'soft'); }}
+                        className="relative z-30 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 group p-3 cursor-pointer  rounded-md"
+                      >
+                        <span className="relative z-30">حذف</span>
+                        <span className="absolute inset-0 bg-red-600/10 group-hover:bg-red-600/20 rounded transition-all z-20 pointer-events-none"></span>
+                      </button>
                     )}
                     {canHardDelete && (
-                      <button onClick={() => handleHardDelete(user._id)} className="text-red-800 hover:text-red-900 font-bold">حذف نهائي</button>
+                      <button
+                        onClick={e => { e.stopPropagation(); openDeleteModal(user._id, 'hard'); }}
+                        className="relative z-30 text-red-800 hover:text-red-900 font-bold group p-3 cursor-pointer  rounded-md"
+                      >
+                        <span className="relative z-30">حذف نهائي</span>
+                        <span className="absolute inset-0 bg-red-800/10 group-hover:bg-red-800/20 rounded transition-all z-20 pointer-events-none"></span>
+                      </button>
                     )}
                   </div>
                 </td>
@@ -503,23 +693,52 @@ const AdminUsersTable = () => {
     {isEditOpen && editUser && (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div className="absolute inset-0 bg-black/50" onClick={() => setIsEditOpen(false)}></div>
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 z-10">
+        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6 z-10 overflow-y-auto max-h-[90vh]">
           <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">تعديل المستخدم</h4>
           {editError && (
             <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded px-3 py-2">{editError}</div>
           )}
-          <form onSubmit={handleEditSubmit} className="space-y-4">
+          <form onSubmit={handleEditSubmit} className="space-y-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">ID</label>
+              <input name="_id" value={editForm._id} readOnly className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الاسم</label>
-              <input name="name" value={editForm.name} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" placeholder="ادخل الاسم" />
+              <input name="name" value={editForm.name} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
             </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">البريد الإلكتروني</label>
-              <input type="email" name="email" value={editForm.email} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" placeholder="email@example.com" />
+              <input type="email" name="email" value={editForm.email} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الدور</label>
+              <select name="role" value={editForm.role} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+                <option value="member">عضو</option>
+                <option value="trainer">مدرب</option>
+                <option value="manager">مدير</option>
+                <option value="admin">إدارة</option>
+              </select>
             </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">رقم الهاتف</label>
-              <input name="phone" value={editForm.phone} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" placeholder="رقم الهاتف" />
+              <input name="phone" value={editForm.phone} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ الميلاد</label>
+              <input type="date" name="dob" value={editForm.dob} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">رابط الصورة</label>
+              <input name="avatarUrl" value={editForm.avatarUrl} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">العنوان</label>
+              <input name="address" value={editForm.address} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الرصيد</label>
+              <input type="number" name="balance" value={editForm.balance} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
             </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الحالة</label>
@@ -530,15 +749,186 @@ const AdminUsersTable = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">العنوان</label>
-              <input name="address" value={editForm.address} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" placeholder="العنوان" />
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تم التحقق من البريد</label>
+              <input type="checkbox" name="isEmailVerified" checked={editForm.isEmailVerified} onChange={e => setEditForm(f => ({ ...f, isEmailVerified: e.target.checked }))} />
             </div>
-            {/* أضف أي حقول إضافية هنا */}
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ بداية الاشتراك</label>
+              <input type="date" name="subscriptionStartDate" value={editForm.subscriptionStartDate} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ نهاية الاشتراك</label>
+              <input type="date" name="subscriptionEndDate" value={editForm.subscriptionEndDate} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">أيام تجميد الاشتراك</label>
+              <input type="number" name="subscriptionFreezeDays" value={editForm.subscriptionFreezeDays} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">أيام التجميد المستخدمة</label>
+              <input type="number" name="subscriptionFreezeUsed" value={editForm.subscriptionFreezeUsed} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">حالة الاشتراك</label>
+              <select name="subscriptionStatus" value={editForm.subscriptionStatus} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+                <option value="active">نشط</option>
+                <option value="expired">منتهي</option>
+                <option value="cancelled">ملغي</option>
+                <option value="frozen">مجمد</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ آخر دفع</label>
+              <input type="date" name="lastPaymentDate" value={editForm.lastPaymentDate} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ استحقاق الدفع القادم</label>
+              <input type="date" name="nextPaymentDueDate" value={editForm.nextPaymentDueDate} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">نقاط الولاء</label>
+              <input type="number" name="loyaltyPoints" value={editForm.loyaltyPoints} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">مستوى العضوية</label>
+              <select name="membershipLevel" value={editForm.membershipLevel} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+                <option value="basic">عادي</option>
+                <option value="silver">فضي</option>
+                <option value="gold">ذهبي</option>
+                <option value="platinum">بلاتينيوم</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الأهداف</label>
+              <div className="flex flex-col gap-1">
+                <label><input type="checkbox" checked={editForm.goals.weightLoss} onChange={e => setEditForm(f => ({ ...f, goals: { ...f.goals, weightLoss: e.target.checked } }))} /> خسارة وزن</label>
+                <label><input type="checkbox" checked={editForm.goals.muscleGain} onChange={e => setEditForm(f => ({ ...f, goals: { ...f.goals, muscleGain: e.target.checked } }))} /> زيادة عضلات</label>
+                <label><input type="checkbox" checked={editForm.goals.endurance} onChange={e => setEditForm(f => ({ ...f, goals: { ...f.goals, endurance: e.target.checked } }))} /> قوة تحمل</label>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">معرف المدرب</label>
+              <input name="trainerId" value={editForm.trainerId} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ الإنشاء</label>
+              <input name="createdAt" value={editForm.createdAt} readOnly className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ التعديل</label>
+              <input name="updatedAt" value={editForm.updatedAt} readOnly className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white" />
+            </div>
+            <div className="col-span-1 md:col-span-2 flex items-center justify-end gap-3 pt-2">
               <button type="button" onClick={() => setIsEditOpen(false)} className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200">إلغاء</button>
               <button type="submit" disabled={isEditSubmitting} className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white">{isEditSubmitting ? 'جارٍ الحفظ...' : 'حفظ'}</button>
             </div>
           </form>
+        </div>
+      </div>
+    )}
+    {/* مودال تأكيد الحذف */}
+    {isDeleteOpen && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/50" onClick={() => setIsDeleteOpen(false)}></div>
+        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 z-10">
+          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
+            {deleteType === 'soft' ? 'تأكيد حذف المستخدم' : 'تأكيد الحذف النهائي للمستخدم'}
+          </h4>
+          <div className="mb-6 text-center text-gray-700 dark:text-gray-300">
+            {deleteType === 'soft'
+              ? 'هل أنت متأكد أنك تريد حذف هذا المستخدم؟ يمكن استرجاعه لاحقًا.'
+              : 'هل أنت متأكد أنك تريد حذف هذا المستخدم نهائيًا؟ لا يمكن استرجاعه بعد ذلك!'}
+          </div>
+          <div className="flex items-center justify-center gap-4">
+            <button
+              onClick={() => setIsDeleteOpen(false)}
+              className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+            >
+              إلغاء
+            </button>
+            <button
+              onClick={confirmDelete}
+              className={`px-4 py-2 rounded-md text-white ${deleteType === 'soft' ? 'bg-red-600 hover:bg-red-700' : 'bg-red-800 hover:bg-red-900 font-bold'}`}
+            >
+              {deleteType === 'soft' ? 'تأكيد الحذف' : 'تأكيد الحذف النهائي'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    {/* مودال عرض بيانات المستخدم */}
+    {isViewOpen && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/50" onClick={() => setIsViewOpen(false)}></div>
+        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6 z-10 overflow-y-auto max-h-[90vh]">
+          {/* رأس المودال: صورة المستخدم وزر X */}
+          <div className="relative flex flex-col items-center mb-6 mt-2">
+            <button
+              onClick={() => setIsViewOpen(false)}
+              className="absolute top-2 left-2 md:left-auto md:right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl font-bold focus:outline-none"
+              aria-label="إغلاق"
+            >
+              ×
+            </button>
+            {viewUser?.avatarUrl ? (
+              <img
+                src={viewUser.avatarUrl}
+                alt={viewUser.name || 'User'}
+                className="w-20 h-20 rounded-full object-cover border-2 border-gray-300 dark:border-gray-700 shadow mb-2"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold mb-2">
+                {viewUser?.name ? viewUser.name.charAt(0) : '?'}
+              </div>
+            )}
+          </div>
+          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">بيانات المستخدم</h4>
+          {viewLoading ? (
+            <div className="text-center py-8">جاري التحميل...</div>
+          ) : viewUser && !viewUser.error ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              {userViewFields.map(({ key, label, type }) => {
+                const value = viewUser[key];
+                if (
+                  typeof value === 'undefined' ||
+                  value === '' ||
+                  value === null ||
+                  (Array.isArray(value)) ||
+                  (typeof value === 'object' && value !== null && Object.keys(value).length === 0) ||
+                  key === 'dob' ||
+                  key === '__v'
+                ) return null;
+                if (type === 'object' && typeof value === 'object' && value !== null) {
+                  return (
+                    <div key={key} className="flex flex-col border-b pb-2">
+                      <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</span>
+                      <div className="bg-gray-50 dark:bg-gray-900 rounded p-2 text-xs">
+                        {Object.entries(value).map(([k, v]) => (
+                          <div key={k} className="flex justify-between border-b last:border-b-0 py-1">
+                            <span className="text-gray-600 dark:text-gray-400">{k}</span>
+                            <span className="text-gray-900 dark:text-white">{v === true ? '✔️' : v === false ? '❌' : (v === null || v === undefined || typeof v === 'object' ? '-' : String(v))}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <div key={key} className="flex flex-col border-b pb-2">
+                    <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</span>
+                    <span className="text-gray-900 dark:text-white break-all">
+                      {value === true ? '✔️' : value === false ? '❌' : value}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center text-red-600 py-8">{viewUser?.error || 'تعذر جلب البيانات'}</div>
+          )}
+          <div className="flex items-center justify-center gap-3 pt-6">
+            <button onClick={() => setIsViewOpen(false)} className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600">إغلاق</button>
+          </div>
         </div>
       </div>
     )}

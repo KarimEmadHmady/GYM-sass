@@ -7,6 +7,7 @@ import {
   deletePayment,
   getAllPayments
 } from '../controllers/payment.controller.js';
+import { authorizeRole } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
