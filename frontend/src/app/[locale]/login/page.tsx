@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
+import SplashCursor from '@/components/ui/SplashCursor';
 
 const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -89,18 +90,13 @@ const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+    <>
       {/* Language Toggle Button */}
-      <button
-        onClick={() => router.push('/login', { locale: otherLocale })}
-        className="absolute top-4 right-4 px-4 py-2 bg-white/20 backdrop-blur-md text-white rounded-lg hover:bg-white/30 transition-colors"
-      >
-        {otherLocale === 'ar' ? 'عربي' : 'EN'}
-      </button>
-      
-      <form 
+
+
+      <form
         onSubmit={handleSubmit}
-        className="bg-white/20 backdrop-blur-md shadow-xl rounded-2xl px-8 py-10 w-full max-w-sm flex flex-col gap-6"
+        className="bg-white/20 backdrop-blur-md shadow-xl rounded-2xl px-8 py-10 w-full max-w-sm flex flex-col gap-6 mx-auto mt-[20vh] relative z-[999999]"
       >
         <h2 className="text-2xl font-bold text-center text-white mb-2">{t('title')}</h2>
         
@@ -158,17 +154,35 @@ const LoginPage: React.FC = () => {
             t('loginBtn')
           )}
         </button>
-        
-        <div className="text-center">
-          <p className="text-white/70 text-sm">
-            {t('noAccount')}{' '}
-            <a href="/register" className="text-blue-300 hover:text-blue-200 underline">
-              {t('signUp')}
-            </a>
-          </p>
+        {/* Divider */}
+        <div className="mt-4 border-t border-white/30 w-[90%] mx-auto"></div>
+
+        {/* Language & Contact Buttons */}
+        <div className="mt-4 w-[90%] mx-auto flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={() => router.push('/login', { locale: 'ar' })}
+            className="px-4 py-2 bg-white/20 backdrop-blur-md text-white rounded-lg hover:bg-white/30 transition-colors"
+          >
+            عربي
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/login', { locale: 'en' })}
+            className="px-4 py-2 bg-white/20 backdrop-blur-md text-white rounded-lg hover:bg-white/30 transition-colors"
+          >
+            EN
+          </button>
+          <a
+            href="mailto:support@example.com"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          >
+            تواصل معنا
+          </a>
         </div>
       </form>
-    </div>
+      <SplashCursor />
+      </>
   );
 };
 

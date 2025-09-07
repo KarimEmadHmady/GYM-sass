@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter, usePathname } from '@/i18n/navigation';
+import { useSearchParams } from 'next/navigation';
 
 // Components
 import AdminStatsCards from '@/components/admin/AdminStatsCards';
@@ -23,7 +24,8 @@ const AdminDashboard = () => {
   const pathname = usePathname();
   const locale = useLocale();
   const t = useTranslations('AdminDashboard');
-  const [activeTab, setActiveTab] = useState('overview');
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'overview');
 
   useEffect(() => {
     if (isLoading) return;
@@ -38,6 +40,14 @@ const AdminDashboard = () => {
       return;
     }
   }, [isAuthenticated, user, isLoading, router]);
+
+  // Keep state in sync if URL query changes externally
+  useEffect(() => {
+    const tabFromQuery = searchParams.get('tab');
+    if (tabFromQuery && tabFromQuery !== activeTab) {
+      setActiveTab(tabFromQuery);
+    }
+  }, [searchParams, activeTab]);
 
   if (isLoading) {
     return (
@@ -65,7 +75,16 @@ const AdminDashboard = () => {
   // زر تبديل اللغة
   const otherLocale = locale === 'ar' ? 'en' : 'ar';
   const handleLocaleSwitch = () => {
-    router.push(pathname, { locale: otherLocale });
+    const paramsString = searchParams.toString();
+    const pathWithQuery = paramsString ? `${pathname}?${paramsString}` : pathname;
+    router.push(pathWithQuery, { locale: otherLocale });
+  };
+
+  const handleTabChange = (id: string) => {
+    setActiveTab(id);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', id);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (
@@ -121,7 +140,7 @@ const AdminDashboard = () => {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabChange(tab.id)}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-red-500 text-red-600 dark:text-red-400'
