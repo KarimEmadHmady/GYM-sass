@@ -4,6 +4,7 @@ import {routing} from '@/i18n/routing';
 import GymNavbar from '@/components/ui/Navbar/Navbar';
 import ReduxProvider from '@/redux/ReduxProvider';
 import { BackgroundGradientAnimation } from '@/components/ui/background-gradient-animation';
+import ConditionalSplashCursorAlt from '@/components/ui/ConditionalSplashCursorAlt';
 
 async function getMessages(locale: string) {
   try {
@@ -50,6 +51,9 @@ export default async function LocaleLayout({
               interactive={true}
               containerClassName="fixed inset-0 -z-10"
             />
+            
+            {/* تأثير الماوس المشروط */}
+            <ConditionalSplashCursorAlt />
             
             {/* محتوى الموقع */}
             <div className="relative z-10">

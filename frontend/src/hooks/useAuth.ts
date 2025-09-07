@@ -73,8 +73,9 @@ export const useAuth = () => {
   // Logout function
   const handleLogout = useCallback(() => {
     dispatch(logout());
-    router.push('/login');
-  }, [dispatch, router]);
+    // Force reload to clear any cached state
+    window.location.href = '/login';
+  }, [dispatch]);
 
   // Clear error function
   const clearAuthError = useCallback(() => {

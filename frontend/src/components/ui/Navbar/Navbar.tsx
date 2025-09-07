@@ -9,8 +9,11 @@ import {
   useScroll,
   useMotionValueEvent,
 } from "motion/react";
-import { useTranslations, useLocale } from 'next-intl';
-import { useRouter, usePathname, Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
+import { Link } from '@/i18n/navigation';
+import { useLocale } from 'next-intl';
+import { usePathname } from 'next/navigation';
 
 export default function GymNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -27,10 +30,22 @@ export default function GymNavbar() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const otherLocale = locale === 'ar' ? 'en' : 'ar';
+  const dashboardRoutes = [
+    '/admin/dashboard',
+    '/manager/dashboard',
+    '/trainer/dashboard',
+    '/member/profile',
+    '/dashboard',
+  ];
+  const cleanPathname = pathname.replace(/^\/[a-z]{2}/, '') || '/';
+  const allowedRoutes = ['/', '/login'];
+  const shouldShowNavbar = allowedRoutes.includes(cleanPathname) && !dashboardRoutes.some(route => cleanPathname.startsWith(route));
   
   // Debug logging
   console.log('Navbar rendered with locale:', locale);
   console.log('Current pathname:', pathname);
+  console.log('Should show navbar:', shouldShowNavbar);
   console.log('Router:', router);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
@@ -110,6 +125,40 @@ export default function GymNavbar() {
     { name: t('login'), link: '/login' }
   ];
 
+  // إخفاء الـ navbar إذا لم يكن في الصفحات المسموحة
+  if (!shouldShowNavbar) {
+    return null;
+  }
+
+  // زر اللغة: إذا في داشبورد استخدم window.location.href، إذا لا استخدم Link
+  const LanguageToggle = () => {
+    if (dashboardRoutes.some(route => cleanPathname.startsWith(route))) {
+      return (
+        <button
+          onClick={() => {
+            const restPath = pathname.split('/').slice(2).join('/') || '';
+            window.location.href = `/${otherLocale}/${restPath}`;
+          }}
+          className="relative z-40 px-2 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer text-xs font-medium"
+          title={`Switch to ${locale === 'ar' ? 'English' : 'العربية'}`}
+        >
+          {locale === 'ar' ? 'EN' : 'عربي'}
+        </button>
+      );
+    }
+    return (
+      <Link
+        href={pathname}
+        locale={otherLocale}
+        className="relative z-40 px-2 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer text-xs font-medium"
+        title={`Switch to ${locale === 'ar' ? 'English' : 'العربية'}`}
+        prefetch={false}
+      >
+        {locale === 'ar' ? 'EN' : 'عربي'}
+      </Link>
+    );
+  };
+
   return (
     <motion.div
       ref={ref}
@@ -175,13 +224,7 @@ export default function GymNavbar() {
         {/* Right Side - Language Toggle and Buttons */}
         <div className="flex items-center space-x-4 relative z-30">
           {/* Language Toggle */}
-          <button
-            onClick={(e) => toggleLanguage(e)}
-            className="relative z-40 px-2 py-1.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer text-xs font-medium"
-            title={`Switch to ${locale === 'ar' ? 'English' : 'العربية'}`}
-          >
-            {locale === 'ar' ? 'EN' : 'ar'}
-          </button>
+          <LanguageToggle />
 
           {/* Auth Button */}
           <NavbarButton href="/login" variant="primary" className={cn("relative z-40", locale === 'ar' ? 'font-cairo' : '')}>
@@ -223,13 +266,7 @@ export default function GymNavbar() {
 
           {/* Language Toggle and Mobile Menu Button */}
           <div className="flex items-center space-x-2">
-            <button
-              onClick={(e) => toggleLanguage(e)}
-              className="px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer text-xs font-medium"
-              title={`Switch to ${locale === 'ar' ? 'English' : 'العربية'}`}
-            >
-              {locale === 'ar' ? 'EN' : 'ar'}
-            </button>
+            <LanguageToggle />
             <MobileNavToggle
               isOpen={isMobileMenuOpen}
               onClick={handleMobileMenuToggle}

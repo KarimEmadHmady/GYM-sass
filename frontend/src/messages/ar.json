@@ -23,5 +23,33 @@
     "water": "حاسبة الماء",
     "workout": "توصيات التمارين",
     "clickToOpen": "اضغط لفتح {name}"
+  },
+  "AdminDashboard": {
+    "Header": {
+      "title": "لوحة تحكم الإدارة",
+      "welcome": "مرحباً {name}، إدارة شاملة لجميع عمليات الجيم",
+      "role": "إدارة"
+    },
+    "Tabs": {
+      "overview": "نظرة عامة",
+      "users": "إدارة المستخدمين",
+      "sessions": "الحصص",
+      "plans": "الخطط",
+      "financial": "الماليات",
+      "reports": "التقارير",
+      "settings": "الإعدادات"
+    },
+    "Logout": {
+      "btn": "تسجيل الخروج"
+    },
+    "Language": {
+      "btn": "EN"
+    },
+    "Loading": {
+      "message": "جاري التحميل..."
+    },
+    "Unauthorized": {
+      "message": "غير مصرح لك بالدخول إلى هذه الصفحة."
+    }
   }
 } 

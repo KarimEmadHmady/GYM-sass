@@ -23,5 +23,33 @@
     "water": "Water Calculator",
     "workout": "Workout Recommendations",
     "clickToOpen": "Click to open {name} "
+  },
+  "AdminDashboard": {
+    "Header": {
+      "title": "Admin Dashboard",
+      "welcome": "Welcome {name}, full management for all gym operations",
+      "role": "Admin"
+    },
+    "Tabs": {
+      "overview": "Overview",
+      "users": "User Management",
+      "sessions": "Sessions",
+      "plans": "Plans",
+      "financial": "Financial",
+      "reports": "Reports",
+      "settings": "Settings"
+    },
+    "Logout": {
+      "btn": "Logout"
+    },
+    "Language": {
+      "btn": "عربي"
+    },
+    "Loading": {
+      "message": "Loading..."
+    },
+    "Unauthorized": {
+      "message": "You are not authorized to access this page."
+    }
   }
 } 

@@ -8,6 +8,7 @@
   --animation-direction: forwards;
   --font-cairo: 'Cairo', Arial, Helvetica, sans-serif;
   --font-inter: 'Inter', Arial, Helvetica, sans-serif;
+  --font-primary: 'Cairo', Arial, Helvetica, sans-serif;
 }
 
 @theme inline {
@@ -15,6 +16,7 @@
   --color-foreground: var(--foreground);
   --font-cairo: var(--font-cairo);
   --font-inter: var(--font-inter);
+  --font-primary: var(--font-primary);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -24,10 +26,18 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  font-family: var(--font-cairo) !important;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter);
+  font-family: var(--font-cairo);
 }
 
 .language-ar, [dir="rtl"] {
@@ -35,7 +45,24 @@ body {
 }
 
 .language-en, [dir="ltr"] {
-  font-family: var(--font-inter) !important;
+  font-family: var(--font-cairo) !important;
+}
+
+/* Ensure Cairo font is applied to all elements */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  font-family: var(--font-cairo) !important;
 }
 
 /* CSS Variables for Background Gradient Animation */
@@ -134,9 +161,18 @@ body {
   );
 }
 
+.animate-first,
+.animate-second,
+.animate-third,
+.animate-fourth,
+.animate-fifth {
+  animation-delay: 0s !important;
+  animation-fill-mode: both; /* يبدأ من frame البداية */
+}
+
 /* Keyframe Animations for Background Gradient */
 @keyframes first {
-  0%, 50% {
+  0% {
     transform: rotate(0deg) scale(1);
   }
   100% {
@@ -144,8 +180,9 @@ body {
   }
 }
 
+
 @keyframes second {
-  0%, 50% {
+  0% {
     transform: rotate(0deg) scale(1);
   }
   100% {
@@ -154,7 +191,7 @@ body {
 }
 
 @keyframes third {
-  0%, 50% {
+  0% {
     transform: rotate(0deg) scale(1);
   }
   100% {
@@ -163,7 +200,7 @@ body {
 }
 
 @keyframes fourth {
-  0%, 50% {
+  0% {
     transform: rotate(0deg) scale(1);
   }
   100% {
@@ -172,7 +209,7 @@ body {
 }
 
 @keyframes fifth {
-  0%, 50% {
+  0%{
     transform: rotate(0deg) scale(1);
   }
   100% {

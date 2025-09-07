@@ -1,131 +1,173 @@
 'use client';
 
-import React from 'react';
-import { DashboardLayout } from '@/components/layouts/DashboardLayout';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
-const MemberProfile: React.FC = () => {
+// Components
+import MemberProfileHeader from '@/components/member/MemberProfileHeader';
+import MemberStatsCards from '@/components/member/MemberStatsCards';
+import MemberQuickActions from '@/components/member/MemberQuickActions';
+import MemberSessionsHistory from '@/components/member/MemberSessionsHistory';
+import MemberPlansOverview from '@/components/member/MemberPlansOverview';
+import MemberProgressTracking from '@/components/member/MemberProgressTracking';
+import MemberLoyaltyPoints from '@/components/member/MemberLoyaltyPoints';
+
+const MemberProfile = () => {
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState('overview');
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+
+    if (user?.role !== 'member') {
+      router.push('/unauthorized');
+      return;
+    }
+  }, [isAuthenticated, user, isLoading, router]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || user?.role !== 'member') {
+    return null;
+  }
+
+  const tabs = [
+    { id: 'overview', name: 'نظرة عامة', icon: '📊' },
+    { id: 'sessions', name: 'حصصي', icon: '🏋️' },
+    { id: 'plans', name: 'خططي', icon: '📋' },
+    { id: 'progress', name: 'تقدمي', icon: '📈' },
+    { id: 'loyalty', name: 'نقاط الولاء', icon: '⭐' },
+    { id: 'settings', name: 'إعداداتي', icon: '⚙️' }
+  ];
+
   return (
-    <ProtectedRoute allowedRoles={['member']}>
-      <DashboardLayout>
-        <div className="space-y-6">
-          {/* Profile Header */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center space-x-6">
-              <div className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-2xl font-bold">JD</span>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">John Doe</h1>
-                <p className="text-gray-600">john.doe@example.com</p>
-                <p className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded-full inline-block mt-2">
-                  Gold Member
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
+      {/* Header */}
+      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                بروفايل العضو
+              </h1>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                مرحباً {user?.name}، تابع تقدمك وخططك
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  {user?.name}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  عضو
                 </p>
               </div>
-            </div>
-          </div>
-
-          {/* Profile Information */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Personal Information */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Personal Information</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Full Name</label>
-                  <p className="text-gray-900">John Doe</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Email</label>
-                  <p className="text-gray-900">john.doe@example.com</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Phone</label>
-                  <p className="text-gray-900">+1 (555) 123-4567</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Address</label>
-                  <p className="text-gray-900">123 Main St, City, State 12345</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Date of Birth</label>
-                  <p className="text-gray-900">January 15, 1990</p>
-                </div>
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                {user?.name?.charAt(0)?.toUpperCase()}
               </div>
-            </div>
-
-            {/* Membership Information */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Membership Information</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Membership Level</label>
-                  <p className="text-yellow-600 font-semibold">Gold</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Subscription Status</label>
-                  <p className="text-green-600 font-semibold">Active</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Start Date</label>
-                  <p className="text-gray-900">January 1, 2024</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">End Date</label>
-                  <p className="text-gray-900">December 31, 2024</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Loyalty Points</label>
-                  <p className="text-blue-600 font-semibold">1,250 points</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Goals */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Fitness Goals</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span className="text-gray-900">Weight Loss</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <span className="text-gray-900">Muscle Gain</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-                <span className="text-gray-500">Endurance</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-                <div className="text-blue-600 font-semibold">Edit Profile</div>
-                <div className="text-sm text-gray-500">Update your information</div>
-              </button>
-              <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-                <div className="text-green-600 font-semibold">Change Password</div>
-                <div className="text-sm text-gray-500">Update your password</div>
-              </button>
-              <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-                <div className="text-purple-600 font-semibold">View Progress</div>
-                <div className="text-sm text-gray-500">Track your fitness journey</div>
-              </button>
-              <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-                <div className="text-orange-600 font-semibold">Contact Support</div>
-                <div className="text-sm text-gray-500">Get help and support</div>
+              <button
+                onClick={logout}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>تسجيل الخروج</span>
               </button>
             </div>
           </div>
         </div>
-      </DashboardLayout>
-    </ProtectedRoute>
+      </div>
+
+      {/* Navigation Tabs */}
+      <div className="bg-white dark:bg-gray-800 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="flex space-x-8 overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'border-purple-500 text-purple-600 dark:text-purple-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                <span className="mr-2">{tab.icon}</span>
+                {tab.name}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {activeTab === 'overview' && (
+          <div className="space-y-8">
+            {/* Profile Header */}
+            <MemberProfileHeader />
+            
+            {/* Stats Cards */}
+            <MemberStatsCards />
+            
+            {/* Quick Actions */}
+            <MemberQuickActions />
+          </div>
+        )}
+
+        {activeTab === 'sessions' && (
+          <div className="space-y-8">
+            <MemberSessionsHistory />
+          </div>
+        )}
+
+        {activeTab === 'plans' && (
+          <div className="space-y-8">
+            <MemberPlansOverview />
+          </div>
+        )}
+
+        {activeTab === 'progress' && (
+          <div className="space-y-8">
+            <MemberProgressTracking />
+          </div>
+        )}
+
+        {activeTab === 'loyalty' && (
+          <div className="space-y-8">
+            <MemberLoyaltyPoints />
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="space-y-8">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                إعداداتي
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                صفحة الإعدادات قيد التطوير...
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
