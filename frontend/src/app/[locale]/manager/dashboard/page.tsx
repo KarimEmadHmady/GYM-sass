@@ -22,6 +22,8 @@ import AdminFeedback from '@/components/admin/AdminFeedback';
 import AdminRewards from '@/components/admin/AdminRewards';
 import AdminLoyalty from '@/components/admin/AdminLoyalty';
 import AdminSearch from '@/components/admin/AdminSearch';
+import ManagerSettings from '@/components/manager/ManagerSettings';
+import TrainersDirectory from '@/components/shared/TrainersDirectory';
 
 const ManagerDashboard = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -70,6 +72,7 @@ const ManagerDashboard = () => {
   const tabs = [
     { id: 'overview', name: t('Tabs.overview'), icon: '📊' },
     { id: 'users', name: t('Tabs.users'), icon: '👥' },
+    { id: 'trainers', name: 'المدربون', icon: '🧑‍🏫' },
     { id: 'sessions', name: t('Tabs.sessions'), icon: '🏋️' },
     { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
     { id: 'reports', name: t('Tabs.reports'), icon: '📈' },
@@ -189,6 +192,12 @@ const ManagerDashboard = () => {
           </div>
         )}
 
+        {activeTab === 'trainers' && (
+          <div className="space-y-8">
+            <TrainersDirectory scope="manager" />
+          </div>
+        )}
+
         {activeTab === 'sessions' && (
           <div className="space-y-8">
             <ManagerSessionsOverview />
@@ -270,14 +279,7 @@ const ManagerDashboard = () => {
 
         {activeTab === 'settings' && (
           <div className="space-y-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                إعدادات المدير
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                صفحة الإعدادات قيد التطوير...
-              </p>
-            </div>
+            <ManagerSettings />
           </div>
         )}
       </div>

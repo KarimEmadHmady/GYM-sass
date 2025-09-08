@@ -5,4 +5,8 @@ export interface UpdateUserRoleRequest {
   role: UserRole;
 }
 
+export interface TrainerClientApiResponse {
+  clients: import('./models').User[];
+}
+
 

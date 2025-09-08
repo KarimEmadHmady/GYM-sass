@@ -4,12 +4,13 @@ import {
   updateUserRoleService,
   updateUserByIdService,
   deleteUserByIdService,
-  deleteUserByIdHardService
+  deleteUserByIdHardService,
+  getMyClientsService
  } from '../services/users.service.js';
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await getAllUsersService();
+    const users = await getAllUsersService(req.query);
     res.status(200).json(users);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -65,5 +66,15 @@ export const deleteUserByIdHard = async (req, res) => {
     res.status(200).json({ message: 'User permanently deleted successfully.', user });
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+};
+
+export const getMyClients = async (req, res) => {
+  try {
+    const trainerId = req.query.trainerId || req.user._id;
+    const clients = await getMyClientsService(trainerId);
+    res.status(200).json({ clients });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };

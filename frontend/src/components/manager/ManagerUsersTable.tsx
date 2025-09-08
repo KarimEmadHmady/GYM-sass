@@ -150,6 +150,12 @@ const ManagerUsersTable = () => {
       goals: user.goals || { weightLoss: false, muscleGain: false, endurance: false },
       trainerId: user.trainerId || '',
       metadata: (user as any).metadata || { emergencyContact: '', notes: '', lastLogin: '', ipAddress: '' },
+      // NEW: gym fields
+      heightCm: (user as any).heightCm ?? '',
+      baselineWeightKg: (user as any).baselineWeightKg ?? '',
+      targetWeightKg: (user as any).targetWeightKg ?? '',
+      activityLevel: (user as any).activityLevel ?? '',
+      healthNotes: (user as any).healthNotes ?? '',
       createdAt: user.createdAt ? (user.createdAt instanceof Date ? user.createdAt.toLocaleString('ar-EG') : user.createdAt) : '',
       updatedAt: user.updatedAt ? (user.updatedAt instanceof Date ? user.updatedAt.toLocaleString('ar-EG') : user.updatedAt) : '',
     });
@@ -217,10 +223,17 @@ const ManagerUsersTable = () => {
           (toSend as any)[field] = null;
         }
       });
-      const stringFields = ['phone', 'avatarUrl', 'address'];
+      const stringFields = ['phone', 'avatarUrl', 'address', 'activityLevel', 'healthNotes'];
       stringFields.forEach(field => {
         if ((toSend as any)[field] === '' || (toSend as any)[field] === undefined) {
           (toSend as any)[field] = null;
+        }
+      });
+      const numberFields = ['balance','subscriptionFreezeDays','subscriptionFreezeUsed','loyaltyPoints','failedLoginAttempts','heightCm','baselineWeightKg','targetWeightKg'];
+      numberFields.forEach(field => {
+        if ((toSend as any)[field] !== undefined) {
+          (toSend as any)[field] = Number((toSend as any)[field]);
+          if (Number.isNaN((toSend as any)[field])) delete (toSend as any)[field];
         }
       });
       const dateKeys: (keyof typeof toSend)[] = [
@@ -258,7 +271,9 @@ const ManagerUsersTable = () => {
         'name', 'email', 'role', 'phone', 'dob', 'avatarUrl', 'address', 'balance', 'status',
         'subscriptionStartDate', 'subscriptionEndDate', 'subscriptionFreezeDays', 'subscriptionFreezeUsed',
         'subscriptionStatus', 'subscriptionRenewalReminderSent', 'lastPaymentDate', 'nextPaymentDueDate',
-        'loyaltyPoints', 'membershipLevel', 'goals', 'trainerId', 'metadata'
+        'loyaltyPoints', 'membershipLevel', 'goals', 'trainerId', 'metadata',
+        // NEW gym fields
+        'heightCm', 'baselineWeightKg', 'targetWeightKg', 'activityLevel', 'healthNotes'
       ];
       if (!submitData.name || submitData.name.trim() === '') {
         throw new Error('الاسم مطلوب');
@@ -404,6 +419,12 @@ const ManagerUsersTable = () => {
     { key: 'metadata', label: 'بيانات إضافية', type: 'object' },
     { key: 'createdAt', label: 'تاريخ الإنشاء' },
     { key: 'updatedAt', label: 'آخر تعديل' },
+    // NEW: gym fields
+    { key: 'heightCm', label: 'طول (سم)' },
+    { key: 'baselineWeightKg', label: 'وزن الأساس (كجم)' },
+    { key: 'targetWeightKg', label: 'وزن الهدف (كجم)' },
+    { key: 'activityLevel', label: 'مستوى النشاط' },
+    { key: 'healthNotes', label: 'ملاحظات صحية' },
   ];
 
   return (

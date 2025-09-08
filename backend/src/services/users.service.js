@@ -1,7 +1,14 @@
 import User from '../models/user.model.js';
 
-export const getAllUsersService = async () => {
-  return await User.find();
+export const getAllUsersService = async (query = {}) => {
+  const filter = {};
+  if (query.role) {
+    filter.role = query.role;
+  }
+  if (query.status) {
+    filter.status = query.status;
+  }
+  return await User.find(filter).sort({ createdAt: -1 });
 };
 
 export const getUserByIdService = async (userId) => {
@@ -46,4 +53,8 @@ export const deleteUserByIdHardService = async (userId) => {
     throw new Error('User not found');
   }
   return user;
+};
+
+export const getMyClientsService = async (trainerId) => {
+  return await User.find({ trainerId });
 };

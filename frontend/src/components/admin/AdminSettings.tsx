@@ -1,290 +1,137 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { GymSettingsService, type GymSettings } from '@/services/gymSettingsService';
 
 const AdminSettings = () => {
-  const [activeTab, setActiveTab] = useState('general');
+  const [settings, setSettings] = useState<GymSettings | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const svc = new GymSettingsService();
 
-  const settingsTabs = [
-    { id: 'general', name: 'عام', icon: '⚙️' },
-    { id: 'users', name: 'المستخدمين', icon: '👥' },
-    { id: 'financial', name: 'الماليات', icon: '💰' },
-    { id: 'notifications', name: 'الإشعارات', icon: '🔔' },
-    { id: 'security', name: 'الأمان', icon: '🔒' },
-    { id: 'backup', name: 'النسخ الاحتياطي', icon: '💾' }
-  ];
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const s = await svc.get();
+        setSettings(s);
+      } catch (e: any) {
+        setError(e?.message || 'تعذر جلب إعدادات الجيم');
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
-  const [generalSettings, setGeneralSettings] = useState({
-    gymName: 'Coach Gym',
-    address: 'شارع الرياض، الرياض، المملكة العربية السعودية',
-    phone: '+966 50 123 4567',
-    email: 'info@coachgym.com',
-    workingHours: '06:00 - 23:00',
-    timezone: 'Asia/Riyadh',
-    currency: 'EGP',
-    language: 'ar'
-  });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setSettings(prev => ({ ...(prev || {}), [name]: value }));
+  };
 
-  const [userSettings, setUserSettings] = useState({
-    allowSelfRegistration: true,
-    requireEmailVerification: true,
-    allowPasswordReset: true,
-    maxLoginAttempts: 5,
-    sessionTimeout: 30,
-    requireStrongPassword: true
-  });
+  const handleToggle = (path: string) => {
+    setSettings(prev => {
+      const next: any = { ...(prev || {}) };
+      const parts = path.split('.');
+      let obj = next;
+      for (let i = 0; i < parts.length - 1; i++) {
+        obj[parts[i]] = obj[parts[i]] || {};
+        obj = obj[parts[i]];
+      }
+      const key = parts[parts.length - 1];
+      obj[key] = !obj[key];
+      return next;
+    });
+  };
 
-  const [financialSettings, setFinancialSettings] = useState({
-    currency: 'EGP',
-    taxRate: 15,
-    allowPartialPayments: true,
-    autoGenerateInvoices: true,
-    invoicePrefix: 'INV-',
-    paymentMethods: ['cash', 'card', 'bank_transfer']
-  });
-
-  const handleSave = (settingsType: string) => {
-    console.log(`Saving ${settingsType} settings`);
-    // Here you would typically save to backend
+  const save = async () => {
+    if (!settings) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const payload: GymSettings = { ...settings };
+      const updated = await svc.update(payload);
+      setSettings(updated);
+      window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'تم حفظ الإعدادات' } }));
+    } catch (e: any) {
+      setError(e?.message || 'تعذر حفظ الإعدادات');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Settings Tabs */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="border-b border-gray-200 dark:border-gray-700">
-          <nav className="flex space-x-8 px-6">
-            {settingsTabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                }`}
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.name}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        <div className="p-6">
-          {activeTab === 'general' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">الإعدادات العامة</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    اسم الجيم
-                  </label>
-                  <input
-                    type="text"
-                    value={generalSettings.gymName}
-                    onChange={(e) => setGeneralSettings({...generalSettings, gymName: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    الهاتف
-                  </label>
-                  <input
-                    type="text"
-                    value={generalSettings.phone}
-                    onChange={(e) => setGeneralSettings({...generalSettings, phone: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    البريد الإلكتروني
-                  </label>
-                  <input
-                    type="email"
-                    value={generalSettings.email}
-                    onChange={(e) => setGeneralSettings({...generalSettings, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    ساعات العمل
-                  </label>
-                  <input
-                    type="text"
-                    value={generalSettings.workingHours}
-                    onChange={(e) => setGeneralSettings({...generalSettings, workingHours: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-                
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    العنوان
-                  </label>
-                  <textarea
-                    value={generalSettings.address}
-                    onChange={(e) => setGeneralSettings({...generalSettings, address: e.target.value})}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
+    <div className="space-y-8">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">إعدادات الجيم</h3>
+        {loading ? (
+          <div className="text-gray-500 dark:text-gray-400">جاري التحميل...</div>
+        ) : error ? (
+          <div className="text-red-600">{error}</div>
+        ) : (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">اسم الجيم</label>
+                <input name="gymName" value={settings?.gymName || ''} onChange={handleChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
               </div>
-              
-              <button
-                onClick={() => handleSave('general')}
-                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                حفظ الإعدادات
-              </button>
-            </div>
-          )}
-
-          {activeTab === 'users' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">إعدادات المستخدمين</h3>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">السماح بالتسجيل الذاتي</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">السماح للمستخدمين بالتسجيل بأنفسهم</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={userSettings.allowSelfRegistration}
-                      onChange={(e) => setUserSettings({...userSettings, allowSelfRegistration: e.target.checked})}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                  </label>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">طلب تأكيد البريد الإلكتروني</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">طلب تأكيد البريد الإلكتروني عند التسجيل</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={userSettings.requireEmailVerification}
-                      onChange={(e) => setUserSettings({...userSettings, requireEmailVerification: e.target.checked})}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                  </label>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">طلب كلمة مرور قوية</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">طلب كلمة مرور قوية عند التسجيل</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={userSettings.requireStrongPassword}
-                      onChange={(e) => setUserSettings({...userSettings, requireStrongPassword: e.target.checked})}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                  </label>
-                </div>
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">رابط الشعار</label>
+                <input name="logoUrl" value={settings?.logoUrl || ''} onChange={handleChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
               </div>
-              
-              <button
-                onClick={() => handleSave('users')}
-                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                حفظ الإعدادات
-              </button>
-            </div>
-          )}
-
-          {activeTab === 'financial' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">إعدادات الماليات</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    العملة
-                  </label>
-                  <select
-                    value={financialSettings.currency}
-                    onChange={(e) => setFinancialSettings({...financialSettings, currency: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  >
-                    <option value="SAR">ريال سعودي (SAR)</option>
-                    <option value="EGP">جنيه مصري (ج.م)</option>
-                    <option value="EUR">يورو (EUR)</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    معدل الضريبة (%)
-                  </label>
-                  <input
-                    type="number"
-                    value={financialSettings.taxRate}
-                    onChange={(e) => setFinancialSettings({...financialSettings, taxRate: parseInt(e.target.value)})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    بادئة الفواتير
-                  </label>
-                  <input
-                    type="text"
-                    value={financialSettings.invoicePrefix}
-                    onChange={(e) => setFinancialSettings({...financialSettings, invoicePrefix: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">العنوان</label>
+                <input name="address" value={settings?.address || ''} onChange={handleChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
               </div>
-              
-              <button
-                onClick={() => handleSave('financial')}
-                className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
-              >
-                حفظ الإعدادات
-              </button>
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الهاتف</label>
+                <input name="phone" value={settings?.phone || ''} onChange={handleChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">البريد</label>
+                <input name="email" value={settings?.email || ''} onChange={handleChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">مواعيد العمل</label>
+                <input name="workingHours" value={settings?.workingHours || ''} onChange={handleChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+              </div>
             </div>
-          )}
 
-          {activeTab === 'notifications' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">إعدادات الإشعارات</h3>
-              <p className="text-gray-500 dark:text-gray-400">صفحة إعدادات الإشعارات قيد التطوير...</p>
+            <div>
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">روابط السوشيال</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {['facebook','instagram','twitter','tiktok','youtube'].map((k) => (
+                  <div key={k}>
+                    <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">{k}</label>
+                    <input name={`socialLinks.${k}`} value={(settings as any)?.socialLinks?.[k] || ''} onChange={(e) => {
+                      const { name, value } = e.target; const [, key] = name.split('.'); setSettings(prev => ({ ...(prev || {}), socialLinks: { ...((prev as any)?.socialLinks || {}), [key]: value } }));
+                    }} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+                  </div>
+                ))}
+              </div>
             </div>
-          )}
 
-          {activeTab === 'security' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">إعدادات الأمان</h3>
-              <p className="text-gray-500 dark:text-gray-400">صفحة إعدادات الأمان قيد التطوير...</p>
-            </div>
-          )}
 
-          {activeTab === 'backup' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">النسخ الاحتياطي</h3>
-              <p className="text-gray-500 dark:text-gray-400">صفحة النسخ الاحتياطي قيد التطوير...</p>
+
+            <div>
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">السياسات</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {['terms','privacy','refund'].map((k) => (
+                  <div key={k}>
+                    <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">{k}</label>
+                    <textarea name={`policies.${k}`} value={(settings as any)?.policies?.[k] || ''} onChange={(e) => { const { name, value } = e.target; const [, key] = name.split('.'); setSettings(prev => ({ ...(prev || {}), policies: { ...((prev as any)?.policies || {}), [key]: value } })); }} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" rows={3} />
+                  </div>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
+
+            <div className="text-left">
+              <button onClick={save} disabled={saving} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">{saving ? 'جارٍ الحفظ...' : 'حفظ الإعدادات'}</button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

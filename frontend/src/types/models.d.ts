@@ -22,6 +22,8 @@ export interface User {
     notes?: string;
     lastLogin?: Date;
     ipAddress?: string;
+    // keep backwards compatibility if height was stored here before
+    heightCm?: number;
   };
   isDeleted: boolean;
   
@@ -45,6 +47,15 @@ export interface User {
   };
   
   trainerId?: string;
+
+  // New gym fields
+  heightCm?: number;
+  baselineWeightKg?: number;
+  targetWeightKg?: number;
+  activityLevel?: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
+  healthNotes?: string;
+  // Virtual field from backend
+  age?: number;
   
   createdAt: Date;
   updatedAt: Date;

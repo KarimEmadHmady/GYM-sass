@@ -25,6 +25,7 @@ import AdminFeedback from '@/components/admin/AdminFeedback';
 import AdminRewards from '@/components/admin/AdminRewards';
 import AdminLoyalty from '@/components/admin/AdminLoyalty';
 import AdminSearch from '@/components/admin/AdminSearch';
+import TrainersDirectory from '@/components/shared/TrainersDirectory';
 
 
 const AdminDashboard = () => {
@@ -74,6 +75,7 @@ const AdminDashboard = () => {
   const tabs = [
     { id: 'overview', name: t('Tabs.overview'), icon: '📊' },
     { id: 'users', name: t('Tabs.users'), icon: '👥' },
+    { id: 'trainers', name: 'المدربون', icon: '🧑‍🏫' },
     { id: 'sessions', name: t('Tabs.sessions'), icon: '🏋️' },
     { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
     { id: 'financial', name: t('Tabs.financial'), icon: '💰' },
@@ -191,6 +193,12 @@ const AdminDashboard = () => {
         {activeTab === 'users' && (
           <div className="space-y-8">
             <AdminUsersTable />
+          </div>
+        )}
+
+        {activeTab === 'trainers' && (
+          <div className="space-y-8">
+            <TrainersDirectory scope="admin" />
           </div>
         )}
 

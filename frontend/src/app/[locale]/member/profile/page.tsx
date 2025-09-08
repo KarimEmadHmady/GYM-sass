@@ -19,6 +19,7 @@ import MemberPayments from '@/components/member/MemberPayments';
 import MemberSubscription from '@/components/member/MemberSubscription';
 import MemberPurchases from '@/components/member/MemberPurchases';
 import MemberTrainer from '@/components/member/MemberTrainer';
+import MemberSettings from '@/components/member/MemberSettings';
 
 const MemberProfile = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -242,14 +243,7 @@ const MemberProfile = () => {
 
         {activeTab === 'settings' && (
           <div className="space-y-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                إعداداتي
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                صفحة الإعدادات قيد التطوير...
-              </p>
-            </div>
+            <MemberSettings />
           </div>
         )}
       </div>

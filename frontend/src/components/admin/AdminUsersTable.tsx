@@ -30,12 +30,36 @@ const AdminUsersTable = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editUser, setEditUser] = useState<UserModel | null>(null);
   const [editForm, setEditForm] = useState({
-    _id: '', name: '', email: '', role: 'member', phone: '', dob: '', avatarUrl: '', address: '', balance: 0, status: 'active', 
-    isEmailVerified: false, emailVerificationToken: '', failedLoginAttempts: 0, lockUntil: '', isDeleted: false,
-    subscriptionStartDate: '', subscriptionEndDate: '', subscriptionFreezeDays: 0, subscriptionFreezeUsed: 0, 
-    subscriptionStatus: 'active', subscriptionRenewalReminderSent: '', lastPaymentDate: '', nextPaymentDueDate: '', 
-    loyaltyPoints: 0, membershipLevel: 'basic', goals: { weightLoss: false, muscleGain: false, endurance: false }, 
-    trainerId: '', metadata: { emergencyContact: '', notes: '', lastLogin: '', ipAddress: '' }, createdAt: '', updatedAt: '',
+    _id: '',
+    name: '',
+    email: '',
+    role: 'member',
+    phone: '',
+    dob: '',
+    avatarUrl: '',
+    address: '',
+    balance: 0,
+    status: 'active',
+    isEmailVerified: false,
+    subscriptionStartDate: '',
+    subscriptionEndDate: '',
+    subscriptionFreezeDays: 0,
+    subscriptionFreezeUsed: 0,
+    subscriptionStatus: 'active',
+    lastPaymentDate: '',
+    nextPaymentDueDate: '',
+    loyaltyPoints: 0,
+    membershipLevel: 'basic',
+    goals: { weightLoss: false, muscleGain: false, endurance: false },
+    trainerId: '',
+    // NEW: gym fields defaults
+    heightCm: '',
+    baselineWeightKg: '',
+    targetWeightKg: '',
+    activityLevel: '',
+    healthNotes: '',
+    createdAt: '',
+    updatedAt: '',
   });
   const [isEditSubmitting, setIsEditSubmitting] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
@@ -159,7 +183,7 @@ const AdminUsersTable = () => {
           }
         }));
       } else {
-        setNewUser(prev => ({ ...prev, [name]: value }));
+    setNewUser(prev => ({ ...prev, [name]: value }));
       }
     }
     
@@ -284,23 +308,23 @@ const AdminUsersTable = () => {
       balance: user.balance ?? 0,
       status: user.status || 'active',
       isEmailVerified: user.isEmailVerified ?? false,
-      emailVerificationToken: (user as any).emailVerificationToken || '',
-      failedLoginAttempts: (user as any).failedLoginAttempts ?? 0,
-      lockUntil: (user as any).lockUntil ? ((user as any).lockUntil instanceof Date ? (user as any).lockUntil.toISOString().slice(0, 16) : (user as any).lockUntil) : '',
-      isDeleted: (user as any).isDeleted ?? false,
       subscriptionStartDate: dateToInputString(user.subscriptionStartDate),
       subscriptionEndDate: dateToInputString(user.subscriptionEndDate),
       subscriptionFreezeDays: user.subscriptionFreezeDays ?? 0,
       subscriptionFreezeUsed: user.subscriptionFreezeUsed ?? 0,
       subscriptionStatus: user.subscriptionStatus || 'active',
-      subscriptionRenewalReminderSent: datetimeToInputString((user as any).subscriptionRenewalReminderSent),
       lastPaymentDate: dateToInputString(user.lastPaymentDate),
       nextPaymentDueDate: dateToInputString(user.nextPaymentDueDate),
       loyaltyPoints: user.loyaltyPoints ?? 0,
       membershipLevel: user.membershipLevel || 'basic',
       goals: user.goals || { weightLoss: false, muscleGain: false, endurance: false },
       trainerId: user.trainerId || '',
-      metadata: (user as any).metadata || { emergencyContact: '', notes: '', lastLogin: '', ipAddress: '' },
+      // NEW gym fields
+      heightCm: (user as any).heightCm ?? '',
+      baselineWeightKg: (user as any).baselineWeightKg ?? '',
+      targetWeightKg: (user as any).targetWeightKg ?? '',
+      activityLevel: (user as any).activityLevel ?? '',
+      healthNotes: (user as any).healthNotes ?? '',
       createdAt: user.createdAt ? (user.createdAt instanceof Date ? user.createdAt.toLocaleString('ar-EG') : user.createdAt) : '',
       updatedAt: user.updatedAt ? (user.updatedAt instanceof Date ? user.updatedAt.toLocaleString('ar-EG') : user.updatedAt) : '',
     });
@@ -345,7 +369,7 @@ const AdminUsersTable = () => {
           }
         }));
       } else {
-        setEditForm(prev => ({ ...prev, [name]: value }));
+    setEditForm(prev => ({ ...prev, [name]: value }));
       }
     }
     
@@ -371,11 +395,9 @@ const AdminUsersTable = () => {
       toSend.subscriptionFreezeDays = Number(toSend.subscriptionFreezeDays) || 0;
       toSend.subscriptionFreezeUsed = Number(toSend.subscriptionFreezeUsed) || 0;
       toSend.loyaltyPoints = Number(toSend.loyaltyPoints) || 0;
-      toSend.failedLoginAttempts = Number(toSend.failedLoginAttempts) || 0;
       
       // التأكد من صحة القيم المنطقية
       toSend.isEmailVerified = Boolean(toSend.isEmailVerified);
-      toSend.isDeleted = Boolean(toSend.isDeleted);
       
       // التأكد من صحة goals
       if (toSend.goals) {
@@ -404,7 +426,6 @@ const AdminUsersTable = () => {
         'dob',
         'subscriptionStartDate',
         'subscriptionEndDate',
-        'subscriptionRenewalReminderSent',
         'lastPaymentDate',
         'nextPaymentDueDate',
       ];
@@ -439,27 +460,21 @@ const AdminUsersTable = () => {
           delete submitData[key];
         }
       });
-      // فلترة الحقول المسموحة فقط حسب schema (إزالة الحقول الحساسة)
+      // تحويل الحقول الرقمية (بما فيها حقول الجيم)
+      ['balance','subscriptionFreezeDays','subscriptionFreezeUsed','loyaltyPoints','heightCm','baselineWeightKg','targetWeightKg'].forEach((field) => {
+        if (submitData[field] !== undefined && submitData[field] !== '') {
+          submitData[field] = Number(submitData[field]);
+          if (Number.isNaN(submitData[field])) delete submitData[field];
+        }
+      });
+      // فلترة الحقول المسموحة فقط حسب schema
       const allowedKeys = [
-        'name', 'email', 'role', 'phone', 'dob', 'avatarUrl', 'address', 'balance', 'status',
-        'subscriptionStartDate', 'subscriptionEndDate', 'subscriptionFreezeDays', 'subscriptionFreezeUsed', 
-        'subscriptionStatus', 'subscriptionRenewalReminderSent', 'lastPaymentDate', 'nextPaymentDueDate',
-        'loyaltyPoints', 'membershipLevel', 'goals', 'trainerId', 'metadata'
+        'name','email','role','phone','avatarUrl','address','balance','status','isEmailVerified',
+        'subscriptionStartDate','subscriptionEndDate','subscriptionFreezeDays','subscriptionFreezeUsed','subscriptionStatus',
+        'lastPaymentDate','nextPaymentDueDate','loyaltyPoints','membershipLevel','goals','trainerId',
+        // NEW gym fields
+        'heightCm','baselineWeightKg','targetWeightKg','activityLevel','healthNotes'
       ];
-      
-      // التأكد من صحة البيانات الأساسية
-      if (!submitData.name || submitData.name.trim() === '') {
-        throw new Error('الاسم مطلوب');
-      }
-      if (!submitData.email || submitData.email.trim() === '') {
-        throw new Error('البريد الإلكتروني مطلوب');
-      }
-      if (!['admin', 'trainer', 'member', 'manager'].includes(submitData.role)) {
-        throw new Error('الدور غير صحيح');
-      }
-      if (!['active', 'inactive', 'banned'].includes(submitData.status)) {
-        throw new Error('الحالة غير صحيحة');
-      }
       const filteredData: any = {};
       for (const key of allowedKeys) {
         if (typeof submitData[key] !== 'undefined') {
@@ -474,9 +489,7 @@ const AdminUsersTable = () => {
       });
       // سجل البيانات المرسلة
       console.log('editForm original:', editForm);
-      console.log('subscriptionRenewalReminderSent original:', editForm.subscriptionRenewalReminderSent);
       console.log('submitData before filtering:', submitData);
-      console.log('subscriptionRenewalReminderSent after processing:', submitData.subscriptionRenewalReminderSent);
       console.log('editForm sent:', filteredData);
       await userService.updateUser(editUser!._id, filteredData);
       setIsEditOpen(false);

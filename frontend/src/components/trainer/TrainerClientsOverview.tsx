@@ -1,65 +1,116 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import type { User } from '@/types/models';
+import type { TrainerClientApiResponse } from '@/types/users';
+import { apiRequest } from '@/lib/api';
+import { UserService } from '@/services/userService';
+import { ProgressService } from '@/services/progressService';
 
 const TrainerClientsOverview = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [clients, setClients] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [viewLoading, setViewLoading] = useState(false);
+  const [viewUser, setViewUser] = useState<User | any>(null);
+  const [viewProgress, setViewProgress] = useState<any>(null);
 
-  const clients = [
-    {
-      id: 1,
-      name: 'أحمد محمد',
-      email: 'ahmed@example.com',
-      phone: '+966 50 123 4567',
-      status: 'active',
-      joinDate: '2024-01-15',
-      lastSession: '2024-01-20',
-      totalSessions: 12,
-      rating: 4.8,
-      progress: 85,
-      goals: ['تخسيس', 'بناء عضلات']
-    },
-    {
-      id: 2,
-      name: 'فاطمة حسن',
-      email: 'fatima@example.com',
-      phone: '+966 50 234 5678',
-      status: 'active',
-      joinDate: '2024-01-10',
-      lastSession: '2024-01-19',
-      totalSessions: 8,
-      rating: 4.9,
-      progress: 72,
-      goals: ['تخسيس', 'لياقة عامة']
-    },
-    {
-      id: 3,
-      name: 'محمد علي',
-      email: 'mohamed@example.com',
-      phone: '+966 50 345 6789',
-      status: 'inactive',
-      joinDate: '2024-01-05',
-      lastSession: '2024-01-15',
-      totalSessions: 5,
-      rating: 4.5,
-      progress: 60,
-      goals: ['بناء عضلات']
-    },
-    {
-      id: 4,
-      name: 'نور الدين',
-      email: 'nour@example.com',
-      phone: '+966 50 456 7890',
-      status: 'active',
-      joinDate: '2024-01-12',
-      lastSession: '2024-01-20',
-      totalSessions: 6,
-      rating: 4.7,
-      progress: 78,
-      goals: ['لياقة عامة', 'مرونة']
-    }
+  const userService = new UserService();
+  const progressService = new ProgressService();
+
+  const userViewFields: { key: keyof User | string; label: string; type?: 'object' | 'goals' | 'date' }[] = [
+    { key: 'name', label: 'الاسم' },
+    { key: 'email', label: 'البريد الإلكتروني' },
+    { key: 'phone', label: 'رقم الهاتف' },
+    { key: 'avatarUrl', label: 'رابط الصورة' },
+    { key: 'address', label: 'العنوان' },
+    { key: 'balance', label: 'الرصيد' },
+    { key: 'status', label: 'الحالة' },
+    // أخفينا failedLoginAttempts و isDeleted
+    { key: 'subscriptionStartDate', label: 'بداية الاشتراك', type: 'date' },
+    { key: 'subscriptionEndDate', label: 'نهاية الاشتراك', type: 'date' },
+    { key: 'subscriptionRenewalReminderSent', label: 'تذكير التجديد', type: 'date' },
+    { key: 'lastPaymentDate', label: 'آخر دفعة', type: 'date' },
+    { key: 'nextPaymentDueDate', label: 'استحقاق الدفع القادم', type: 'date' },
+    { key: 'subscriptionFreezeDays', label: 'أيام تجميد الاشتراك' },
+    { key: 'subscriptionFreezeUsed', label: 'أيام التجميد المستخدمة' },
+    { key: 'subscriptionStatus', label: 'حالة الاشتراك' },
+    { key: 'loyaltyPoints', label: 'نقاط الولاء' },
+    { key: 'membershipLevel', label: 'مستوى العضوية' },
+    { key: 'goals', label: 'الأهداف', type: 'goals' },
+    { key: 'metadata', label: 'بيانات إضافية', type: 'object' },
+    { key: 'createdAt', label: 'تاريخ الإنشاء', type: 'date' },
+    { key: 'updatedAt', label: 'آخر تعديل', type: 'date' },
   ];
+
+  const formatDate = (val: any): string => {
+    if (!val) return '-';
+    const d = typeof val === 'string' || typeof val === 'number' ? new Date(val) : val instanceof Date ? val : null;
+    if (!d || isNaN(d.getTime())) return '-';
+    return d.toLocaleString('ar-EG');
+  };
+
+  const formatDateShort = (val: any): string => {
+    if (!val) return '-';
+    const d = typeof val === 'string' || typeof val === 'number' ? new Date(val) : val instanceof Date ? val : null;
+    if (!d || isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('ar-EG');
+  };
+
+  const calcAge = (dob: any): string => {
+    if (!dob) return '-';
+    const d = new Date(dob);
+    if (isNaN(d.getTime())) return '-';
+    const diff = Date.now() - d.getTime();
+    const ageDt = new Date(diff);
+    return String(Math.abs(ageDt.getUTCFullYear() - 1970));
+  };
+
+  const calcBMI = (weightKg?: number, heightCm?: number): string => {
+    if (!weightKg || !heightCm) return '-';
+    const h = heightCm / 100;
+    const bmi = weightKg / (h * h);
+    return bmi ? bmi.toFixed(1) : '-';
+  };
+
+  const openViewClient = async (id: string) => {
+    setIsViewOpen(true);
+    setViewLoading(true);
+    setViewUser(null);
+    setViewProgress(null);
+    try {
+      const [u, p] = await Promise.all([
+        userService.getUser(id),
+        progressService.getLatestProgress(id).catch(() => null)
+      ]);
+      setViewUser(u);
+      setViewProgress(p);
+    } catch {
+      setViewUser({ error: 'تعذر جلب بيانات العميل' });
+    } finally {
+      setViewLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const userService = new UserService();
+        const list = await userService.getMyClients();
+        setClients(list || []);
+      } catch (err: any) {
+        setError('تعذر جلب العملاء');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchClients();
+  }, []);
 
   const getStatusColor = (status: string) => {
     const colors = {
@@ -116,17 +167,22 @@ const TrainerClientsOverview = () => {
               <option value="all">جميع الحالات</option>
               <option value="active">نشط</option>
               <option value="inactive">غير نشط</option>
-              <option value="suspended">معلق</option>
+              <option value="banned">محظور</option>
             </select>
           </div>
         </div>
       </div>
-
       {/* Clients Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredClients.map((client) => (
+        {loading ? (
+          <div className="col-span-full text-center py-8">جاري التحميل...</div>
+        ) : error ? (
+          <div className="col-span-full text-center text-red-600 py-8">{error}</div>
+        ) : filteredClients.length === 0 ? (
+          <div className="col-span-full text-center py-8">لا يوجد عملاء</div>
+        ) : filteredClients.map((client) => (
           <div
-            key={client.id}
+            key={client._id}
             className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
           >
             <div className="flex items-start justify-between mb-4">
@@ -143,64 +199,64 @@ const TrainerClientsOverview = () => {
                 {getStatusText(client.status)}
               </span>
             </div>
-
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">التقييم:</span>
-                <div className="flex items-center">
-                  <span className="text-yellow-500">⭐</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white mr-1">
-                    {client.rating}
-                  </span>
-                </div>
+                <span className="text-sm text-gray-600 dark:text-gray-400">بداية الاشتراك:</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{formatDateShort((client as any).subscriptionStartDate)}</span>
               </div>
-
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">الحصص:</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {client.totalSessions} حصة
-                </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">نهاية الاشتراك:</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{formatDateShort((client as any).subscriptionEndDate)}</span>
               </div>
-
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">آخر حصة:</span>
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {client.lastSession}
-                </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">الوزن (ابتدائي):</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{(client as any).baselineWeightKg ?? '-'}</span>
               </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">التقدم:</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">
-                    {client.progress}%
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full ${getProgressColor(client.progress)}`}
-                    style={{ width: `${client.progress}%` }}
-                  ></div>
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">الوزن المستهدف:</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{(client as any).targetWeightKg ?? '-'}</span>
               </div>
-
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">الطول (سم):</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{(client as any).heightCm ?? (client as any).metadata?.heightCm ?? '-'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">العمر:</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{calcAge(client.dob)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">رقم الهاتف:</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{client.phone || '-'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">نقاط الولاء:</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{client.loyaltyPoints}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Freeze Days:</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{(client as any).subscriptionFreezeDays ?? 0}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Freeze Used:</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">{(client as any).subscriptionFreezeUsed ?? 0}</span>
+              </div>
               <div>
                 <span className="text-sm text-gray-600 dark:text-gray-400">الأهداف:</span>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {client.goals.map((goal, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
-                    >
-                      {goal}
-                    </span>
-                  ))}
+                  {client.goals && Object.entries(client.goals).filter(([_, v]) => v).length > 0 ? (
+                    Object.entries(client.goals).filter(([_, v]) => v).map(([k], idx) => (
+                      <span key={idx} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                        {k === 'weightLoss' ? 'تخسيس' : k === 'muscleGain' ? 'بناء عضلات' : k === 'endurance' ? 'قوة تحمل' : k}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-xs text-gray-400">لا يوجد أهداف</span>
+                  )}
                 </div>
               </div>
             </div>
-
             <div className="mt-6 flex space-x-2">
-              <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md text-sm hover:bg-blue-700 transition-colors">
+              <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md text-sm hover:bg-blue-700 transition-colors" onClick={() => openViewClient(client._id)}>
                 عرض التفاصيل
               </button>
               <button className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
@@ -210,6 +266,154 @@ const TrainerClientsOverview = () => {
           </div>
         ))}
       </div>
+      {/* Client Details Modal */}
+      {isViewOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setIsViewOpen(false)}></div>
+          <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6 z-10 overflow-y-auto max-h-[90vh]">
+            <div className="relative flex flex-col items-center mb-6 mt-2">
+              <button
+                onClick={() => setIsViewOpen(false)}
+                className="absolute top-2 left-2 md:left-auto md:right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl font-bold focus:outline-none"
+                aria-label="إغلاق"
+              >
+                ×
+              </button>
+              {viewUser?.avatarUrl ? (
+                <img src={viewUser.avatarUrl} alt={viewUser?.name || 'User'} className="w-20 h-20 rounded-full object-cover border-2 border-gray-300 dark:border-gray-700 shadow mb-2" />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold mb-2">
+                  {viewUser?.name ? viewUser.name.charAt(0) : '?'}
+                </div>
+              )}
+              <div className="text-lg font-semibold text-gray-900 dark:text-white">{viewUser?.name}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{viewUser?.email}</div>
+            </div>
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">بيانات العميل</h4>
+            {viewLoading ? (
+              <div className="text-center py-8">جاري التحميل...</div>
+            ) : viewUser && !viewUser.error ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-6">
+                  {userViewFields.map(({ key, label, type }) => {
+                    const value = (viewUser as any)[key as any];
+                    if (
+                      typeof value === 'undefined' ||
+                      value === '' ||
+                      value === null ||
+                      Array.isArray(value) ||
+                      (typeof value === 'object' && value !== null && Object.keys(value).length === 0) ||
+                      key === 'dob' ||
+                      key === '__v'
+                    ) return null;
+
+                    if (type === 'date') {
+                      return (
+                        <div key={String(key)} className="flex flex-col border-b pb-2">
+                          <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</span>
+                          <span className="text-gray-900 dark:text-white break-all">{formatDate(value)}</span>
+                        </div>
+                      );
+                    }
+
+                    if (type === 'goals') {
+                      const entries = value && typeof value === 'object' ? Object.entries(value).filter(([_, v]) => v) : [];
+                      return (
+                        <div key={String(key)} className="flex flex-col border-b pb-2">
+                          <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {entries.length > 0 ? (
+                              entries.map(([k], idx) => (
+                                <span key={idx} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+                                  {k === 'weightLoss' ? 'تخسيس' : k === 'muscleGain' ? 'بناء عضلات' : k === 'endurance' ? 'قوة تحمل' : k}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-xs text-gray-400">لا يوجد أهداف</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    if (type === 'object' && typeof value === 'object' && value !== null) {
+                      const filtered = Object.entries(value).filter(([k]) => k !== 'lastLogin' && k !== 'ipAddress');
+                      if (filtered.length === 0) return null;
+                      return (
+                        <div key={String(key)} className="flex flex-col border-b pb-2">
+                          <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</span>
+                          <div className="bg-gray-50 dark:bg-gray-900 rounded p-2 text-xs">
+                            {filtered.map(([k, v]) => (
+                              <div key={k} className="flex justify-between border-b last:border-b-0 py-1">
+                                <span className="text-gray-600 dark:text-gray-400">{k}</span>
+                                <span className="text-gray-900 dark:text-white">{v === true ? '✔️' : v === false ? '❌' : (v === null || v === undefined || typeof v === 'object' ? '-' : String(v))}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={String(key)} className="flex flex-col border-b pb-2">
+                        <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</span>
+                        <span className="text-gray-900 dark:text-white break-all">
+                          {value === true ? '✔️' : value === false ? '❌' : value}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* قسم بيانات المستخدم */}
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <h5 className="font-semibold text-gray-900 dark:text-white mb-3">بيانات المستخدم</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">العمر:</span>
+                      <span className="text-gray-900 dark:text-white">{calcAge(viewUser?.dob)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">الوزن (آخر قياس):</span>
+                      <span className="text-gray-900 dark:text-white">{viewProgress?.weight ?? '-'}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">نسبة الدهون (آخر قياس):</span>
+                      <span className="text-gray-900 dark:text-white">{viewProgress?.bodyFat ?? '-'}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">الطول (من metadata إن وجد):</span>
+                      <span className="text-gray-900 dark:text-white">{viewUser?.metadata?.heightCm ?? '-'}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">BMI:</span>
+                      <span className="text-gray-900 dark:text-white">{calcBMI(viewProgress?.weight, viewUser?.metadata?.heightCm)}</span>
+                    </div>
+                    {viewProgress?.measurements && (
+                      <div className="md:col-span-2">
+                        <span className="text-gray-600 dark:text-gray-400">القياسات:</span>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2 text-xs">
+                          {Object.entries(viewProgress.measurements).map(([k, v]) => (
+                            <div key={k} className="flex items-center justify-between bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700 px-2 py-1">
+                              <span className="text-gray-600 dark:text-gray-400">{k}</span>
+                              <span className="text-gray-900 dark:text-white">{(v === null || v === undefined || typeof v === 'object') ? '-' : String(v)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-center text-red-600 py-8">{viewUser?.error || 'تعذر جلب البيانات'}</div>
+            )}
+            <div className="flex items-center justify-center gap-3 pt-6">
+              <button onClick={() => setIsViewOpen(false)} className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600">إغلاق</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { BaseService } from './baseService';
 import { API_ENDPOINTS } from '@/lib/constants';
-import type { User, PaginationParams, PaginatedResponse } from '@/types';
+import type { PaginationParams, PaginatedResponse } from '@/types';
+import type { User } from '@/types/models';
 import { AuthService } from './authService';
 import { apiRequest } from '@/lib/api';
 
@@ -105,5 +106,18 @@ export class UserService extends BaseService {
       method: 'PATCH',
       body: JSON.stringify(subscriptionData),
     });
+  }
+
+  // Get my clients (trainer)
+  async getMyClients(): Promise<User[]> {
+    const res = await this.apiCall<{ clients: User[] }>(API_ENDPOINTS.users.myClients);
+    return res.clients;
+  }
+
+  // Get clients of a specific trainer (admin/manager use)
+  async getClientsOfTrainer(trainerId: string): Promise<User[]> {
+    const url = `${API_ENDPOINTS.users.myClients}?trainerId=${encodeURIComponent(trainerId)}`;
+    const res = await this.apiCall<{ clients: User[] }>(url);
+    return res.clients;
   }
 }
