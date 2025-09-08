@@ -13,7 +13,7 @@ import {
 
 const router = express.Router();
 
-router.get('/', authenticate,  authorizeRole(['admin','manager']), getAllUsers);
+router.get('/', authenticate,  authorizeRole(['admin','manager', 'trainer']), getAllUsers);
 router.put('/role', authenticate, authorizeRole(['admin','manager']), updateUserRole);
 router.get('/my-clients', authenticate, authorizeRole(['admin','manager', 'trainer']), getMyClients);
 router.get('/:id', authenticate, getUserById);

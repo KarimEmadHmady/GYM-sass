@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import type { User } from '@/types/models';
 import type { TrainerClientApiResponse } from '@/types/users';
 import { apiRequest } from '@/lib/api';
@@ -8,6 +9,8 @@ import { UserService } from '@/services/userService';
 import { ProgressService } from '@/services/progressService';
 
 const TrainerClientsOverview = () => {
+  const { user } = useAuth();
+  const currentTrainerId = useMemo(() => ((user as any)?._id ?? user?.id ?? ''), [user]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [clients, setClients] = useState<User[]>([]);
@@ -101,8 +104,17 @@ const TrainerClientsOverview = () => {
       setError(null);
       try {
         const userService = new UserService();
-        const list = await userService.getMyClients();
-        setClients(list || []);
+        const membersRes: any = await userService.getUsersByRole('member', { page: 1, limit: 1000 });
+        const arr = Array.isArray(membersRes) ? membersRes : (membersRes?.data || []);
+        const normalizeId = (val: any): string => {
+          if (!val) return '';
+          if (typeof val === 'string') return val;
+          if (typeof val === 'object') return (val._id || val.id || '') as string;
+          return String(val);
+        };
+        const me = normalizeId(currentTrainerId);
+        const filtered = (arr || []).filter((m: any) => normalizeId(m?.trainerId) === me);
+        setClients(filtered);
       } catch (err: any) {
         setError('تعذر جلب العملاء');
       } finally {
@@ -110,7 +122,7 @@ const TrainerClientsOverview = () => {
       }
     };
     fetchClients();
-  }, []);
+  }, [currentTrainerId]);
 
   const getStatusColor = (status: string) => {
     const colors = {

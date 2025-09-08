@@ -12,13 +12,13 @@ import {
 const router = express.Router();
 
 // إنشاء سجل حضور جديد
-router.post('/', authenticate,authorizeRole(['admin','manager', 'trainer']),  createAttendanceRecord);
+router.post('/', authenticate, createAttendanceRecord);
 
 // جلب كل سجلات الحضور
 router.get('/', authenticate, authorizeRole(['admin','manager', 'trainer']), getAllAttendanceRecords);
 
 // جلب كل سجلات مستخدم معين
-router.get('/:userId', authenticate, authorizeRole(['admin','manager', 'trainer','member']), getAttendanceRecordsByUser);
+router.get('/:userId', authenticate, getAttendanceRecordsByUser);
 
 // تعديل سجل حضور
 router.put('/:id', authenticate, authorizeRole(['admin','manager', 'trainer']), updateAttendanceRecord);

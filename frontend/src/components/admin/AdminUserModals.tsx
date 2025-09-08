@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type { User as UserModel } from '@/types/models';
+import { UserService } from '@/services/userService';
 
 // دالة لتنسيق التاريخ والوقت بشكل مقروء
 function formatDateTime(dateString: string) {
@@ -57,6 +58,26 @@ interface AdminUserModalsProps {
 }
 
 const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
+  const userSvc = useMemo(() => new UserService(), []);
+  const [trainers, setTrainers] = useState<UserModel[]>([]);
+  const [loadingTrainers, setLoadingTrainers] = useState(false);
+
+  useEffect(() => {
+    const loadTrainers = async () => {
+      setLoadingTrainers(true);
+      try {
+        const res = await userSvc.getUsersByRole('trainer', { page: 1, limit: 1000, sortBy: 'name', sortOrder: 'asc' } as any);
+        const arr = Array.isArray(res) ? (res as unknown as UserModel[]) : ((res as any)?.data || []);
+        setTrainers(arr);
+      } catch {
+        setTrainers([]);
+      } finally {
+        setLoadingTrainers(false);
+      }
+    };
+    loadTrainers();
+  }, [userSvc]);
+
   // نسخ كل JSX المودالز من الكود الأصلي هنا مع تمرير props
   // ... سيتم نقل كل مودال كما هو مع استخدام props
   // لتوفير الوقت، يمكن نقل الكود مباشرة من الكومبوننت الأصلي
@@ -273,13 +294,21 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
             </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">معرف المدرب</label>
-              <input
+              <select
                 name="trainerId"
                 value={props.newUser.trainerId || ''}
                 onChange={props.handleCreateChange}
                 className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                placeholder="معرف المدرب"
-              />
+              >
+                <option value="">بدون مدرب</option>
+                {loadingTrainers ? (
+                  <option value="" disabled>جارٍ التحميل...</option>
+                ) : (
+                  trainers.map(t => (
+                    <option key={t._id} value={t._id}>{t.name} {t.phone ? `(${t.phone})` : ''}</option>
+                  ))
+                )}
+              </select>
             </div>
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
@@ -530,7 +559,21 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
             {/* مدرب المستخدم */}
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">معرف المدرب</label>
-              <input name="trainerId" value={props.editForm.trainerId} onChange={props.handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+              <select
+                name="trainerId"
+                value={props.editForm.trainerId || ''}
+                onChange={props.handleEditChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              >
+                <option value="">بدون مدرب</option>
+                {loadingTrainers ? (
+                  <option value="" disabled>جارٍ التحميل...</option>
+                ) : (
+                  trainers.map(t => (
+                    <option key={t._id} value={t._id}>{t.name} {t.phone ? `(${t.phone})` : ''}</option>
+                  ))
+                )}
+              </select>
             </div>
             {/* createdAt, updatedAt */}
             <div>

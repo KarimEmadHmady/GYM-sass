@@ -41,7 +41,7 @@ export class AttendanceService extends BaseService {
     if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
     if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
 
-    return this.apiCall<PaginatedResponse<AttendanceRecord>>(`/user/${userId}?${queryParams.toString()}`);
+    return this.apiCall<PaginatedResponse<AttendanceRecord>>(`/${userId}?${queryParams.toString()}`);
   }
 
   // Get attendance records by date range
