@@ -5,6 +5,7 @@ export interface User {
   _id: string;
   name: string;
   email: string;
+  passwordHash?: string;
   role: 'admin' | 'trainer' | 'member' | 'manager';
   phone?: string;
   dob?: Date;
@@ -13,6 +14,16 @@ export interface User {
   balance: number;
   status: 'active' | 'inactive' | 'banned';
   isEmailVerified: boolean;
+  emailVerificationToken?: string;
+  failedLoginAttempts: number;
+  lockUntil?: Date;
+  metadata?: {
+    emergencyContact?: string;
+    notes?: string;
+    lastLogin?: Date;
+    ipAddress?: string;
+  };
+  isDeleted: boolean;
   
   // Subscription data
   subscriptionStartDate?: Date;
@@ -20,6 +31,7 @@ export interface User {
   subscriptionFreezeDays: number;
   subscriptionFreezeUsed: number;
   subscriptionStatus: 'active' | 'frozen' | 'expired' | 'cancelled';
+  subscriptionRenewalReminderSent?: Date;
   lastPaymentDate?: Date;
   nextPaymentDueDate?: Date;
   

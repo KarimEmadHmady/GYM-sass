@@ -5,7 +5,8 @@ interface AdminUsersTableHeaderProps {
   setSearchTerm: (v: string) => void;
   filterRole: string;
   setFilterRole: (v: string) => void;
-  onOpenCreate: () => void;
+  onOpenCreate?: () => void;
+  hideCreateButton?: boolean;
 }
 
 const AdminUsersTableHeader: React.FC<AdminUsersTableHeaderProps> = ({
@@ -14,6 +15,7 @@ const AdminUsersTableHeader: React.FC<AdminUsersTableHeaderProps> = ({
   filterRole,
   setFilterRole,
   onOpenCreate,
+  hideCreateButton,
 }) => (
   <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -21,12 +23,14 @@ const AdminUsersTableHeader: React.FC<AdminUsersTableHeaderProps> = ({
         إدارة المستخدمين - الإدارة
       </h3>
       <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-        <button
-          onClick={onOpenCreate}
-          className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
-        >
-          إضافة مستخدم
-        </button>
+        {!hideCreateButton && (
+          <button
+            onClick={onOpenCreate}
+            className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
+          >
+            إضافة مستخدم
+          </button>
+        )}
         <input
           type="text"
           placeholder="البحث عن مستخدم..."

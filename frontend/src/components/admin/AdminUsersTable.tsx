@@ -16,7 +16,12 @@ const AdminUsersTable = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'member' });
+  const [newUser, setNewUser] = useState({ 
+    name: '', email: '', password: '', role: 'member', phone: '', dob: '', avatarUrl: '', address: '', 
+    balance: 0, status: 'active', isEmailVerified: false, loyaltyPoints: 0, membershipLevel: 'basic', 
+    goals: { weightLoss: false, muscleGain: false, endurance: false }, trainerId: '',
+    subscriptionStartDate: '', subscriptionEndDate: '', lastPaymentDate: '', nextPaymentDueDate: ''
+  });
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const userService = new UserService();
@@ -25,7 +30,12 @@ const AdminUsersTable = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editUser, setEditUser] = useState<UserModel | null>(null);
   const [editForm, setEditForm] = useState({
-    _id: '', name: '', email: '', role: 'member', phone: '', dob: '', avatarUrl: '', address: '', balance: 0, status: 'active', isEmailVerified: false, subscriptionStartDate: '', subscriptionEndDate: '', subscriptionFreezeDays: 0, subscriptionFreezeUsed: 0, subscriptionStatus: 'active', lastPaymentDate: '', nextPaymentDueDate: '', loyaltyPoints: 0, membershipLevel: 'basic', goals: { weightLoss: false, muscleGain: false, endurance: false }, trainerId: '', createdAt: '', updatedAt: '',
+    _id: '', name: '', email: '', role: 'member', phone: '', dob: '', avatarUrl: '', address: '', balance: 0, status: 'active', 
+    isEmailVerified: false, emailVerificationToken: '', failedLoginAttempts: 0, lockUntil: '', isDeleted: false,
+    subscriptionStartDate: '', subscriptionEndDate: '', subscriptionFreezeDays: 0, subscriptionFreezeUsed: 0, 
+    subscriptionStatus: 'active', subscriptionRenewalReminderSent: '', lastPaymentDate: '', nextPaymentDueDate: '', 
+    loyaltyPoints: 0, membershipLevel: 'basic', goals: { weightLoss: false, muscleGain: false, endurance: false }, 
+    trainerId: '', metadata: { emergencyContact: '', notes: '', lastLogin: '', ipAddress: '' }, createdAt: '', updatedAt: '',
   });
   const [isEditSubmitting, setIsEditSubmitting] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
@@ -109,13 +119,50 @@ const AdminUsersTable = () => {
   // handlers (نفس الكود السابق)
   const openCreate = () => {
     setFormError(null);
-    setNewUser({ name: '', email: '', password: '', role: 'member' });
+    setNewUser({ 
+      name: '', email: '', password: '', role: 'member', phone: '', dob: '', avatarUrl: '', address: '', 
+      balance: 0, status: 'active', isEmailVerified: false, loyaltyPoints: 0, membershipLevel: 'basic', 
+      goals: { weightLoss: false, muscleGain: false, endurance: false }, trainerId: '',
+      subscriptionStartDate: '', subscriptionEndDate: '', lastPaymentDate: '', nextPaymentDueDate: ''
+    });
     setIsCreateOpen(true);
   };
 
   const handleCreateChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setNewUser(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      
+      // التعامل مع الحقول المتداخلة مثل goals.weightLoss
+      if (name.includes('.')) {
+        const [parentKey, childKey] = name.split('.');
+        setNewUser(prev => ({
+          ...prev,
+          [parentKey]: {
+            ...(prev[parentKey as keyof typeof prev] as any || {}),
+            [childKey]: checked
+          }
+        }));
+      } else {
+        setNewUser(prev => ({ ...prev, [name]: checked }));
+      }
+    } else {
+      // التعامل مع الحقول المتداخلة مثل metadata.lastLogin
+      if (name.includes('.')) {
+        const [parentKey, childKey] = name.split('.');
+        setNewUser(prev => ({
+          ...prev,
+          [parentKey]: {
+            ...(prev[parentKey as keyof typeof prev] as any || {}),
+            [childKey]: value
+          }
+        }));
+      } else {
+        setNewUser(prev => ({ ...prev, [name]: value }));
+      }
+    }
+    
     if (formError) setFormError(null);
   };
 
@@ -127,12 +174,37 @@ const AdminUsersTable = () => {
     }
     setIsSubmitting(true);
     try {
-      await userService.createUser({
+      // تحويل القيم الرقمية والتواريخ
+      const userData: any = {
         name: newUser.name,
         email: newUser.email,
         password: newUser.password,
-        role: newUser.role as any
+        role: newUser.role as any,
+        phone: newUser.phone || null,
+        dob: newUser.dob || null,
+        avatarUrl: newUser.avatarUrl || null,
+        address: newUser.address || null,
+        balance: Number(newUser.balance) || 0,
+        status: newUser.status as any,
+        isEmailVerified: Boolean(newUser.isEmailVerified),
+        loyaltyPoints: Number(newUser.loyaltyPoints) || 0,
+        membershipLevel: newUser.membershipLevel as any,
+        goals: newUser.goals || { weightLoss: false, muscleGain: false, endurance: false },
+        trainerId: newUser.trainerId || null,
+        subscriptionStartDate: newUser.subscriptionStartDate || null,
+        subscriptionEndDate: newUser.subscriptionEndDate || null,
+        lastPaymentDate: newUser.lastPaymentDate || null,
+        nextPaymentDueDate: newUser.nextPaymentDueDate || null,
+      };
+      
+      // حذف الحقول الفارغة
+      Object.keys(userData).forEach(key => {
+        if (userData[key] === null || userData[key] === undefined || userData[key] === '') {
+          delete userData[key];
+        }
       });
+      
+      await userService.createUser(userData);
       setIsCreateOpen(false);
       setRefresh(r => !r); // Refresh to show new user
     } catch (err) {
@@ -187,6 +259,18 @@ const AdminUsersTable = () => {
       if (val instanceof Date) return val.toISOString().substring(0, 10);
       return '';
     }
+    
+    function datetimeToInputString(val: any): string {
+      if (!val) return '';
+      if (typeof val === 'string') {
+        // إذا string من نوع ISO
+        if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(val)) return val.substring(0, 16);
+        // إذا string تاريخ عربي أو غيره
+        return '';
+      }
+      if (val instanceof Date) return val.toISOString().substring(0, 16);
+      return '';
+    }
     setEditUser(user);
     setEditForm({
       _id: user._id || '',
@@ -200,17 +284,23 @@ const AdminUsersTable = () => {
       balance: user.balance ?? 0,
       status: user.status || 'active',
       isEmailVerified: user.isEmailVerified ?? false,
+      emailVerificationToken: (user as any).emailVerificationToken || '',
+      failedLoginAttempts: (user as any).failedLoginAttempts ?? 0,
+      lockUntil: (user as any).lockUntil ? ((user as any).lockUntil instanceof Date ? (user as any).lockUntil.toISOString().slice(0, 16) : (user as any).lockUntil) : '',
+      isDeleted: (user as any).isDeleted ?? false,
       subscriptionStartDate: dateToInputString(user.subscriptionStartDate),
       subscriptionEndDate: dateToInputString(user.subscriptionEndDate),
       subscriptionFreezeDays: user.subscriptionFreezeDays ?? 0,
       subscriptionFreezeUsed: user.subscriptionFreezeUsed ?? 0,
       subscriptionStatus: user.subscriptionStatus || 'active',
+      subscriptionRenewalReminderSent: datetimeToInputString((user as any).subscriptionRenewalReminderSent),
       lastPaymentDate: dateToInputString(user.lastPaymentDate),
       nextPaymentDueDate: dateToInputString(user.nextPaymentDueDate),
       loyaltyPoints: user.loyaltyPoints ?? 0,
       membershipLevel: user.membershipLevel || 'basic',
       goals: user.goals || { weightLoss: false, muscleGain: false, endurance: false },
       trainerId: user.trainerId || '',
+      metadata: (user as any).metadata || { emergencyContact: '', notes: '', lastLogin: '', ipAddress: '' },
       createdAt: user.createdAt ? (user.createdAt instanceof Date ? user.createdAt.toLocaleString('ar-EG') : user.createdAt) : '',
       updatedAt: user.updatedAt ? (user.updatedAt instanceof Date ? user.updatedAt.toLocaleString('ar-EG') : user.updatedAt) : '',
     });
@@ -220,8 +310,45 @@ const AdminUsersTable = () => {
 
   // تحديث handleEditChange ليشمل كل الحقول
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setEditForm(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    
+    // Debug log for subscriptionRenewalReminderSent
+    if (name === 'subscriptionRenewalReminderSent') {
+      console.log('subscriptionRenewalReminderSent changed:', value);
+    }
+    
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      
+      // التعامل مع الحقول المتداخلة مثل goals.weightLoss
+      if (name.includes('.')) {
+        const [parentKey, childKey] = name.split('.');
+        setEditForm(prev => ({
+          ...prev,
+          [parentKey]: {
+            ...(prev[parentKey as keyof typeof prev] as any || {}),
+            [childKey]: checked
+          }
+        }));
+      } else {
+        setEditForm(prev => ({ ...prev, [name]: checked }));
+      }
+    } else {
+      // التعامل مع الحقول المتداخلة مثل metadata.lastLogin
+      if (name.includes('.')) {
+        const [parentKey, childKey] = name.split('.');
+        setEditForm(prev => ({
+          ...prev,
+          [parentKey]: {
+            ...(prev[parentKey as keyof typeof prev] as any || {}),
+            [childKey]: value
+          }
+        }));
+      } else {
+        setEditForm(prev => ({ ...prev, [name]: value }));
+      }
+    }
+    
     if (editError) setEditError(null);
   };
 
@@ -239,36 +366,100 @@ const AdminUsersTable = () => {
         _id, createdAt, updatedAt, // نستثنيهم
         ...toSend
       } = editForm;
-      // تحويل القيم الرقمية
+      // تحويل القيم الرقمية والتأكد من صحة البيانات
       toSend.balance = Number(toSend.balance) || 0;
       toSend.subscriptionFreezeDays = Number(toSend.subscriptionFreezeDays) || 0;
       toSend.subscriptionFreezeUsed = Number(toSend.subscriptionFreezeUsed) || 0;
       toSend.loyaltyPoints = Number(toSend.loyaltyPoints) || 0;
-      // تجهيز submitData مع تحويل الحقول الفارغة إلى null
+      toSend.failedLoginAttempts = Number(toSend.failedLoginAttempts) || 0;
+      
+      // التأكد من صحة القيم المنطقية
+      toSend.isEmailVerified = Boolean(toSend.isEmailVerified);
+      toSend.isDeleted = Boolean(toSend.isDeleted);
+      
+      // التأكد من صحة goals
+      if (toSend.goals) {
+        toSend.goals.weightLoss = Boolean(toSend.goals.weightLoss);
+        toSend.goals.muscleGain = Boolean(toSend.goals.muscleGain);
+        toSend.goals.endurance = Boolean(toSend.goals.endurance);
+      }
+      
+      // معالجة الحقول التي تحتاج ObjectId (تحويل القيم الفارغة إلى null)
+      const objectIdFields = ['trainerId'];
+      objectIdFields.forEach(field => {
+        if ((toSend as any)[field] === '' || (toSend as any)[field] === undefined) {
+          (toSend as any)[field] = null;
+        }
+      });
+      
+      // معالجة الحقول النصية الفارغة
+      const stringFields = ['phone', 'avatarUrl', 'address'];
+      stringFields.forEach(field => {
+        if ((toSend as any)[field] === '' || (toSend as any)[field] === undefined) {
+          (toSend as any)[field] = null;
+        }
+      });
+      // تجهيز submitData مع تحويل الحقول الفارغة إلى null وتحويل التواريخ
       const dateKeys: (keyof typeof toSend)[] = [
         'dob',
         'subscriptionStartDate',
         'subscriptionEndDate',
+        'subscriptionRenewalReminderSent',
         'lastPaymentDate',
         'nextPaymentDueDate',
       ];
       const submitData: any = { ...toSend };
+      
+      // تحويل حقول التاريخ من strings إلى Date objects
       dateKeys.forEach((key) => {
-        if (submitData[key] === '') submitData[key] = null;
+        if (submitData[key] && submitData[key] !== '') {
+          submitData[key] = new Date(submitData[key]);
+        } else {
+          submitData[key] = null;
+        }
       });
-      // حذف الحقول التي قيمتها null
+      
+      // التعامل مع metadata بشكل صحيح (فقط notes)
+      if (submitData.metadata) {
+        // حذف الحقول الفارغة في metadata
+        Object.keys(submitData.metadata).forEach(key => {
+          if (submitData.metadata[key] === '' || submitData.metadata[key] === null || submitData.metadata[key] === undefined) {
+            delete submitData.metadata[key];
+          }
+        });
+        
+        // إذا كان metadata فارغ تماماً، احذفه
+        if (Object.keys(submitData.metadata).length === 0) {
+          delete submitData.metadata;
+        }
+      }
+      // حذف الحقول التي قيمتها null أو undefined أو string فارغ
       Object.keys(submitData).forEach((key) => {
-        if (submitData[key] === null) {
+        if (submitData[key] === null || submitData[key] === undefined || submitData[key] === '') {
           delete submitData[key];
         }
       });
-      // فلترة الحقول المسموحة فقط حسب schema
+      // فلترة الحقول المسموحة فقط حسب schema (إزالة الحقول الحساسة)
       const allowedKeys = [
-        'name', 'email', 'role', 'phone', 'avatarUrl', 'address', 'balance', 'status',
-        'isEmailVerified', 'failedLoginAttempts', 'metadata', 'isDeleted',
-        'subscriptionFreezeDays', 'subscriptionFreezeUsed', 'subscriptionStatus',
-        'loyaltyPoints', 'membershipLevel', 'goals'
+        'name', 'email', 'role', 'phone', 'dob', 'avatarUrl', 'address', 'balance', 'status',
+        'subscriptionStartDate', 'subscriptionEndDate', 'subscriptionFreezeDays', 'subscriptionFreezeUsed', 
+        'subscriptionStatus', 'subscriptionRenewalReminderSent', 'lastPaymentDate', 'nextPaymentDueDate',
+        'loyaltyPoints', 'membershipLevel', 'goals', 'trainerId', 'metadata'
       ];
+      
+      // التأكد من صحة البيانات الأساسية
+      if (!submitData.name || submitData.name.trim() === '') {
+        throw new Error('الاسم مطلوب');
+      }
+      if (!submitData.email || submitData.email.trim() === '') {
+        throw new Error('البريد الإلكتروني مطلوب');
+      }
+      if (!['admin', 'trainer', 'member', 'manager'].includes(submitData.role)) {
+        throw new Error('الدور غير صحيح');
+      }
+      if (!['active', 'inactive', 'banned'].includes(submitData.status)) {
+        throw new Error('الحالة غير صحيحة');
+      }
       const filteredData: any = {};
       for (const key of allowedKeys) {
         if (typeof submitData[key] !== 'undefined') {
@@ -282,13 +473,18 @@ const AdminUsersTable = () => {
         }
       });
       // سجل البيانات المرسلة
+      console.log('editForm original:', editForm);
+      console.log('subscriptionRenewalReminderSent original:', editForm.subscriptionRenewalReminderSent);
+      console.log('submitData before filtering:', submitData);
+      console.log('subscriptionRenewalReminderSent after processing:', submitData.subscriptionRenewalReminderSent);
       console.log('editForm sent:', filteredData);
       await userService.updateUser(editUser!._id, filteredData);
       setIsEditOpen(false);
       setRefresh(r => !r);
       window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'success', message: 'تم تعديل المستخدم بنجاح' } }));
-    } catch {
-      setEditError('حدث خطأ أثناء التعديل');
+    } catch (err: any) {
+      console.error('Error updating user:', err);
+      setEditError(err.message || 'حدث خطأ أثناء التعديل');
     } finally {
       setIsEditSubmitting(false);
     }
@@ -355,25 +551,34 @@ const AdminUsersTable = () => {
     }
   };
 
-  // userViewFields (نفس الكود السابق)
+  // userViewFields (جميع الحقول من User Schema)
   const userViewFields: { key: string; label: string; type?: 'object' }[] = [
     { key: 'name', label: 'الاسم' },
     { key: 'email', label: 'البريد الإلكتروني' },
     { key: 'role', label: 'الدور' },
     { key: 'phone', label: 'رقم الهاتف' },
+    { key: 'dob', label: 'تاريخ الميلاد' },
     { key: 'avatarUrl', label: 'رابط الصورة' },
     { key: 'address', label: 'العنوان' },
     { key: 'balance', label: 'الرصيد' },
     { key: 'status', label: 'الحالة' },
     { key: 'isEmailVerified', label: 'تم التحقق من البريد' },
+    { key: 'emailVerificationToken', label: 'رمز تأكيد البريد الإلكتروني' },
     { key: 'failedLoginAttempts', label: 'محاولات الدخول الفاشلة' },
+    { key: 'lockUntil', label: 'تاريخ القفل' },
     { key: 'isDeleted', label: 'محذوف؟' },
+    { key: 'subscriptionStartDate', label: 'تاريخ بداية الاشتراك' },
+    { key: 'subscriptionEndDate', label: 'تاريخ نهاية الاشتراك' },
     { key: 'subscriptionFreezeDays', label: 'أيام تجميد الاشتراك' },
     { key: 'subscriptionFreezeUsed', label: 'أيام التجميد المستخدمة' },
     { key: 'subscriptionStatus', label: 'حالة الاشتراك' },
+    { key: 'subscriptionRenewalReminderSent', label: 'تاريخ إرسال تذكير التجديد' },
+    { key: 'lastPaymentDate', label: 'تاريخ آخر دفع' },
+    { key: 'nextPaymentDueDate', label: 'تاريخ استحقاق الدفع القادم' },
     { key: 'loyaltyPoints', label: 'نقاط الولاء' },
     { key: 'membershipLevel', label: 'مستوى العضوية' },
     { key: 'goals', label: 'الأهداف', type: 'object' },
+    { key: 'trainerId', label: 'معرف المدرب' },
     { key: 'metadata', label: 'بيانات إضافية', type: 'object' },
     { key: 'createdAt', label: 'تاريخ الإنشاء' },
     { key: 'updatedAt', label: 'آخر تعديل' },

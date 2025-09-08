@@ -1,6 +1,22 @@
 import React from 'react';
 import type { User as UserModel } from '@/types/models';
 
+// دالة لتنسيق التاريخ والوقت بشكل مقروء
+function formatDateTime(dateString: string) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  let hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // 0 => 12
+  return `${day}-${month}-${year} ${hours}:${minutes} ${ampm}`;
+}
+
 interface AdminUserModalsProps {
   isCreateOpen: boolean;
   setIsCreateOpen: (v: boolean) => void;
@@ -87,6 +103,182 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
                 onChange={props.handleCreateChange}
                 className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 placeholder="••••••••"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">رقم الهاتف</label>
+              <input
+                name="phone"
+                value={props.newUser.phone || ''}
+                onChange={props.handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                placeholder="01234567890"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ الميلاد</label>
+              <input
+                type="date"
+                name="dob"
+                value={props.newUser.dob || ''}
+                onChange={props.handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">العنوان</label>
+              <input
+                name="address"
+                value={props.newUser.address || ''}
+                onChange={props.handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                placeholder="العنوان"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الرصيد</label>
+              <input
+                type="number"
+                name="balance"
+                value={props.newUser.balance || 0}
+                onChange={props.handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الحالة</label>
+              <select
+                name="status"
+                value={props.newUser.status || 'active'}
+                onChange={props.handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              >
+                <option value="active">نشط</option>
+                <option value="inactive">غير نشط</option>
+                <option value="banned">محظور</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تأكيد البريد الإلكتروني</label>
+              <select
+                name="isEmailVerified"
+                value={props.newUser.isEmailVerified || false}
+                onChange={props.handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              >
+                <option value="false">غير مؤكد</option>
+                <option value="true">مؤكد</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">نقاط الولاء</label>
+              <input
+                type="number"
+                name="loyaltyPoints"
+                value={props.newUser.loyaltyPoints || 0}
+                onChange={props.handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">مستوى العضوية</label>
+              <select
+                name="membershipLevel"
+                value={props.newUser.membershipLevel || 'basic'}
+                onChange={props.handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              >
+                <option value="basic">عادي</option>
+                <option value="silver">فضي</option>
+                <option value="gold">ذهبي</option>
+                <option value="platinum">بلاتينيوم</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الأهداف</label>
+              <div className="space-y-2">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="goals.weightLoss"
+                    checked={props.newUser.goals?.weightLoss || false}
+                    onChange={props.handleCreateChange}
+                    className="mr-2"
+                  />
+                  فقدان الوزن
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="goals.muscleGain"
+                    checked={props.newUser.goals?.muscleGain || false}
+                    onChange={props.handleCreateChange}
+                    className="mr-2"
+                  />
+                  بناء العضلات
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="goals.endurance"
+                    checked={props.newUser.goals?.endurance || false}
+                    onChange={props.handleCreateChange}
+                    className="mr-2"
+                  />
+                  تحسين التحمل
+                </label>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ بداية الاشتراك</label>
+              <input
+                type="date"
+                name="subscriptionStartDate"
+                value={props.newUser.subscriptionStartDate || ''}
+                onChange={props.handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ نهاية الاشتراك</label>
+              <input
+                type="date"
+                name="subscriptionEndDate"
+                value={props.newUser.subscriptionEndDate || ''}
+                onChange={props.handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ آخر دفع</label>
+              <input
+                type="date"
+                name="lastPaymentDate"
+                value={props.newUser.lastPaymentDate || ''}
+                onChange={props.handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ استحقاق الدفع القادم</label>
+              <input
+                type="date"
+                name="nextPaymentDueDate"
+                value={props.newUser.nextPaymentDueDate || ''}
+                onChange={props.handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">معرف المدرب</label>
+              <input
+                name="trainerId"
+                value={props.newUser.trainerId || ''}
+                onChange={props.handleCreateChange}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                placeholder="معرف المدرب"
               />
             </div>
             <div className="flex items-center justify-end gap-3 pt-2">
@@ -257,18 +449,54 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
                 <option value="platinum">بلاتينيوم</option>
               </select>
             </div>
-            {/* بيانات metadata */}
+            {/* حالة الحذف */}
             <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">جهة اتصال الطوارئ (metadata.emergencyContact)</label>
-              <input name="metadata.emergencyContact" value={props.editForm.metadata?.emergencyContact || ''} onChange={props.handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">حالة الحذف</label>
+              <select name="isDeleted" value={props.editForm.isDeleted} onChange={props.handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+                <option value="false">غير محذوف</option>
+                <option value="true">محذوف</option>
+              </select>
             </div>
+            {/* الأهداف */}
             <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">ملاحظات (metadata.notes)</label>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الأهداف</label>
+              <div className="space-y-2">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="goals.weightLoss"
+                    checked={props.editForm.goals?.weightLoss || false}
+                    onChange={props.handleEditChange}
+                    className="mr-2"
+                  />
+                  فقدان الوزن
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="goals.muscleGain"
+                    checked={props.editForm.goals?.muscleGain || false}
+                    onChange={props.handleEditChange}
+                    className="mr-2"
+                  />
+                  بناء العضلات
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="goals.endurance"
+                    checked={props.editForm.goals?.endurance || false}
+                    onChange={props.handleEditChange}
+                    className="mr-2"
+                  />
+                  تحسين التحمل
+                </label>
+              </div>
+            </div>
+            {/* ملاحظات فقط */}
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">ملاحظات</label>
               <textarea name="metadata.notes" value={props.editForm.metadata?.notes || ''} onChange={e => props.handleEditChange(e as any)} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">آخر دخول (metadata.lastLogin)</label>
-              <input type="datetime-local" name="metadata.lastLogin" value={props.editForm.metadata?.lastLogin || ''} onChange={props.handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
             </div>
             {/* مدرب المستخدم */}
             <div>
@@ -278,11 +506,11 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
             {/* createdAt, updatedAt */}
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ الإنشاء</label>
-              <input name="createdAt" value={props.editForm.createdAt} readOnly className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white" />
+              <input name="createdAt" value={formatDateTime(props.editForm.createdAt)} readOnly className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white" />
             </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ التعديل</label>
-              <input name="updatedAt" value={props.editForm.updatedAt} readOnly className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white" />
+              <input name="updatedAt" value={formatDateTime(props.editForm.updatedAt)} readOnly className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white" />
             </div>
             <div className="col-span-1 md:col-span-2 flex items-center justify-end gap-3 pt-2">
               <button type="button" onClick={() => props.setIsEditOpen(false)} className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200">إلغاء</button>
@@ -336,16 +564,18 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
             >
               ×
             </button>
-            {props.viewUser?.avatarUrl ? (
+            {props.viewUser?.avatarUrl && props.viewUser.avatarUrl !== '' ? (
               <img
                 src={props.viewUser.avatarUrl}
                 alt={props.viewUser.name || 'User'}
                 className="w-20 h-20 rounded-full object-cover border-2 border-gray-300 dark:border-gray-700 shadow mb-2"
               />
             ) : (
-              <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold mb-2">
-                {props.viewUser?.name ? props.viewUser.name.charAt(0) : '?'}
-              </div>
+              <img
+                src="https://st4.depositphotos.com/5161043/23536/v/450/depositphotos_235367142-stock-illustration-fitness-logo-design-vector.jpg"
+                alt="User"
+                className="w-20 h-20 rounded-full object-cover border-2 border-gray-300 dark:border-gray-700 shadow mb-2"
+              />
             )}
           </div>
           <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">بيانات المستخدم</h4>
@@ -353,41 +583,93 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
             <div className="text-center py-8">جاري التحميل...</div>
           ) : props.viewUser && !props.viewUser.error ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              {props.userViewFields.map(({ key, label, type }) => {
-                const value = props.viewUser[key];
-                if (
-                  typeof value === 'undefined' ||
-                  value === '' ||
-                  value === null ||
-                  (Array.isArray(value)) ||
-                  (typeof value === 'object' && value !== null && Object.keys(value).length === 0) ||
-                  key === 'dob' ||
-                  key === '__v'
-                ) return null;
-                if (type === 'object' && typeof value === 'object' && value !== null) {
-                  return (
-                    <div key={key} className="flex flex-col border-b pb-2">
-                      <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</span>
-                      <div className="bg-gray-50 dark:bg-gray-900 rounded p-2 text-xs">
-                        {Object.entries(value).map(([k, v]) => (
-                          <div key={k} className="flex justify-between border-b last:border-b-0 py-1">
-                            <span className="text-gray-600 dark:text-gray-400">{k}</span>
-                            <span className="text-gray-900 dark:text-white">{v === true ? '✔️' : v === false ? '❌' : (v === null || v === undefined || typeof v === 'object' ? '-' : String(v))}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
-                return (
-                  <div key={key} className="flex flex-col border-b pb-2">
-                    <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</span>
-                    <span className="text-gray-900 dark:text-white break-all">
-                      {value === true ? '✔️' : value === false ? '❌' : value}
-                    </span>
-                  </div>
-                );
-              })}
+              <div className="flex flex-col border-b pb-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">الاسم</span>
+                <span className="text-gray-900 dark:text-white break-all">{props.viewUser.name}</span>
+              </div>
+              <div className="flex flex-col border-b pb-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">البريد الإلكتروني</span>
+                <span className="text-gray-900 dark:text-white break-all">{props.viewUser.email}</span>
+              </div>
+              <div className="flex flex-col border-b pb-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">الدور</span>
+                <span className="text-gray-900 dark:text-white">{
+                  props.viewUser.role === 'admin' ? 'إدارة' :
+                  props.viewUser.role === 'manager' ? 'مدير' :
+                  props.viewUser.role === 'trainer' ? 'مدرب' :
+                  'عضو'
+                }</span>
+              </div>
+              <div className="flex flex-col border-b pb-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">رقم الهاتف</span>
+                <span className="text-gray-900 dark:text-white">{props.viewUser.phone || '-'}</span>
+              </div>
+              <div className="flex flex-col border-b pb-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">الرصيد</span>
+                <span className="text-gray-900 dark:text-white">{props.viewUser.balance ?? 0}</span>
+              </div>
+              <div className="flex flex-col border-b pb-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">الحالة</span>
+                <span className="text-gray-900 dark:text-white">{
+                  props.viewUser.status === 'active' ? 'نشط' :
+                  props.viewUser.status === 'inactive' ? 'غير نشط' :
+                  props.viewUser.status === 'banned' ? 'محظور' : '-'
+                }</span>
+              </div>
+              <div className="flex flex-col border-b pb-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">مستوى العضوية</span>
+                <span className="text-gray-900 dark:text-white">{
+                  props.viewUser.membershipLevel === 'basic' ? 'عادي' :
+                  props.viewUser.membershipLevel === 'silver' ? 'فضي' :
+                  props.viewUser.membershipLevel === 'gold' ? 'ذهبي' :
+                  props.viewUser.membershipLevel === 'platinum' ? 'بلاتينيوم' : '-'
+                }</span>
+              </div>
+              <div className="flex flex-col border-b pb-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">نقاط الولاء</span>
+                <span className="text-gray-900 dark:text-white">{props.viewUser.loyaltyPoints ?? 0}</span>
+              </div>
+              {/* الأهداف */}
+              <div className="flex flex-col border-b pb-2 col-span-1 md:col-span-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">الأهداف</span>
+                <div className="flex gap-6 flex-wrap">
+                  <span className="flex items-center gap-1">
+                    {props.viewUser.goals?.weightLoss ? '✔️' : '❌'} فقدان الوزن
+                  </span>
+                  <span className="flex items-center gap-1">
+                    {props.viewUser.goals?.muscleGain ? '✔️' : '❌'} بناء العضلات
+                  </span>
+                  <span className="flex items-center gap-1">
+                    {props.viewUser.goals?.endurance ? '✔️' : '❌'} تحسين التحمل
+                  </span>
+                </div>
+              </div>
+              {/* بيانات الاشتراك */}
+              <div className="flex flex-col border-b pb-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">تاريخ بداية الاشتراك</span>
+                <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.subscriptionStartDate)}</span>
+              </div>
+              <div className="flex flex-col border-b pb-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">تاريخ نهاية الاشتراك</span>
+                <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.subscriptionEndDate)}</span>
+              </div>
+              <div className="flex flex-col border-b pb-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">تاريخ آخر دفع</span>
+                <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.lastPaymentDate)}</span>
+              </div>
+              <div className="flex flex-col border-b pb-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">تاريخ استحقاق الدفع القادم</span>
+                <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.nextPaymentDueDate)}</span>
+              </div>
+              {/* createdAt, updatedAt */}
+              <div className="flex flex-col border-b pb-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">تاريخ الإنشاء</span>
+                <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.createdAt)}</span>
+              </div>
+              <div className="flex flex-col border-b pb-2">
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">تاريخ التعديل</span>
+                <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.updatedAt)}</span>
+              </div>
             </div>
           ) : (
             <div className="text-center text-red-600 py-8">{props.viewUser?.error || 'تعذر جلب البيانات'}</div>
