@@ -12,16 +12,16 @@ import { authorizeRole } from '../middlewares/role.middleware.js';
 const router = express.Router();
 
 // ➕ إنشاء دفعة جديدة
-router.post('/', authenticate, authorizeAdmin, createPayment);
+router.post('/', authenticate, authorizeRole(['admin','manager']), createPayment);
 
 // جلب جميع الدفعات
-router.get('/', authenticate, authorizeAdmin, getAllPayments);
+router.get('/', authenticate, authorizeRole(['admin','manager']), getAllPayments);
 
 // 📄 جلب جميع الدفعات لمستخدم معين
-router.get('/:userId', authenticate,  authorizeRole(['admin','manager', 'trainer','member']), getPaymentsByUser);
+router.get('/:userId', authenticate, getPaymentsByUser);
 
 // ✏️ تعديل دفعة
-router.put('/:id', authenticate, authorizeAdmin, updatePayment);
+router.put('/:id', authenticate, authorizeRole(['admin','manager']), updatePayment);
 
 // 🗑️ حذف دفعة
 router.delete('/:id', authenticate, authorizeAdmin, deletePayment);

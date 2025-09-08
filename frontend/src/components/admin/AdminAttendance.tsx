@@ -384,7 +384,7 @@ const AdminAttendance = () => {
               </div>
             </form>
           </div>
-        </div>
+      </div>
       )}
     </div>
   );

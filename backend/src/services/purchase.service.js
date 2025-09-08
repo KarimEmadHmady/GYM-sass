@@ -10,8 +10,18 @@ export const createPurchaseService = async (data) => {
   return await Purchase.create(allowed);
 };
 
+// جلب جميع المشتريات
+export const getAllPurchasesService = async () => {
+  return await Purchase.find({}).sort({ createdAt: -1 });
+};
+
 // جلب كل المشتريات لمستخدم معين
 export const getPurchasesByUserService = async (userId) => {
+  return await Purchase.find({ userId }).sort({ createdAt: -1 });
+};
+
+// Alias أكثر وضوحًا للاستخدام عبر userId
+export const getPurchasesByUserIdService = async (userId) => {
   return await Purchase.find({ userId }).sort({ createdAt: -1 });
 };
 

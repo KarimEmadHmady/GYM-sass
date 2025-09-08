@@ -86,7 +86,7 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
     {props.isCreateOpen && (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div className="absolute inset-0 bg-black/50" onClick={() => props.setIsCreateOpen(false)}></div>
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 z-10">
+        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 z-10 overflow-y-auto max-h-[90vh]">
           <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">إضافة مستخدم جديد</h4>
           {props.formError && (
             <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded px-3 py-2">

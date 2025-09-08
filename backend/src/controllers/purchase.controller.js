@@ -1,6 +1,8 @@
 import {
   createPurchaseService,
+  getAllPurchasesService,
   getPurchasesByUserService,
+  getPurchasesByUserIdService,
   getPurchaseByIdService,
   updatePurchaseService,
   deletePurchaseService
@@ -9,9 +11,11 @@ import {
 // إنشاء عملية شراء جديدة
 export const createPurchase = async (req, res) => {
   try {
+    const isAdminOrManager = req.user?.role === 'admin' || req.user?.role === 'manager';
+    const targetUserId = isAdminOrManager && req.body.userId ? req.body.userId : req.user.id;
     const purchase = await createPurchaseService({
       ...req.body,
-      userId: req.user.id, // جلب معرف المستخدم من التوكن
+      userId: targetUserId,
     });
     res.status(201).json(purchase);
   } catch (error) {
@@ -22,7 +26,24 @@ export const createPurchase = async (req, res) => {
 // جلب كل المشتريات لمستخدم
 export const getPurchases = async (req, res) => {
   try {
-    const purchases = await getPurchasesByUserService(req.user.id);
+    const isAdminOrManager = req.user?.role === 'admin' || req.user?.role === 'manager';
+    const purchases = isAdminOrManager
+      ? await getAllPurchasesService()
+      : await getPurchasesByUserService(req.user.id);
+    res.json(purchases);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// جلب كل المشتريات لمستخدم محدد عبر userId
+export const getPurchasesByUserId = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) {
+      return res.status(400).json({ message: "userId مطلوب" });
+    }
+    const purchases = await getPurchasesByUserIdService(userId);
     res.json(purchases);
   } catch (error) {
     res.status(500).json({ message: error.message });

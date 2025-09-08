@@ -382,5 +382,21 @@ export const API_ENDPOINTS = {
     update: (id: string) => `/client-progress/${id}`,
     delete: (id: string) => `/client-progress/${id}`,
     user: (userId: string) => `/client-progress/user/${userId}`
+  },
+  // Payments
+  payments: {
+    list: '/payments',
+    create: '/payments',
+    update: (id: string) => `/payments/${id}`,
+    delete: (id: string) => `/payments/${id}`,
+    user: (userId: string) => `/payments/${userId}`
+  },
+  // Purchases
+  purchases: {
+    list: '/purchases',
+    create: '/purchases',
+    update: (id: string) => `/purchases/${id}`,
+    delete: (id: string) => `/purchases/${id}`,
+    user: (userId: string) => `/purchases/user/${userId}`
   }
 };

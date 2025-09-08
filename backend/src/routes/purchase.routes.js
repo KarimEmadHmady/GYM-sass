@@ -5,7 +5,8 @@ import {
     getPurchases,
     getPurchase,
     updatePurchase,
-    deletePurchase
+    deletePurchase,
+    getPurchasesByUserId
 } from "../controllers/purchase.controller.js";
 import { authorizeRole } from '../middlewares/role.middleware.js';
 
@@ -16,6 +17,9 @@ router.post("/", authenticate,  authorizeRole(['admin','manager']), createPurcha
 
 // جلب كل المشتريات
 router.get("/", authenticate,  authorizeRole(['admin','manager']), getPurchases);
+
+// جلب كل المشتريات لمستخدم محدد عبر userId (لـ admin/manager)
+router.get("/user/:userId", authenticate,  authorizeRole(['admin','manager','member']), getPurchasesByUserId);
 
 // جلب عملية شراء واحدة
 router.get("/:id", authenticate,  authorizeRole(['admin','manager']), getPurchase);
