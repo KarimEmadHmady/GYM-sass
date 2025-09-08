@@ -4,6 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { UserService } from '@/services/userService';
 import { usePermissions } from '@/hooks/usePermissions';
 import type { User as UserModel } from '@/types/models';
+import AdminUsersTableHeader from './AdminUsersTableHeader';
+import AdminUsersTableList from './AdminUsersTableList';
+import AdminUsersTablePagination from './AdminUsersTablePagination';
+import AdminUserModals from './AdminUserModals';
 
 const AdminUsersTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,8 +17,6 @@ const AdminUsersTable = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'member' });
-  const [users, setUsers] = useState<UserModel[]>([]);
-  const [totalUsers, setTotalUsers] = useState(0);
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const userService = new UserService();
@@ -23,30 +25,7 @@ const AdminUsersTable = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editUser, setEditUser] = useState<UserModel | null>(null);
   const [editForm, setEditForm] = useState({
-    _id: '',
-    name: '',
-    email: '',
-    role: 'member',
-    phone: '',
-    dob: '',
-    avatarUrl: '',
-    address: '',
-    balance: 0,
-    status: 'active',
-    isEmailVerified: false,
-    subscriptionStartDate: '',
-    subscriptionEndDate: '',
-    subscriptionFreezeDays: 0,
-    subscriptionFreezeUsed: 0,
-    subscriptionStatus: 'active',
-    lastPaymentDate: '',
-    nextPaymentDueDate: '',
-    loyaltyPoints: 0,
-    membershipLevel: 'basic',
-    goals: { weightLoss: false, muscleGain: false, endurance: false },
-    trainerId: '',
-    createdAt: '',
-    updatedAt: '',
+    _id: '', name: '', email: '', role: 'member', phone: '', dob: '', avatarUrl: '', address: '', balance: 0, status: 'active', isEmailVerified: false, subscriptionStartDate: '', subscriptionEndDate: '', subscriptionFreezeDays: 0, subscriptionFreezeUsed: 0, subscriptionStatus: 'active', lastPaymentDate: '', nextPaymentDueDate: '', loyaltyPoints: 0, membershipLevel: 'basic', goals: { weightLoss: false, muscleGain: false, endurance: false }, trainerId: '', createdAt: '', updatedAt: '',
   });
   const [isEditSubmitting, setIsEditSubmitting] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
@@ -61,81 +40,73 @@ const AdminUsersTable = () => {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [viewUser, setViewUser] = useState<any>(null);
   const [viewLoading, setViewLoading] = useState(false);
+  const [allUsers, setAllUsers] = useState<UserModel[]>([]);
 
-  // جلب المستخدمين من السيرفر
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchAllUsers = async () => {
       setLoading(true);
       try {
-        const params: any = { page: currentPage, limit: PAGE_SIZE };
-        if (filterRole !== 'all') params.role = filterRole;
-        if (searchTerm) params.search = searchTerm;
-        const res = await userService.getUsers(params);
+        // جلب كل المستخدمين بدون فلترة أو pagination
+        const res = await userService.getUsers({});
+        let usersArr: UserModel[] = [];
         if (Array.isArray(res)) {
-          setUsers(res as unknown as UserModel[]);
-          setTotalUsers((res as UserModel[]).length);
+          usersArr = res as unknown as UserModel[];
         } else if (Array.isArray(res.data)) {
-          setUsers(res.data as unknown as UserModel[]);
-          setTotalUsers(res.pagination?.total || res.data.length);
-        } else {
-          setUsers([]);
-          setTotalUsers(0);
+          usersArr = res.data as unknown as UserModel[];
         }
+        setAllUsers(usersArr);
       } catch (err) {
-        setUsers([]);
-        setTotalUsers(0);
+        setAllUsers([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchUsers();
-  }, [currentPage, filterRole, searchTerm, refresh]);
+    fetchAllUsers();
+  }, [refresh]);
+
+  // فلترة وبحث محلي
+  const filteredUsers = allUsers.filter(user => {
+    // فلترة الدور
+    if (filterRole !== 'all' && user.role !== filterRole) return false;
+    // بحث بالاسم أو الإيميل أو رقم الهاتف
+    if (searchTerm) {
+      const s = searchTerm.toLowerCase();
+      if (
+        !(user.name?.toLowerCase().includes(s) ||
+          user.email?.toLowerCase().includes(s) ||
+          user.phone?.toLowerCase().includes(s))
+      ) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  // pagination محلي
+  const totalUsers = filteredUsers.length;
+  const startIdx = (currentPage - 1) * PAGE_SIZE;
+  const endIdx = startIdx + PAGE_SIZE;
+  const users = filteredUsers.slice(startIdx, endIdx);
 
   const getRoleText = (role: string) => {
-    const roles = {
-      member: 'عضو',
-      trainer: 'مدرب',
-      admin: 'إدارة',
-      manager: 'مدير'
-    };
+    const roles = { member: 'عضو', trainer: 'مدرب', admin: 'إدارة', manager: 'مدير' };
     return roles[role as keyof typeof roles] || role;
   };
-
   const getRoleColor = (role: string) => {
-    const colors = {
-      member: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      trainer: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      admin: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-      manager: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
-    };
+    const colors = { member: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200', trainer: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200', admin: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200', manager: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' };
     return colors[role as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
-
   const getStatusColor = (status: string) => {
-    const colors = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      inactive: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-      banned: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-    };
+    const colors = { active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200', inactive: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200', banned: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' };
     return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
-
   const getSubscriptionColor = (subscription: string) => {
-    const colors = {
-      active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      expired: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-      cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-    };
+    const colors = { active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200', expired: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200', cancelled: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' };
     return colors[subscription as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
-
-  // users دائماً Array
   const safeUsers = Array.isArray(users) ? users : [];
 
-  // إذا أردت فلترة محلية إضافية (مثلاً بحث محلي بعد جلب السيرفر)
-  // const filteredUsers = safeUsers.filter(...)
-  // لكن حالياً البحث والتصفية تتم في السيرفر
-
+  // handlers (نفس الكود السابق)
   const openCreate = () => {
     setFormError(null);
     setNewUser({ name: '', email: '', password: '', role: 'member' });
@@ -203,7 +174,7 @@ const AdminUsersTable = () => {
 
   // تحديث handleEdit ليشمل كل بيانات المستخدم
   const handleEdit = (id: string) => {
-    const user = users.find(u => u._id === id);
+    const user = allUsers.find(u => u._id === id); // البحث في جميع المستخدمين
     if (!user) return;
     function dateToInputString(val: any): string {
       if (!val) return '';
@@ -384,13 +355,7 @@ const AdminUsersTable = () => {
     }
   };
 
-  // فلترة الأزرار حسب الصلاحيات
-  const canEdit = hasPermission('users:write');
-  const canChangeRole = hasPermission('users:write');
-  const canDelete = hasPermission('users:delete');
-  const canHardDelete = currentUser?.role === 'admin';
-
-  // ترتيب الحقول المهمة للعرض
+  // userViewFields (نفس الكود السابق)
   const userViewFields: { key: string; label: string; type?: 'object' }[] = [
     { key: 'name', label: 'الاسم' },
     { key: 'email', label: 'البريد الإلكتروني' },
@@ -415,524 +380,72 @@ const AdminUsersTable = () => {
   ];
 
   return (
-    <>
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 sm:mb-0">
-            إدارة المستخدمين - الإدارة
-          </h3>
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-            <button
-              onClick={openCreate}
-              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
-            >
-              إضافة مستخدم
-            </button>
-            <input
-              type="text"
-              placeholder="البحث عن مستخدم..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-            <select
-              value={filterRole}
-              onChange={(e) => setFilterRole(e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            >
-              <option value="all">جميع الأدوار</option>
-              <option value="member">عضو</option>
-              <option value="trainer">مدرب</option>
-              <option value="manager">مدير</option>
-              <option value="admin">إدارة</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                المستخدم
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                الدور
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                الحالة
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                الاشتراك
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                الرصيد
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                آخر دخول
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                الإجراءات
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            {loading ? (
-              <tr><td colSpan={8} className="text-center py-8">جاري التحميل...</td></tr>
-            ) : safeUsers.length === 0 ? (
-              <tr><td colSpan={8} className="text-center py-8">لا يوجد مستخدمين</td></tr>
-            ) : safeUsers.map((user) => (
-              <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onClick={() => openViewUser(user._id)}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                      {user.name.charAt(0)}
-                    </div>
-                    <div className="mr-4">
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        {user.name}
-                      </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {user.email}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
-                    {getRoleText(user.role)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(user.status)}`}>
-                    {user.status === 'active' ? 'نشط' : user.status === 'inactive' ? 'غير نشط' : 'محظور'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getSubscriptionColor(user.subscriptionStatus)}`}>
-                    {user.subscriptionStatus === 'active' ? 'نشط' : user.subscriptionStatus === 'expired' ? 'منتهي' : user.subscriptionStatus === 'cancelled' ? 'ملغي' : 'مجمد'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  ج.م{user.balance}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  {user.updatedAt ? new Date(user.updatedAt).toLocaleDateString('ar-EG') : '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium relative z-30">
-                  <div className="flex space-x-2 relative z-30">
-                    {canEdit && (
-                      <button
-                        onClick={e => { e.stopPropagation(); handleEdit(user._id); }}
-                        className="relative z-30 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 group p-3 cursor-pointer  rounded-md"
-                      >
-                        <span className="relative z-30">تعديل</span>
-                        <span className="absolute inset-0 bg-blue-600/10 group-hover:bg-blue-600/20 rounded transition-all z-20 pointer-events-none"></span>
-                      </button>
-                    )}
-                    {canChangeRole && (
-                      <button
-                        onClick={e => { e.stopPropagation(); handleChangeRole(user._id, user.role); }}
-                        className="relative z-30 text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 group p-3 cursor-pointer  rounded-md"
-                      >
-                        <span className="relative z-30">تغيير دور</span>
-                        <span className="absolute inset-0 bg-yellow-400/10 group-hover:bg-yellow-400/20 rounded transition-all z-20 pointer-events-none"></span>
-                      </button>
-                    )}
-                    {canDelete && (
-                      <button
-                        onClick={e => { e.stopPropagation(); openDeleteModal(user._id, 'soft'); }}
-                        className="relative z-30 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 group p-3 cursor-pointer  rounded-md"
-                      >
-                        <span className="relative z-30">حذف</span>
-                        <span className="absolute inset-0 bg-red-600/10 group-hover:bg-red-600/20 rounded transition-all z-20 pointer-events-none"></span>
-                      </button>
-                    )}
-                    {canHardDelete && (
-                      <button
-                        onClick={e => { e.stopPropagation(); openDeleteModal(user._id, 'hard'); }}
-                        className="relative z-30 text-red-800 hover:text-red-900 font-bold group p-3 cursor-pointer  rounded-md"
-                      >
-                        <span className="relative z-30">حذف نهائي</span>
-                        <span className="absolute inset-0 bg-red-800/10 group-hover:bg-red-800/20 rounded transition-all z-20 pointer-events-none"></span>
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-700 dark:text-gray-300">
-            عرض {safeUsers.length} من {totalUsers} مستخدم
-          </div>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1 || loading}
-              className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              السابق
-            </button>
-            <button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage * PAGE_SIZE >= totalUsers || loading}
-              className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              التالي
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    {isCreateOpen && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/50" onClick={() => setIsCreateOpen(false)}></div>
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 z-10">
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">إضافة مستخدم جديد</h4>
-          {formError && (
-            <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded px-3 py-2">
-              {formError}
-            </div>
-          )}
-          <form onSubmit={handleCreateSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الاسم</label>
-              <input
-                name="name"
-                value={newUser.name}
-                onChange={handleCreateChange}
-                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                placeholder="ادخل الاسم"
+      <AdminUsersTableHeader
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        filterRole={filterRole}
+        setFilterRole={setFilterRole}
+        onOpenCreate={openCreate}
+      />
+      <AdminUsersTableList
+        users={safeUsers}
+        loading={loading}
+        openViewUser={openViewUser}
+        canEdit={hasPermission('users:write')}
+        canChangeRole={hasPermission('users:write')}
+        canDelete={hasPermission('users:delete')}
+        canHardDelete={currentUser?.role === 'admin'}
+        handleEdit={handleEdit}
+        handleChangeRole={handleChangeRole}
+        openDeleteModal={openDeleteModal}
+        getRoleText={getRoleText}
+        getRoleColor={getRoleColor}
+        getStatusColor={getStatusColor}
+        getSubscriptionColor={getSubscriptionColor}
+      />
+      <AdminUsersTablePagination
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+        PAGE_SIZE={PAGE_SIZE}
+        totalUsers={totalUsers}
+        loading={loading}
+      />
+      <AdminUserModals
+        isCreateOpen={isCreateOpen}
+        setIsCreateOpen={setIsCreateOpen}
+        isSubmitting={isSubmitting}
+        formError={formError}
+        newUser={newUser}
+        handleCreateChange={handleCreateChange}
+        handleCreateSubmit={handleCreateSubmit}
+        isRoleOpen={isRoleOpen}
+        roleUser={roleUser}
+        roleForm={roleForm}
+        setRoleForm={setRoleForm}
+        roleError={roleError}
+        isRoleSubmitting={isRoleSubmitting}
+        setIsRoleOpen={setIsRoleOpen}
+        handleRoleSubmit={handleRoleSubmit}
+        isEditOpen={isEditOpen}
+        editUser={editUser}
+        editForm={editForm}
+        handleEditChange={handleEditChange}
+        handleEditSubmit={handleEditSubmit}
+        isEditSubmitting={isEditSubmitting}
+        editError={editError}
+        setIsEditOpen={setIsEditOpen}
+        isDeleteOpen={isDeleteOpen}
+        setIsDeleteOpen={setIsDeleteOpen}
+        deleteType={deleteType}
+        confirmDelete={confirmDelete}
+        isViewOpen={isViewOpen}
+        setIsViewOpen={setIsViewOpen}
+        viewUser={viewUser}
+        viewLoading={viewLoading}
+        userViewFields={userViewFields}
               />
             </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">البريد الإلكتروني</label>
-              <input
-                type="email"
-                name="email"
-                value={newUser.email}
-                onChange={handleCreateChange}
-                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                placeholder="email@example.com"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">كلمة المرور</label>
-              <input
-                type="password"
-                name="password"
-                value={newUser.password}
-                onChange={handleCreateChange}
-                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                placeholder="••••••••"
-              />
-            </div>
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsCreateOpen(false)}
-                className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200"
-              >
-                إلغاء
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white"
-              >
-                {isSubmitting ? 'جارٍ الإضافة...' : 'إضافة'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    )}
-    {/* Popup تغيير الدور */}
-    {isRoleOpen && roleUser && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/50" onClick={() => setIsRoleOpen(false)}></div>
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 z-10">
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">تغيير دور المستخدم</h4>
-          {roleError && (
-            <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded px-3 py-2">{roleError}</div>
-          )}
-          <form onSubmit={handleRoleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الدور</label>
-              <select
-                name="role"
-                value={roleForm}
-                onChange={e => setRoleForm(e.target.value)}
-                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-              >
-                <option value="member">عضو</option>
-                <option value="trainer">مدرب</option>
-                <option value="manager">مدير</option>
-                <option value="admin">إدارة</option>
-              </select>
-            </div>
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setIsRoleOpen(false)} className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200">إلغاء</button>
-              <button type="submit" disabled={isRoleSubmitting} className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white">{isRoleSubmitting ? 'جارٍ الحفظ...' : 'حفظ'}</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    )}
-    {/* Popup تعديل المستخدم */}
-    {isEditOpen && editUser && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/50" onClick={() => setIsEditOpen(false)}></div>
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6 z-10 overflow-y-auto max-h-[90vh]">
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">تعديل المستخدم</h4>
-          {editError && (
-            <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded px-3 py-2">{editError}</div>
-          )}
-          <form onSubmit={handleEditSubmit} className="space-y-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">ID</label>
-              <input name="_id" value={editForm._id} readOnly className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الاسم</label>
-              <input name="name" value={editForm.name} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">البريد الإلكتروني</label>
-              <input type="email" name="email" value={editForm.email} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الدور</label>
-              <select name="role" value={editForm.role} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-                <option value="member">عضو</option>
-                <option value="trainer">مدرب</option>
-                <option value="manager">مدير</option>
-                <option value="admin">إدارة</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">رقم الهاتف</label>
-              <input name="phone" value={editForm.phone} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ الميلاد</label>
-              <input type="date" name="dob" value={editForm.dob} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">رابط الصورة</label>
-              <input name="avatarUrl" value={editForm.avatarUrl} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">العنوان</label>
-              <input name="address" value={editForm.address} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الرصيد</label>
-              <input type="number" name="balance" value={editForm.balance} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الحالة</label>
-              <select name="status" value={editForm.status} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-                <option value="active">نشط</option>
-                <option value="inactive">غير نشط</option>
-                <option value="banned">محظور</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تم التحقق من البريد</label>
-              <input type="checkbox" name="isEmailVerified" checked={editForm.isEmailVerified} onChange={e => setEditForm(f => ({ ...f, isEmailVerified: e.target.checked }))} />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ بداية الاشتراك</label>
-              <input type="date" name="subscriptionStartDate" value={editForm.subscriptionStartDate} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ نهاية الاشتراك</label>
-              <input type="date" name="subscriptionEndDate" value={editForm.subscriptionEndDate} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">أيام تجميد الاشتراك</label>
-              <input type="number" name="subscriptionFreezeDays" value={editForm.subscriptionFreezeDays} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">أيام التجميد المستخدمة</label>
-              <input type="number" name="subscriptionFreezeUsed" value={editForm.subscriptionFreezeUsed} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">حالة الاشتراك</label>
-              <select name="subscriptionStatus" value={editForm.subscriptionStatus} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-                <option value="active">نشط</option>
-                <option value="expired">منتهي</option>
-                <option value="cancelled">ملغي</option>
-                <option value="frozen">مجمد</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ آخر دفع</label>
-              <input type="date" name="lastPaymentDate" value={editForm.lastPaymentDate} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ استحقاق الدفع القادم</label>
-              <input type="date" name="nextPaymentDueDate" value={editForm.nextPaymentDueDate} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">نقاط الولاء</label>
-              <input type="number" name="loyaltyPoints" value={editForm.loyaltyPoints} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">مستوى العضوية</label>
-              <select name="membershipLevel" value={editForm.membershipLevel} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-                <option value="basic">عادي</option>
-                <option value="silver">فضي</option>
-                <option value="gold">ذهبي</option>
-                <option value="platinum">بلاتينيوم</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">الأهداف</label>
-              <div className="flex flex-col gap-1">
-                <label><input type="checkbox" checked={editForm.goals.weightLoss} onChange={e => setEditForm(f => ({ ...f, goals: { ...f.goals, weightLoss: e.target.checked } }))} /> خسارة وزن</label>
-                <label><input type="checkbox" checked={editForm.goals.muscleGain} onChange={e => setEditForm(f => ({ ...f, goals: { ...f.goals, muscleGain: e.target.checked } }))} /> زيادة عضلات</label>
-                <label><input type="checkbox" checked={editForm.goals.endurance} onChange={e => setEditForm(f => ({ ...f, goals: { ...f.goals, endurance: e.target.checked } }))} /> قوة تحمل</label>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">معرف المدرب</label>
-              <input name="trainerId" value={editForm.trainerId} onChange={handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ الإنشاء</label>
-              <input name="createdAt" value={editForm.createdAt} readOnly className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ التعديل</label>
-              <input name="updatedAt" value={editForm.updatedAt} readOnly className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white" />
-            </div>
-            <div className="col-span-1 md:col-span-2 flex items-center justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setIsEditOpen(false)} className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200">إلغاء</button>
-              <button type="submit" disabled={isEditSubmitting} className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white">{isEditSubmitting ? 'جارٍ الحفظ...' : 'حفظ'}</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    )}
-    {/* مودال تأكيد الحذف */}
-    {isDeleteOpen && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/50" onClick={() => setIsDeleteOpen(false)}></div>
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 z-10">
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
-            {deleteType === 'soft' ? 'تأكيد حذف المستخدم' : 'تأكيد الحذف النهائي للمستخدم'}
-          </h4>
-          <div className="mb-6 text-center text-gray-700 dark:text-gray-300">
-            {deleteType === 'soft'
-              ? 'هل أنت متأكد أنك تريد حذف هذا المستخدم؟ يمكن استرجاعه لاحقًا.'
-              : 'هل أنت متأكد أنك تريد حذف هذا المستخدم نهائيًا؟ لا يمكن استرجاعه بعد ذلك!'}
-          </div>
-          <div className="flex items-center justify-center gap-4">
-            <button
-              onClick={() => setIsDeleteOpen(false)}
-              className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
-            >
-              إلغاء
-            </button>
-            <button
-              onClick={confirmDelete}
-              className={`px-4 py-2 rounded-md text-white ${deleteType === 'soft' ? 'bg-red-600 hover:bg-red-700' : 'bg-red-800 hover:bg-red-900 font-bold'}`}
-            >
-              {deleteType === 'soft' ? 'تأكيد الحذف' : 'تأكيد الحذف النهائي'}
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
-    {/* مودال عرض بيانات المستخدم */}
-    {isViewOpen && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/50" onClick={() => setIsViewOpen(false)}></div>
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6 z-10 overflow-y-auto max-h-[90vh]">
-          {/* رأس المودال: صورة المستخدم وزر X */}
-          <div className="relative flex flex-col items-center mb-6 mt-2">
-            <button
-              onClick={() => setIsViewOpen(false)}
-              className="absolute top-2 left-2 md:left-auto md:right-2 text-gray-400 hover:text-gray-700 dark:hover:text-white text-2xl font-bold focus:outline-none"
-              aria-label="إغلاق"
-            >
-              ×
-            </button>
-            {viewUser?.avatarUrl ? (
-              <img
-                src={viewUser.avatarUrl}
-                alt={viewUser.name || 'User'}
-                className="w-20 h-20 rounded-full object-cover border-2 border-gray-300 dark:border-gray-700 shadow mb-2"
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold mb-2">
-                {viewUser?.name ? viewUser.name.charAt(0) : '?'}
-              </div>
-            )}
-          </div>
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">بيانات المستخدم</h4>
-          {viewLoading ? (
-            <div className="text-center py-8">جاري التحميل...</div>
-          ) : viewUser && !viewUser.error ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              {userViewFields.map(({ key, label, type }) => {
-                const value = viewUser[key];
-                if (
-                  typeof value === 'undefined' ||
-                  value === '' ||
-                  value === null ||
-                  (Array.isArray(value)) ||
-                  (typeof value === 'object' && value !== null && Object.keys(value).length === 0) ||
-                  key === 'dob' ||
-                  key === '__v'
-                ) return null;
-                if (type === 'object' && typeof value === 'object' && value !== null) {
-                  return (
-                    <div key={key} className="flex flex-col border-b pb-2">
-                      <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</span>
-                      <div className="bg-gray-50 dark:bg-gray-900 rounded p-2 text-xs">
-                        {Object.entries(value).map(([k, v]) => (
-                          <div key={k} className="flex justify-between border-b last:border-b-0 py-1">
-                            <span className="text-gray-600 dark:text-gray-400">{k}</span>
-                            <span className="text-gray-900 dark:text-white">{v === true ? '✔️' : v === false ? '❌' : (v === null || v === undefined || typeof v === 'object' ? '-' : String(v))}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
-                return (
-                  <div key={key} className="flex flex-col border-b pb-2">
-                    <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">{label}</span>
-                    <span className="text-gray-900 dark:text-white break-all">
-                      {value === true ? '✔️' : value === false ? '❌' : value}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="text-center text-red-600 py-8">{viewUser?.error || 'تعذر جلب البيانات'}</div>
-          )}
-          <div className="flex items-center justify-center gap-3 pt-6">
-            <button onClick={() => setIsViewOpen(false)} className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600">إغلاق</button>
-          </div>
-        </div>
-      </div>
-    )}
-    </>
   );
 };
 
