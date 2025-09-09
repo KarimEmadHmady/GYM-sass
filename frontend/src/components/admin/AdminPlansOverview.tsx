@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useAuth } from '@/hooks/useAuth';
 import type { WorkoutPlan } from '@/types';
 import { workoutService, userService } from '@/services';
 import { dietService } from '@/services';
@@ -12,6 +13,9 @@ type AdminPlansOverviewProps = {
 };
 
 const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => {
+  const { user } = useAuth();
+  const currentRole = (user as any)?.role as string | undefined;
+  const currentTrainerId = React.useMemo(() => ((user as any)?._id ?? (user as any)?.id ?? ''), [user]);
   const [activeTab, setActiveTab] = useState('workout');
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [loading, setLoading] = useState(false);
@@ -27,7 +31,10 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
   const [formExercises, setFormExercises] = useState<Array<Pick<WorkoutPlan['exercises'][number], 'name' | 'reps' | 'sets' | 'notes'>>> ([]);
   const [editingPlan, setEditingPlan] = useState<WorkoutPlan | null>(null);
   const [members, setMembers] = useState<Array<{ _id: string; name: string; email?: string; phone?: string }>>([]);
+  const [trainers, setTrainers] = useState<Array<{ _id: string; name: string; email?: string; phone?: string }>>([]);
   const [memberSearch, setMemberSearch] = useState('');
+  const [trainerSearch, setTrainerSearch] = useState('');
+  const [creatingTrainerId, setCreatingTrainerId] = useState('');
   const [userNameMap, setUserNameMap] = useState<Record<string, string>>({});
   const t = useTranslations();
   const [dietPlans, setDietPlans] = useState<DietPlan[]>([]);
@@ -40,6 +47,8 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
   const [showDeleteDietModal, setShowDeleteDietModal] = useState<null | string>(null);
   const [dietPlanNameInput, setDietPlanNameInput] = useState('');
   const [dietPlanDescInput, setDietPlanDescInput] = useState('');
+  const [dietPlanStartInput, setDietPlanStartInput] = useState('');
+  const [dietPlanEndInput, setDietPlanEndInput] = useState('');
   const [showCreateDietModal, setShowCreateDietModal] = useState(false);
   const [createDietUserId, setCreateDietUserId] = useState('');
   const [createDietName, setCreateDietName] = useState('');
@@ -57,11 +66,28 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
         setError(null);
         const res = await workoutService.getAllWorkoutPlans();
         setWorkoutPlans((res as any).data || (res as any));
-        // load members for selector
+        // load members and trainers for selector
         try {
-          const membersRes = await userService.getUsersByRole('member', { limit: 100 });
-          const data = (membersRes as any).data || (membersRes as any);
-          setMembers(data?.items || data || []);
+          const membersRes = await userService.getUsersByRole('member', { limit: 1000 });
+          const raw = (membersRes as any).data || (membersRes as any);
+          const list = (raw?.items || raw || []) as any[];
+          if (currentRole === 'trainer') {
+            const normalizeId = (val: any): string => {
+              if (!val) return '';
+              if (typeof val === 'string') return val;
+              if (typeof val === 'object') return (val._id || val.id || '') as string;
+              return String(val);
+            };
+            const me = normalizeId(currentTrainerId);
+            setMembers(list.filter((m) => normalizeId((m as any)?.trainerId) === me));
+          } else {
+            setMembers(list);
+          }
+        } catch {}
+        try {
+          const trainersRes = await userService.getUsersByRole('trainer', { limit: 100 });
+          const tdata = (trainersRes as any).data || (trainersRes as any);
+          setTrainers(tdata?.items || tdata || []);
         } catch {}
       } catch (e: any) {
         setError(e.message || 'فشل تحميل الخطط');
@@ -76,7 +102,9 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
     const loadNames = async () => {
       const ids = Array.from(new Set([
         ...((workoutPlans || []).map(p => p.userId).filter(Boolean)),
+        ...((workoutPlans || []).map((p:any) => p.trainerId).filter(Boolean)),
         ...((dietPlans || []).map((p:any) => p.userId).filter(Boolean)),
+        ...((dietPlans || []).map((p:any) => p.trainerId).filter(Boolean)),
       ]));
       const missing = ids.filter(id => !userNameMap[id]);
       if (missing.length === 0) return;
@@ -109,6 +137,7 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
 
   const resetForm = () => {
     setCreatingUserId('');
+    setCreatingTrainerId('');
     setFormPlanName('');
     setFormDescription('');
     setFormStartDate('');
@@ -136,6 +165,8 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
     setShowEditDietModal(true);
     setDietPlanNameInput(plan.planName || '');
     setDietPlanDescInput(plan.description || '');
+    setDietPlanStartInput(plan.startDate ? new Date(plan.startDate).toISOString().slice(0,10) : '');
+    setDietPlanEndInput(plan.endDate ? new Date(plan.endDate).toISOString().slice(0,10) : '');
   };
 
   const canSubmitCreate = useMemo(() => creatingUserId && formPlanName && formStartDate && formEndDate, [creatingUserId, formPlanName, formStartDate, formEndDate]);
@@ -216,7 +247,7 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 sm:mb-0">
-            {t('AdminPlansOverview.title')}
+            {currentRole === 'trainer' ? 'إدارة الخطط (مدرب)' : t('AdminPlansOverview.title')}
           </h3>
           <div className="flex items-center space-x-4">
             <div className="flex space-x-2">
@@ -292,7 +323,10 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
                     {plan.planName}
                   </h4>
                 </div>
-                <p className="text-xs text-gray-500 mb-2">اسم المستخدم: {userNameMap[plan.userId] || '...'}</p>
+                <p className="text-xs text-gray-500 mb-1">اسم المستخدم: {userNameMap[plan.userId] || '...'}</p>
+                { (plan as any).trainerId && (
+                  <p className="text-xs text-gray-500 mb-2">اسم المدرب: {userNameMap[(plan as any).trainerId as any] || '...'}</p>
+                )}
                 {plan.description && (
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{plan.description}</p>
                 )}
@@ -332,7 +366,10 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
                       <button className="bg-red-600 text-white px-3 py-1 rounded text-xs" onClick={() => setShowDeleteDietModal(plan._id)}>حذف</button>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 mb-2">اسم المستخدم: {userNameMap[(plan as any).userId] || '...'}</p>
+                  <p className="text-xs text-gray-500 mb-1">اسم المستخدم: {userNameMap[(plan as any).userId] || '...'}</p>
+                  {(plan as any).trainerId && (
+                    <p className="text-xs text-gray-500 mb-2">اسم المدرب: {userNameMap[(plan as any).trainerId] || '...'}</p>
+                  )}
                   {plan.description && (
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{plan.description}</p>
                   )}
@@ -356,8 +393,8 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
  
     {/* Create Modal */}
     {showCreateModal && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify_center z-50">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify_center z-50 ">
+        <div className="bg-white margin-auto dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6 margin-auto">
           <h3 className="text-lg font-semibold text_gray-900 dark:text-white mb-4">إنشاء خطة تمرين</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -384,6 +421,32 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
                   ))}
               </select>
             </div>
+            {currentRole !== 'trainer' && (
+              <div>
+                <label className="block text-sm mb-1">المدرب</label>
+                <input
+                  className="mb-2 w-full border rounded px-3 py-2 bg-white dark:bg-gray-900"
+                  placeholder="ابحث بالاسم أو الهاتف أو الإيميل"
+                  value={trainerSearch}
+                  onChange={(e) => setTrainerSearch(e.target.value)}
+                />
+                <select value={creatingTrainerId} onChange={(e) => setCreatingTrainerId(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900">
+                  <option value="">اختر مدرب...</option>
+                  {trainers
+                    .filter((m) => {
+                      const q = trainerSearch.trim().toLowerCase();
+                      if (!q) return true;
+                      const phone = (m.phone || '').toLowerCase();
+                      const name = (m.name || '').toLowerCase();
+                      const email = (m.email || '').toLowerCase();
+                      return phone.includes(q) || name.includes(q) || email.includes(q);
+                    })
+                    .map((m) => (
+                      <option key={m._id} value={m._id}>{(m.phone || 'بدون هاتف')} - {m.name}</option>
+                    ))}
+                </select>
+              </div>
+            )}
             <div>
               <label className="block text-sm mb-1">اسم الخطة</label>
               <input value={formPlanName} onChange={(e) => setFormPlanName(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="اكتب اسم الخطة (مثال: خطة تخسيس)" />
@@ -394,11 +457,11 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
             </div>
             <div>
               <label className="block text-sm mb-1">تاريخ البداية</label>
-              <input type="date" value={formStartDate} onChange={(e) => setFormStartDate(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="تاريخ البداية" />
+              <input type="date" value={formStartDate} onChange={(e) => setFormStartDate(e.target.value)} onFocus={(e)=> (e.currentTarget as any).showPicker?.()} onClick={(e)=> (e.currentTarget as any).showPicker?.()} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="تاريخ البداية" />
             </div>
             <div>
               <label className="block text-sm mb-1">تاريخ النهاية</label>
-              <input type="date" value={formEndDate} onChange={(e) => setFormEndDate(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="تاريخ النهاية" />
+              <input type="date" value={formEndDate} onChange={(e) => setFormEndDate(e.target.value)} onFocus={(e)=> (e.currentTarget as any).showPicker?.()} onClick={(e)=> (e.currentTarget as any).showPicker?.()} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="تاريخ النهاية" />
             </div>
           </div>
 
@@ -441,6 +504,7 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
                   startDate: new Date(formStartDate) as any,
                   endDate: new Date(formEndDate) as any,
                   exercises: formExercises as any,
+                  trainerId: currentRole === 'trainer' ? undefined : (creatingTrainerId || undefined),
                 });
                 setWorkoutPlans((prev) => [created, ...prev]);
                 setShowCreateModal(false);
@@ -459,7 +523,7 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
     {/* Create Diet Plan Modal */}
     {showCreateDietModal && (
       <div className="fixed inset-0 bg-black/50 flex items-center justify_center z-50">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6 margin-auto">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">إنشاء خطة غذائية</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
@@ -486,6 +550,17 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
                   ))}
               </select>
             </div>
+            {currentRole !== 'trainer' && (
+              <div>
+                <label className="block text-sm mb-1">المدرب</label>
+                <select value={creatingTrainerId} onChange={(e) => setCreatingTrainerId(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900">
+                  <option value="">اختر مدرب...</option>
+                  {trainers.map((m) => (
+                    <option key={m._id} value={m._id}>{(m.phone || 'بدون هاتف')} - {m.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <label className="block text-sm mb-1">اسم الخطة</label>
               <input value={createDietName} onChange={(e) => setCreateDietName(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="مثال: خطة غذائية" />
@@ -496,11 +571,11 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
             </div>
             <div>
               <label className="block text-sm mb-1">تاريخ البداية</label>
-              <input type="date" value={createDietStart} onChange={(e) => setCreateDietStart(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" />
+              <input type="date" value={createDietStart} onChange={(e) => setCreateDietStart(e.target.value)} onFocus={(e)=> (e.currentTarget as any).showPicker?.()} onClick={(e)=> (e.currentTarget as any).showPicker?.()} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" />
             </div>
             <div>
               <label className="block text-sm mb-1">تاريخ النهاية</label>
-              <input type="date" value={createDietEnd} onChange={(e) => setCreateDietEnd(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" />
+              <input type="date" value={createDietEnd} onChange={(e) => setCreateDietEnd(e.target.value)} onFocus={(e)=> (e.currentTarget as any).showPicker?.()} onClick={(e)=> (e.currentTarget as any).showPicker?.()} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" />
             </div>
           </div>
 
@@ -549,6 +624,7 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
                   startDate: new Date(createDietStart) as any,
                   endDate: createDietEnd ? new Date(createDietEnd) as any : undefined,
                   meals: createDietMeals as any,
+                  trainerId: currentRole === 'trainer' ? undefined : (creatingTrainerId || undefined),
                 });
                 setDietPlans((prev) => [created as any, ...prev]);
                 setShowCreateDietModal(false);
@@ -580,11 +656,11 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
             </div>
             <div>
               <label className="block text-sm mb-1">تاريخ البداية</label>
-              <input type="date" value={formStartDate} onChange={(e) => setFormStartDate(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="تاريخ البداية" />
+              <input type="date" value={formStartDate} onChange={(e) => setFormStartDate(e.target.value)} onFocus={(e)=> (e.currentTarget as any).showPicker?.()} onClick={(e)=> (e.currentTarget as any).showPicker?.()} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="تاريخ البداية" />
             </div>
             <div>
               <label className="block text-sm mb-1">تاريخ النهاية</label>
-              <input type="date" value={formEndDate} onChange={(e) => setFormEndDate(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="تاريخ النهاية" />
+              <input type="date" value={formEndDate} onChange={(e) => setFormEndDate(e.target.value)} onFocus={(e)=> (e.currentTarget as any).showPicker?.()} onClick={(e)=> (e.currentTarget as any).showPicker?.()} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="تاريخ النهاية" />
             </div>
           </div>
 
@@ -689,6 +765,16 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
           <div className="mb-4">
             <label className="block text-sm mb-1">الوصف</label>
             <textarea className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" value={dietPlanDescInput} onChange={(e)=>setDietPlanDescInput(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm mb-1">تاريخ البداية</label>
+              <input type="date" className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" value={dietPlanStartInput} onChange={(e)=>setDietPlanStartInput(e.target.value)} onFocus={(e)=> (e.currentTarget as any).showPicker?.()} onClick={(e)=> (e.currentTarget as any).showPicker?.()} />
+            </div>
+            <div>
+              <label className="block text-sm mb-1">تاريخ النهاية</label>
+              <input type="date" className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" value={dietPlanEndInput} onChange={(e)=>setDietPlanEndInput(e.target.value)} onFocus={(e)=> (e.currentTarget as any).showPicker?.()} onClick={(e)=> (e.currentTarget as any).showPicker?.()} />
+            </div>
           </div>
           <div className="mb-4">
             <label className="block text-sm mb-1">الوجبات</label>
@@ -805,7 +891,12 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
               if(!editingDietPlan) return;
               try{
                 setDietMealsLoading(true);
-                const updated = await dietService.updateDietPlan(editingDietPlan._id, { planName: dietPlanNameInput, description: dietPlanDescInput });
+                const updated = await dietService.updateDietPlan(editingDietPlan._id, {
+                  planName: dietPlanNameInput,
+                  description: dietPlanDescInput,
+                  startDate: dietPlanStartInput ? (new Date(dietPlanStartInput) as any) : undefined,
+                  endDate: dietPlanEndInput ? (new Date(dietPlanEndInput) as any) : undefined,
+                });
                 await refreshDietPlan(editingDietPlan._id);
                 setEditingDietPlan(updated);
                 setShowEditDietModal(false);

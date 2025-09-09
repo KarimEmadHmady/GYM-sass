@@ -24,7 +24,10 @@ const ManagerPlansOverview = () => {
   const [formExercises, setFormExercises] = useState<Array<{ name: string; reps: number; sets: number; notes?: string }>>([]);
   const [editingPlan, setEditingPlan] = useState<WorkoutPlan | null>(null);
   const [members, setMembers] = useState<Array<{ _id: string; name: string; email?: string; phone?: string }>>([]);
+  const [trainers, setTrainers] = useState<Array<{ _id: string; name: string; email?: string; phone?: string }>>([]);
   const [memberSearch, setMemberSearch] = useState('');
+  const [trainerSearch, setTrainerSearch] = useState('');
+  const [creatingTrainerId, setCreatingTrainerId] = useState('');
   const [userNameMap, setUserNameMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -38,6 +41,11 @@ const ManagerPlansOverview = () => {
           const membersRes = await userService.getUsersByRole('member', { limit: 100 });
           const data = (membersRes as any).data || (membersRes as any);
           setMembers(data?.items || data || []);
+        } catch {}
+        try {
+          const trainersRes = await userService.getUsersByRole('trainer', { limit: 100 });
+          const tdata = (trainersRes as any).data || (trainersRes as any);
+          setTrainers(tdata?.items || tdata || []);
         } catch {}
       } catch (e: any) {
         setError(e.message || 'فشل تحميل الخطط');
@@ -66,7 +74,12 @@ const ManagerPlansOverview = () => {
 
   useEffect(() => {
     const loadNames = async () => {
-      const ids = Array.from(new Set((workoutPlans || []).map(p => p.userId).filter(Boolean)));
+      const ids = Array.from(new Set([
+        ...((workoutPlans || []).map(p => p.userId).filter(Boolean)),
+        ...((workoutPlans || []).map((p:any) => p.trainerId).filter(Boolean)),
+        ...((dietPlans || []).map((p:any) => p.userId).filter(Boolean)),
+        ...((dietPlans || []).map((p:any) => p.trainerId).filter(Boolean)),
+      ]));
       const missing = ids.filter(id => !userNameMap[id]);
       if (missing.length === 0) return;
       try {
@@ -78,10 +91,11 @@ const ManagerPlansOverview = () => {
       } catch {}
     };
     loadNames();
-  }, [workoutPlans, userNameMap]);
+  }, [workoutPlans, dietPlans, userNameMap]);
 
   const resetForm = () => {
     setCreatingUserId('');
+    setCreatingTrainerId('');
     setFormPlanName('');
     setFormDescription('');
     setFormStartDate('');
@@ -158,6 +172,10 @@ const ManagerPlansOverview = () => {
                   <div className="flex items-start justify-between mb-4">
                     <h4 className="text-lg font-medium text-gray-900 dark:text-white">{plan.planName}</h4>
                   </div>
+                  <p className="text-xs text-gray-500 mb-1">اسم المستخدم: {userNameMap[(plan as any).userId] || '...'}</p>
+                  {(plan as any).trainerId && (
+                    <p className="text-xs text-gray-500 mb-2">اسم المدرب: {userNameMap[(plan as any).trainerId] || '...'}</p>
+                  )}
                   {plan.description && (
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{plan.description}</p>
                   )}
@@ -192,7 +210,10 @@ const ManagerPlansOverview = () => {
                     {plan.planName}
                   </h4>
                 </div>
-                <p className="text-xs text-gray-500 mb-2">اسم المستخدم: {userNameMap[plan.userId] || '...'}</p>
+                <p className="text-xs text-gray-500 mb-1">اسم المستخدم: {userNameMap[plan.userId] || '...'}</p>
+                {(plan as any).trainerId && (
+                  <p className="text-xs text-gray-500 mb-2">اسم المدرب: {userNameMap[(plan as any).trainerId] || '...'}</p>
+                )}
                 {plan.description && (
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{plan.description}</p>
                 )}
@@ -241,6 +262,22 @@ const ManagerPlansOverview = () => {
                 </select>
               </div>
               <div>
+                <input className="mb-2 w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="ابحث عن مدرب" value={trainerSearch} onChange={(e)=>setTrainerSearch(e.target.value)} />
+                <select className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" value={creatingTrainerId} onChange={(e)=>setCreatingTrainerId(e.target.value)}>
+                  <option value="">اختر مدرب...</option>
+                  {trainers.filter(m=>{
+                    const q = trainerSearch.trim().toLowerCase();
+                    if(!q) return true;
+                    const phone=(m.phone||'').toLowerCase();
+                    const name=(m.name||'').toLowerCase();
+                    const email=(m.email||'').toLowerCase();
+                    return phone.includes(q)||name.includes(q)||email.includes(q);
+                  }).map(m=> (
+                    <option key={m._id} value={m._id}>{(m.phone||'بدون هاتف')} - {m.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm mb-1">اسم الخطة</label>
                 <input className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="اكتب اسم الخطة (مثال: خطة تخسيس)" value={formPlanName} onChange={(e)=>setFormPlanName(e.target.value)} />
               </div>
@@ -250,11 +287,11 @@ const ManagerPlansOverview = () => {
               </div>
               <div>
                 <label className="block text-sm mb-1">تاريخ البداية</label>
-                <input type="date" className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" value={formStartDate} onChange={(e)=>setFormStartDate(e.target.value)} placeholder="تاريخ البداية" />
+                <input type="date" className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" value={formStartDate} onChange={(e)=>setFormStartDate(e.target.value)} onFocus={(e)=> (e.currentTarget as any).showPicker?.()} onClick={(e)=> (e.currentTarget as any).showPicker?.()} placeholder="تاريخ البداية" />
               </div>
               <div>
                 <label className="block text-sm mb-1">تاريخ النهاية</label>
-                <input type="date" className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" value={formEndDate} onChange={(e)=>setFormEndDate(e.target.value)} placeholder="تاريخ النهاية" />
+                <input type="date" className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" value={formEndDate} onChange={(e)=>setFormEndDate(e.target.value)} onFocus={(e)=> (e.currentTarget as any).showPicker?.()} onClick={(e)=> (e.currentTarget as any).showPicker?.()} placeholder="تاريخ النهاية" />
               </div>
             </div>
             <div className="mt-3">
@@ -282,7 +319,7 @@ const ManagerPlansOverview = () => {
             <div className="mt-4 flex justify-end space-x-2">
               <button className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded" onClick={()=>setShowCreateModal(false)}>إلغاء</button>
               <button className={`px-4 py-2 rounded text-white ${canSubmitCreate?'bg-blue-600 hover:bg-blue-700':'bg-blue-300 cursor-not-allowed'}`} disabled={!canSubmitCreate} onClick={async()=>{
-                try{ setLoading(true); const created=await workoutService.createWorkoutPlan(creatingUserId,{planName:formPlanName,description:formDescription,startDate:new Date(formStartDate) as any,endDate:new Date(formEndDate) as any,exercises: formExercises as any}); setWorkoutPlans(prev=>[created,...prev]); setShowCreateModal(false); resetForm();}catch(e:any){alert(e.message||'فشل إنشاء الخطة');}finally{setLoading(false);}
+                try{ setLoading(true); const created=await workoutService.createWorkoutPlan(creatingUserId,{planName:formPlanName,description:formDescription,startDate:new Date(formStartDate) as any,endDate:new Date(formEndDate) as any,exercises: formExercises as any, trainerId: creatingTrainerId || undefined}); setWorkoutPlans(prev=>[created,...prev]); setShowCreateModal(false); resetForm();}catch(e:any){alert(e.message||'فشل إنشاء الخطة');}finally{setLoading(false);}
               }}>حفظ</button>
             </div>
           </div>

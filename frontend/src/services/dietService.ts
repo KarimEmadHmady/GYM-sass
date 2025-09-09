@@ -9,8 +9,15 @@ export class DietService extends BaseService {
   }
 
   // Get all diet plans
-  async getDietPlans(params?: PaginationParams): Promise<PaginatedResponse<DietPlan>> {
-    return this.getAll<DietPlan>(params);
+  async getDietPlans(params?: PaginationParams & { trainerId?: string }): Promise<PaginatedResponse<DietPlan>> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
+    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
+    if (params?.trainerId) queryParams.append('trainerId', params.trainerId);
+    const qs = queryParams.toString();
+    return this.apiCall<PaginatedResponse<DietPlan>>(`${qs ? `?${qs}` : ''}`);
   }
 
   // Get diet plan by ID
@@ -19,12 +26,12 @@ export class DietService extends BaseService {
   }
 
   // Create new diet plan
-  async createDietPlan(dietData: Partial<DietPlan>): Promise<DietPlan> {
+  async createDietPlan(dietData: Partial<DietPlan> & { trainerId?: string }): Promise<DietPlan> {
     return this.create<DietPlan>(dietData);
   }
 
   // Update diet plan
-  async updateDietPlan(id: string, dietData: Partial<DietPlan>): Promise<DietPlan> {
+  async updateDietPlan(id: string, dietData: Partial<DietPlan> & { trainerId?: string }): Promise<DietPlan> {
     return this.update<DietPlan>(id, dietData);
   }
 

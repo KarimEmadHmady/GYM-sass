@@ -22,6 +22,12 @@ const dietPlanSchema = new mongoose.Schema(
       ref: "User",
       required: true, // العميل المرتبط بالخطة - إجباري
     },
+    // معرف المدرب المسؤول عن هذه الخطة - يسهل جلب عملاء المدرب
+    trainerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      index: true,
+    },
     planName: { type: String, required: true }, // اسم الخطة - إجباري
     description: { type: String }, // وصف الخطة - اختياري
     startDate: { type: Date, required: true }, // تاريخ بداية الخطة - إجباري
@@ -30,6 +36,9 @@ const dietPlanSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// فهرس لتسريع البحث بخانة المدرب
+dietPlanSchema.index({ trainerId: 1 });
 
 const DietPlan = mongoose.model("DietPlan", dietPlanSchema);
 export default DietPlan;

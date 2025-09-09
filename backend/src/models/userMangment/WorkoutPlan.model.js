@@ -24,6 +24,8 @@ const workoutPlanSchema = new mongoose.Schema(
   {
     // معرف المستخدم المرتبطة به الخطة
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    // معرف المدرب المسؤول عن هذه الخطة - يسهل جلب عملاء المدرب
+    trainerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", index: true },
     // اسم الخطة
     planName: { type: String, required: true },
     // وصف الخطة
@@ -37,6 +39,9 @@ const workoutPlanSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// فهرس لتسريع البحث بخانة المدرب
+workoutPlanSchema.index({ trainerId: 1 });
 
 // إنشاء الموديل من السكيمة
 const WorkoutPlan = mongoose.model("WorkoutPlan", workoutPlanSchema);

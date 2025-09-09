@@ -84,6 +84,7 @@ export interface Exercise {
 export interface WorkoutPlan {
   _id: string;
   userId: string;
+  trainerId?: string;
   planName: string;
   description?: string;
   startDate: Date;
@@ -105,6 +106,7 @@ export interface Meal {
 export interface DietPlan {
   _id: string;
   userId: string;
+  trainerId?: string;
   planName: string;
   description?: string;
   startDate: Date;

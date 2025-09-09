@@ -2,11 +2,14 @@ import WorkoutPlan from "../models/userMangment/WorkoutPlan.model.js";
 
 // إنشاء خطة تمرين جديدة
 export const createWorkoutPlanService = async (data) => {
-  const { userId, planName, description, startDate, endDate, exercises } = data;
+  const { userId, planName, description, startDate, endDate, exercises, trainerId } = data;
   if (!userId || !planName || !startDate || !endDate || !exercises) {
     throw new Error('userId, planName, startDate, endDate, and exercises are required');
   }
   const allowed = { userId, planName, description, startDate, endDate, exercises };
+  if (trainerId) {
+    allowed.trainerId = trainerId;
+  }
   return await WorkoutPlan.create(allowed);
 };
 
@@ -16,8 +19,12 @@ export const getWorkoutPlansByUserService = async (userId) => {
 };
 
 // جلب جميع خطط التمرين
-export const getAllWorkoutPlansService = async () => {
-  return await WorkoutPlan.find().sort({ createdAt: -1 });
+export const getAllWorkoutPlansService = async (filters = {}) => {
+  const query = {};
+  if (filters.trainerId) {
+    query.trainerId = filters.trainerId;
+  }
+  return await WorkoutPlan.find(query).sort({ createdAt: -1 });
 };
 
 // جلب جميع التمارين لخطة معينة

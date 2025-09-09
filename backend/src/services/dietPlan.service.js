@@ -2,11 +2,14 @@ import mongoose from 'mongoose';
 import DietPlan from '../models/userMangment/DietPlan.model.js';
 // إنشاء خطة غذائية جديدة
 export const createDietPlanService = async (data) => {
-  const { userId, planName, description, startDate, endDate, meals } = data;
+  const { userId, planName, description, startDate, endDate, meals, trainerId } = data;
   if (!userId || !planName || !startDate) {
     throw new Error('userId, planName, and startDate are required');
   }
   const allowed = { userId, planName, description, startDate, endDate, meals };
+  if (trainerId) {
+    allowed.trainerId = trainerId;
+  }
   return await DietPlan.create(allowed);
 };
 
@@ -100,7 +103,11 @@ export const getDietPlanByIdService = async (id) => {
 };
 
 // جلب جميع الخطط الغذائية (للاستخدام الإداري)
-export const getAllDietPlansService = async () => {
-  return await DietPlan.find().sort({ createdAt: -1 });
+export const getAllDietPlansService = async (filters = {}) => {
+  const query = {};
+  if (filters.trainerId) {
+    query.trainerId = filters.trainerId;
+  }
+  return await DietPlan.find(query).sort({ createdAt: -1 });
 };
 

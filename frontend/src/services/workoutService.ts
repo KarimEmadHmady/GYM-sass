@@ -8,8 +8,15 @@ export class WorkoutService extends BaseService {
   }
 
   // Get all workout plans
-  async getAllWorkoutPlans(params?: PaginationParams): Promise<PaginatedResponse<WorkoutPlan>> {
-    return this.getAll<WorkoutPlan>(params);
+  async getAllWorkoutPlans(params?: PaginationParams & { trainerId?: string }): Promise<PaginatedResponse<WorkoutPlan>> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
+    if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
+    if (params?.trainerId) queryParams.append('trainerId', params.trainerId);
+    const qs = queryParams.toString();
+    return this.apiCall<PaginatedResponse<WorkoutPlan>>(`${qs ? `?${qs}` : ''}`);
   }
 
   // Get workout plan by ID
@@ -18,7 +25,7 @@ export class WorkoutService extends BaseService {
   }
 
   // Create new workout plan
-  async createWorkoutPlan(userId: string, workoutData: Partial<WorkoutPlan>): Promise<WorkoutPlan> {
+  async createWorkoutPlan(userId: string, workoutData: Partial<WorkoutPlan> & { trainerId?: string }): Promise<WorkoutPlan> {
     return this.apiCall<WorkoutPlan>(`/${userId}`, {
       method: 'POST',
       body: JSON.stringify(workoutData),
@@ -26,7 +33,7 @@ export class WorkoutService extends BaseService {
   }
 
   // Update workout plan
-  async updateWorkoutPlan(id: string, workoutData: Partial<WorkoutPlan>): Promise<WorkoutPlan> {
+  async updateWorkoutPlan(id: string, workoutData: Partial<WorkoutPlan> & { trainerId?: string }): Promise<WorkoutPlan> {
     return this.apiCall<WorkoutPlan>(`/${id}`, {
       method: 'PUT',
       body: JSON.stringify(workoutData),

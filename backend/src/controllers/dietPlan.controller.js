@@ -15,7 +15,11 @@ import { getAllDietPlansService } from '../services/dietPlan.service.js';
   // إنشاء خطة غذائية جديدة
   export const createDietPlan = async (req, res) => {
     try {
-      const plan = await createDietPlanService(req.body);
+      const plan = await createDietPlanService({
+        ...req.body,
+        // لو المستخدم مدرب ومررناش trainerId، خليه المدرب الحالي
+        trainerId: req.body.trainerId || (req.user && req.user.role === 'trainer' ? req.user.id : undefined)
+      });
       res.status(201).json(plan);
     } catch (err) {
       res.status(400).json({ message: err.message });
@@ -35,7 +39,11 @@ import { getAllDietPlansService } from '../services/dietPlan.service.js';
   // تعديل خطة غذائية
   export const updateDietPlan = async (req, res) => {
     try {
-      const plan = await updateDietPlanService(req.params.id, req.body);
+      const payload = { ...req.body };
+      if (!payload.trainerId && req.user && req.user.role === 'trainer') {
+        payload.trainerId = req.user.id;
+      }
+      const plan = await updateDietPlanService(req.params.id, payload);
       res.status(200).json(plan);
     } catch (err) {
       res.status(400).json({ message: err.message });
@@ -117,7 +125,8 @@ export const getDietPlanById = async (req, res) => {
 // جلب كل الخطط الغذائية
 export const getAllDietPlans = async (req, res) => {
   try {
-    const plans = await getAllDietPlansService();
+    const trainerId = req.query.trainerId || (req.user && req.user.role === 'trainer' ? req.user.id : undefined);
+    const plans = await getAllDietPlansService({ trainerId });
     res.status(200).json(plans);
   } catch (err) {
     res.status(500).json({ message: err.message });

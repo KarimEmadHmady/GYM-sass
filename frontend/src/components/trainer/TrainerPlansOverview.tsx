@@ -16,6 +16,15 @@ const TrainerPlansOverview = () => {
   const [dietPlans, setDietPlans] = useState<DietPlan[]>([]);
   const [dietLoading, setDietLoading] = useState(false);
   const [dietError, setDietError] = useState<string | null>(null);
+  const [showCreateDietModal, setShowCreateDietModal] = useState(false);
+  const [createDietUserId, setCreateDietUserId] = useState('');
+  const [createDietName, setCreateDietName] = useState('');
+  const [createDietDesc, setCreateDietDesc] = useState('');
+  const [createDietStart, setCreateDietStart] = useState('');
+  const [createDietEnd, setCreateDietEnd] = useState('');
+  const [createDietMeals, setCreateDietMeals] = useState<Array<{ mealName: string; calories: number; quantity: string; notes?: string }>>([]);
+  const [createDietLoading, setCreateDietLoading] = useState(false);
+  const [createDietError, setCreateDietError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState<null | string>(null);
@@ -55,7 +64,7 @@ const TrainerPlansOverview = () => {
         } catch {}
 
         // Fetch all plans then filter to only my clients
-        const res = await workoutService.getAllWorkoutPlans();
+        const res = await workoutService.getAllWorkoutPlans({ trainerId: currentTrainerId });
         const plans: any = (res as any).data || (res as any);
         const filtered = clientIds.length ? plans.filter((p: any) => clientIds.includes(p.userId)) : plans;
         setWorkoutPlans(filtered);
@@ -73,7 +82,7 @@ const TrainerPlansOverview = () => {
       try {
         setDietLoading(true);
         setDietError(null);
-        const res: any = await dietService.getDietPlans();
+        const res: any = await dietService.getDietPlans({ trainerId: currentTrainerId });
         setDietPlans((res?.data || res || []) as DietPlan[]);
       } catch (e: any) {
         setDietError(e.message || 'فشل تحميل الخطط الغذائية');
@@ -82,7 +91,7 @@ const TrainerPlansOverview = () => {
       }
     };
     fetchDietPlans();
-  }, []);
+  }, [currentTrainerId]);
 
   useEffect(() => {
     const loadNames = async () => {
@@ -180,15 +189,122 @@ const TrainerPlansOverview = () => {
             خططي
           </h3>
           <div className="flex space-x-2">
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors" onClick={openCreate}>
-              إنشاء خطة جديدة
-            </button>
+            {activeTab === 'workout' ? (
+              <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors" onClick={openCreate}>
+                إنشاء خطة تمرين
+              </button>
+            ) : (
+              <button className="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700 transition-colors" onClick={() => {
+                setCreateDietUserId('');
+                setCreateDietName('');
+                setCreateDietDesc('');
+                setCreateDietStart('');
+                setCreateDietEnd('');
+                setCreateDietMeals([]);
+                setCreateDietError(null);
+                setShowCreateDietModal(true);
+              }}>
+                إنشاء خطة غذائية
+              </button>
+            )}
             <button className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
               تصدير البيانات
             </button>
           </div>
         </div>
       </div>
+      {/* Create Diet Plan Modal */}
+      {showCreateDietModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">إنشاء خطة غذائية</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-sm mb-1">اختر عميل (من عملائك فقط)</label>
+                <select value={createDietUserId} onChange={(e) => setCreateDietUserId(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900">
+                  <option value="">اختر عميل...</option>
+                  {myClients.map((m) => (
+                    <option key={m._id} value={m._id}>{(m.phone || 'بدون هاتف')} - {m.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm mb-1">اسم الخطة</label>
+                <input value={createDietName} onChange={(e) => setCreateDietName(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="مثال: خطة غذائية" />
+              </div>
+              <div>
+                <label className="block text-sm mb-1">الوصف</label>
+                <input value={createDietDesc} onChange={(e) => setCreateDietDesc(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="وصف مختصر" />
+              </div>
+              <div>
+                <label className="block text-sm mb-1">تاريخ البداية</label>
+                <input type="date" value={createDietStart} onChange={(e) => setCreateDietStart(e.target.value)} onFocus={(e)=> (e.currentTarget as any).showPicker?.()} onClick={(e)=> (e.currentTarget as any).showPicker?.()} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" />
+              </div>
+              <div>
+                <label className="block text-sm mb-1">تاريخ النهاية</label>
+                <input type="date" value={createDietEnd} onChange={(e) => setCreateDietEnd(e.target.value)} onFocus={(e)=> (e.currentTarget as any).showPicker?.()} onClick={(e)=> (e.currentTarget as any).showPicker?.()} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium">الوجبات</h4>
+                <button className="px-3 py-1 bg-green-600 text-white rounded" onClick={() => setCreateDietMeals((prev) => [...prev, { mealName: '', calories: 1, quantity: '1', notes: '' }])}>إضافة وجبة</button>
+              </div>
+              <div className="grid grid-cols-12 gap-2 text-xs text-gray-600 mb-1">
+                <span className="col-span-3">اسم الوجبة</span>
+                <span className="col-span-2">السعرات</span>
+                <span className="col-span-2">الكمية</span>
+                <span className="col-span-4">ملاحظات</span>
+                <span className="col-span-1">إجراء</span>
+              </div>
+              {createDietMeals.length === 0 && (
+                <p className="text-sm text-gray-500">لا يوجد وجبات</p>
+              )}
+              <div className="space-y-3 max-h-60 overflow-auto pr-1">
+                {createDietMeals.map((meal, idx) => (
+                  <div key={idx} className="grid grid-cols-12 gap-2 items-center">
+                    <input className="col-span-3 border rounded px-2 py-1 bg-white dark:bg-gray-900" placeholder="مثال: فطور" value={meal.mealName} onChange={(e)=> setCreateDietMeals(prev => prev.map((m,i)=> i===idx ? { ...m, mealName: e.target.value } : m))} />
+                    <input type="number" className="col-span-2 border rounded px-2 py-1 bg-white dark:bg-gray-900" placeholder="مثال: 300" value={meal.calories} onChange={(e)=> setCreateDietMeals(prev => prev.map((m,i)=> i===idx ? { ...m, calories: Number(e.target.value) } : m))} />
+                    <input className="col-span-2 border rounded px-2 py-1 bg-white dark:bg-gray-900" placeholder="مثال: 1 طبق" value={meal.quantity} onChange={(e)=> setCreateDietMeals(prev => prev.map((m,i)=> i===idx ? { ...m, quantity: e.target.value } : m))} />
+                    <input className="col-span-4 border rounded px-2 py-1 bg-white dark:bg-gray-900" placeholder="اختياري" value={meal.notes || ''} onChange={(e)=> setCreateDietMeals(prev => prev.map((m,i)=> i===idx ? { ...m, notes: e.target.value } : m))} />
+                    <button className="col-span-1 text-red-600" onClick={()=> setCreateDietMeals(prev => prev.filter((_,i)=> i!==idx))}>حذف</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {createDietError && <p className="text-xs text-red-600 mt-2">{createDietError}</p>}
+
+            <div className="mt-6 flex justify-end space-x-2">
+              <button className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded" onClick={() => setShowCreateDietModal(false)}>إلغاء</button>
+              <button className={`px-4 py-2 rounded text-white ${createDietLoading ? 'bg-green-300 cursor-wait' : 'bg-green-600 hover:bg-green-700'}`} disabled={createDietLoading} onClick={async () => {
+                if (!createDietUserId) { setCreateDietError('يجب اختيار عميل'); return; }
+                if (!createDietName.trim()) { setCreateDietError('اسم الخطة مطلوب'); return; }
+                if (!createDietStart) { setCreateDietError('تاريخ البداية مطلوب'); return; }
+                try {
+                  setCreateDietLoading(true);
+                  const created = await dietService.createDietPlan({
+                    userId: createDietUserId,
+                    planName: createDietName.trim(),
+                    description: createDietDesc,
+                    startDate: new Date(createDietStart) as any,
+                    endDate: createDietEnd ? new Date(createDietEnd) as any : undefined,
+                    meals: createDietMeals as any,
+                  });
+                  setDietPlans((prev) => [created as any, ...prev]);
+                  setShowCreateDietModal(false);
+                  setCreateDietMeals([]);
+                } catch (e: any) {
+                  setCreateDietError(e.message || 'فشل إنشاء الخطة الغذائية');
+                } finally {
+                  setCreateDietLoading(false);
+                }
+              }}>حفظ</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
@@ -314,11 +430,11 @@ const TrainerPlansOverview = () => {
               </div>
               <div>
                 <label className="block text-sm mb-1">تاريخ البداية</label>
-                <input type="date" className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" value={formStartDate} onChange={(e)=>setFormStartDate(e.target.value)} placeholder="تاريخ البداية" />
+                <input type="date" className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" value={formStartDate} onChange={(e)=>setFormStartDate(e.target.value)} onFocus={(e)=> (e.currentTarget as any).showPicker?.()} onClick={(e)=> (e.currentTarget as any).showPicker?.()} placeholder="تاريخ البداية" />
               </div>
               <div>
                 <label className="block text-sm mb-1">تاريخ النهاية</label>
-                <input type="date" className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" value={formEndDate} onChange={(e)=>setFormEndDate(e.target.value)} placeholder="تاريخ النهاية" />
+                <input type="date" className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" value={formEndDate} onChange={(e)=>setFormEndDate(e.target.value)} onFocus={(e)=> (e.currentTarget as any).showPicker?.()} onClick={(e)=> (e.currentTarget as any).showPicker?.()} placeholder="تاريخ النهاية" />
               </div>
             </div>
             <div className="mt-3">

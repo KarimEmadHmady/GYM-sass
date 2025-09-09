@@ -2,8 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import type { WorkoutPlan } from '@/types';
-import { workoutService } from '@/services';
+import type { WorkoutPlan, DietPlan } from '@/types';
+import { workoutService, dietService, userService } from '@/services';
 
 const MemberPlansOverview = () => {
   const { user } = useAuth();
@@ -12,33 +12,10 @@ const MemberPlansOverview = () => {
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const dietPlans = [
-    {
-      id: 1,
-      name: 'خطة التخسيس الغذائية',
-      type: 'weight_loss',
-      calories: 1500,
-      meals: 5,
-      currentWeek: 3,
-      progress: 37.5,
-      trainer: 'سارة أحمد',
-      status: 'active',
-      nextMeal: 'الإفطار - 08:00'
-    },
-    {
-      id: 2,
-      name: 'خطة بناء العضلات الغذائية',
-      type: 'muscle_gain',
-      calories: 2500,
-      meals: 6,
-      currentWeek: 2,
-      progress: 16.7,
-      trainer: 'علي محمود',
-      status: 'active',
-      nextMeal: 'الإفطار - 08:00'
-    }
-  ];
+  const [dietPlans, setDietPlans] = useState<DietPlan[]>([]);
+  const [dietLoading, setDietLoading] = useState(false);
+  const [dietError, setDietError] = useState<string | null>(null);
+  const [nameMap, setNameMap] = useState<Record<string, string>>({});
 
   const getTypeText = (type: string) => {
     const types = {
@@ -111,7 +88,43 @@ const MemberPlansOverview = () => {
     fetchMyPlans();
   }, [currentUserId]);
 
-  const currentPlans: any[] = activeTab === 'workout' ? (workoutPlans as any[]) : dietPlans;
+  useEffect(() => {
+    const fetchMyDietPlans = async () => {
+      if (!currentUserId) return;
+      try {
+        setDietLoading(true);
+        setDietError(null);
+        const res: any = await dietService.getUserDietPlans(currentUserId);
+        setDietPlans((res?.data || res || []) as DietPlan[]);
+      } catch (e: any) {
+        setDietError(e.message || 'فشل تحميل الخطط الغذائية');
+      } finally {
+        setDietLoading(false);
+      }
+    };
+    fetchMyDietPlans();
+  }, [currentUserId]);
+
+  useEffect(() => {
+    const loadNames = async () => {
+      const ids = Array.from(new Set([
+        ...((workoutPlans || []).map((p: any) => p.trainerId).filter(Boolean)),
+        ...((dietPlans || []).map((p: any) => p.trainerId).filter(Boolean)),
+      ]));
+      const missing = ids.filter(id => !nameMap[id as string]);
+      if (missing.length === 0) return;
+      try {
+        const pairs = await Promise.all(missing.map(async (id) => {
+          try { const u = await userService.getUser(id as string); return [id, u.name] as const; }
+          catch { return [id, id as string] as const; }
+        }));
+        setNameMap(prev => ({ ...prev, ...Object.fromEntries(pairs) }));
+      } catch {}
+    };
+    loadNames();
+  }, [workoutPlans, dietPlans, nameMap]);
+
+  const currentPlans: any[] = activeTab === 'workout' ? (workoutPlans as any[]) : (dietPlans as any[]);
 
   return (
     <div className="space-y-6">
@@ -173,6 +186,12 @@ const MemberPlansOverview = () => {
                 </div>
 
                 <div className="space-y-3">
+                  {plan.trainerId && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">المدرب:</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{nameMap[plan.trainerId] || '...'}</span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600 dark:text-gray-400">الفترة:</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -221,12 +240,51 @@ const MemberPlansOverview = () => {
                 </div>
               </div>
             ))}
-            {activeTab === 'diet' && dietPlans.map((plan) => (
-              <div key={plan.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
-                <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{plan.name}</h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">السعرات: {plan.calories} - الوجبات: {plan.meals}</p>
-              </div>
-            ))}
+            {activeTab === 'diet' && (
+              dietLoading ? (
+                <p className="text-sm text-gray-600 dark:text-gray-400">جاري التحميل...</p>
+              ) : dietError ? (
+                <p className="text-sm text-red-600">{dietError}</p>
+              ) : (dietPlans as any[]).map((plan: any) => (
+                <div key={plan._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white">{plan.planName}</h4>
+                  </div>
+                  {plan.trainerId && (
+                    <p className="text-xs text-gray-500 mb-1">المدرب: {nameMap[plan.trainerId] || '...'}</p>
+                  )}
+                  <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">{plan.description || '-'}</div>
+                  <div className="flex items-center justify-between text-sm mb-3">
+                    <span className="text-gray-600 dark:text-gray-400">الفترة:</span>
+                    <span className="text-gray-900 dark:text-white">{new Date(plan.startDate).toLocaleDateString()} {plan.endDate ? `- ${new Date(plan.endDate).toLocaleDateString()}` : ''}</span>
+                  </div>
+                  <div>
+                    <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">الوجبات</h5>
+                    {(!plan.meals || plan.meals.length === 0) ? (
+                      <p className="text-xs text-gray-500">لا توجد وجبات.</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {plan.meals.map((meal: any, idx: number) => (
+                          <li key={meal.mealId || idx} className="flex items-center justify-between bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-2">
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold">{idx+1}</span>
+                              <span className="text-sm text-gray-900 dark:text-white">{meal.mealName}</span>
+                            </div>
+                            <div className="text-xs text-gray-700 dark:text-gray-300 text-right">
+                              <div>السعرات: {meal.calories}</div>
+                              <div>الكمية: {meal.quantity}</div>
+                              {meal.notes ? (
+                                <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">ملاحظات: {meal.notes}</div>
+                              ) : null}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

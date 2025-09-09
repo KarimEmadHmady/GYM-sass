@@ -17,7 +17,8 @@ export const createWorkoutPlan = async (req, res) => {
   try {
     const plan = await createWorkoutPlanService({  
       ...req.body,
-      userId: req.params.userId
+      userId: req.params.userId,
+      trainerId: req.body.trainerId || (req.user && req.user.role === 'trainer' ? req.user.id : undefined)
     });
     res.status(201).json(plan);
   } catch (error) {
@@ -49,7 +50,11 @@ export const getWorkoutPlanById = async (req, res) => {
 // تعديل خطة تمرين
 export const updateWorkoutPlan = async (req, res) => {
   try {
-    const updated = await updateWorkoutPlanService(req.params.id, req.body);
+    const payload = { ...req.body };
+    if (!payload.trainerId && req.user && req.user.role === 'trainer') {
+      payload.trainerId = req.user.id;
+    }
+    const updated = await updateWorkoutPlanService(req.params.id, payload);
     if (!updated) return res.status(404).json({ message: "الخطة غير موجودة" });
     res.json(updated);
   } catch (error) {
@@ -110,7 +115,8 @@ export const deleteExerciseFromPlan = async (req, res) => {
 // جلب جميع خطط التمرين
 export const getAllWorkoutPlans = async (req, res) => {
   try {
-    const plans = await getAllWorkoutPlansService();
+    const trainerId = req.query.trainerId || (req.user && req.user.role === 'trainer' ? req.user.id : undefined);
+    const plans = await getAllWorkoutPlansService({ trainerId });
     res.json(plans);
   } catch (error) {
     res.status(500).json({ message: error.message });
