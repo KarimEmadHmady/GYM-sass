@@ -4,8 +4,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { WorkoutPlan } from '@/types';
 import { workoutService, userService } from '@/services';
+import { dietService } from '@/services';
+import type { DietPlan } from '@/types';
 
-const AdminPlansOverview = () => {
+type AdminPlansOverviewProps = {
+  filterUserIds?: Set<string>;
+};
+
+const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => {
   const [activeTab, setActiveTab] = useState('workout');
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [loading, setLoading] = useState(false);
@@ -24,6 +30,25 @@ const AdminPlansOverview = () => {
   const [memberSearch, setMemberSearch] = useState('');
   const [userNameMap, setUserNameMap] = useState<Record<string, string>>({});
   const t = useTranslations();
+  const [dietPlans, setDietPlans] = useState<DietPlan[]>([]);
+  const [dietLoading, setDietLoading] = useState(false);
+  const [dietError, setDietError] = useState<string | null>(null);
+  const [editingDietPlan, setEditingDietPlan] = useState<DietPlan | null>(null);
+  const [showEditDietModal, setShowEditDietModal] = useState(false);
+  const [dietMealsLoading, setDietMealsLoading] = useState(false);
+  const [dietMealsError, setDietMealsError] = useState<string | null>(null);
+  const [showDeleteDietModal, setShowDeleteDietModal] = useState<null | string>(null);
+  const [dietPlanNameInput, setDietPlanNameInput] = useState('');
+  const [dietPlanDescInput, setDietPlanDescInput] = useState('');
+  const [showCreateDietModal, setShowCreateDietModal] = useState(false);
+  const [createDietUserId, setCreateDietUserId] = useState('');
+  const [createDietName, setCreateDietName] = useState('');
+  const [createDietDesc, setCreateDietDesc] = useState('');
+  const [createDietStart, setCreateDietStart] = useState('');
+  const [createDietEnd, setCreateDietEnd] = useState('');
+  const [createDietMeals, setCreateDietMeals] = useState<Array<{ mealName: string; calories: number; quantity: string; notes?: string }>>([]);
+  const [createDietError, setCreateDietError] = useState<string | null>(null);
+  const [createDietLoading, setCreateDietLoading] = useState(false);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -49,7 +74,10 @@ const AdminPlansOverview = () => {
 
   useEffect(() => {
     const loadNames = async () => {
-      const ids = Array.from(new Set((workoutPlans || []).map(p => p.userId).filter(Boolean)));
+      const ids = Array.from(new Set([
+        ...((workoutPlans || []).map(p => p.userId).filter(Boolean)),
+        ...((dietPlans || []).map((p:any) => p.userId).filter(Boolean)),
+      ]));
       const missing = ids.filter(id => !userNameMap[id]);
       if (missing.length === 0) return;
       try {
@@ -61,7 +89,23 @@ const AdminPlansOverview = () => {
       } catch {}
     };
     loadNames();
-  }, [workoutPlans, userNameMap]);
+  }, [workoutPlans, dietPlans, userNameMap]);
+
+  useEffect(() => {
+    const fetchDietPlans = async () => {
+      try {
+        setDietLoading(true);
+        setDietError(null);
+        const res: any = await dietService.getDietPlans();
+        setDietPlans((res?.data || res || []) as DietPlan[]);
+      } catch (e: any) {
+        setDietError(e.message || 'فشل تحميل الخطط الغذائية');
+      } finally {
+        setDietLoading(false);
+      }
+    };
+    fetchDietPlans();
+  }, []);
 
   const resetForm = () => {
     setCreatingUserId('');
@@ -87,46 +131,14 @@ const AdminPlansOverview = () => {
     setShowEditModal(true);
   };
 
-  const canSubmitCreate = useMemo(() => creatingUserId && formPlanName && formStartDate && formEndDate, [creatingUserId, formPlanName, formStartDate, formEndDate]);
+  const openEditDiet = (plan: DietPlan) => {
+    setEditingDietPlan(plan);
+    setShowEditDietModal(true);
+    setDietPlanNameInput(plan.planName || '');
+    setDietPlanDescInput(plan.description || '');
+  };
 
-  const dietPlans = [
-    {
-      id: 1,
-      name: t('AdminPlansOverview.dietPlans.plan1.name'),
-      type: 'weight_loss',
-      calories: 1500,
-      meals: 5,
-      members: 20,
-      status: 'active',
-      createdBy: 'سارة أحمد',
-      createdAt: '2024-01-12',
-      revenue: 1200
-    },
-    {
-      id: 2,
-      name: t('AdminPlansOverview.dietPlans.plan2.name'),
-      type: 'muscle_gain',
-      calories: 2500,
-      meals: 6,
-      members: 12,
-      status: 'active',
-      createdBy: 'علي محمود',
-      createdAt: '2024-01-05',
-      revenue: 900
-    },
-    {
-      id: 3,
-      name: t('AdminPlansOverview.dietPlans.plan3.name'),
-      type: 'general_health',
-      calories: 2000,
-      meals: 4,
-      members: 35,
-      status: 'active',
-      createdBy: 'سارة أحمد',
-      createdAt: '2024-01-03',
-      revenue: 2100
-    }
-  ];
+  const canSubmitCreate = useMemo(() => creatingUserId && formPlanName && formStartDate && formEndDate, [creatingUserId, formPlanName, formStartDate, formEndDate]);
 
   const getTypeText = (type: string) => {
     return t(`AdminPlansOverview.types.${type}`);
@@ -158,7 +170,44 @@ const AdminPlansOverview = () => {
     return t(`AdminPlansOverview.statuses.${status}`);
   };
 
-  const currentPlans = activeTab === 'workout' ? workoutPlans : dietPlans as any[];
+  const filteredWorkoutPlans = useMemo(() => {
+    if (!filterUserIds || filterUserIds.size === 0) return workoutPlans;
+    return workoutPlans.filter((p) => filterUserIds.has(p.userId as any));
+  }, [workoutPlans, filterUserIds]);
+
+  const filteredDietPlans = useMemo(() => {
+    if (!filterUserIds || filterUserIds.size === 0) return dietPlans as any[];
+    return (dietPlans as any[]).filter((p: any) => filterUserIds.has(p.userId));
+  }, [dietPlans, filterUserIds]);
+
+  const currentPlans = activeTab === 'workout' ? filteredWorkoutPlans : filteredDietPlans as any[];
+
+  // 1. أضف دالة لإضافة وجبة جديدة لأول خطة غذائية:
+  const handleAddMealToFirstDietPlan = async () => {
+    if (!dietPlans.length) {
+      alert('لا توجد خطط غذائية لإضافة وجبة');
+      return;
+    }
+    try {
+      setDietMealsLoading(true);
+      const plan = dietPlans[0];
+      const updated = await dietService.addMealToPlan(plan._id, { mealName: 'وجبة جديدة', calories: 1, quantity: '1', notes: '' });
+      await refreshDietPlan(plan._id);
+    } catch (e: any) {
+      setDietMealsError(e.message || 'فشل إضافة الوجبة');
+    } finally {
+      setDietMealsLoading(false);
+    }
+  };
+
+  // أضف دالة لجلب خطة غذائية واحدة وتحديثها في الواجهة:
+  const refreshDietPlan = async (planId: string) => {
+    try {
+      const res = await dietService.getDietPlan(planId);
+      setDietPlans((prev) => prev.map((p) => p._id === planId ? res : p));
+      setEditingDietPlan(res);
+    } catch {}
+  };
 
   return (
     <>
@@ -171,7 +220,24 @@ const AdminPlansOverview = () => {
           </h3>
           <div className="flex items-center space-x-4">
             <div className="flex space-x-2">
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors" onClick={openCreate}>{t('AdminPlansOverview.addNewPlan')}</button>
+              {activeTab === 'workout' ? (
+                <>
+                  <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors" onClick={openCreate}>{t('AdminPlansOverview.addNewPlan')}</button>
+                </>
+              ) : (
+                <>
+                  <button className="bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700 transition-colors" onClick={() => {
+                    setCreateDietUserId('');
+                    setCreateDietName('');
+                    setCreateDietDesc('');
+                    setCreateDietStart('');
+                    setCreateDietEnd('');
+                    setCreateDietMeals([]);
+                    setCreateDietError(null);
+                    setShowCreateDietModal(true);
+                  }}>إنشاء خطة غذائية</button>
+                </>
+              )}
               <button className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
                 {t('AdminPlansOverview.exportData')}
               </button>
@@ -185,8 +251,8 @@ const AdminPlansOverview = () => {
         <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex space-x-8 px-6">
             {[
-              { id: 'workout', name: t('AdminPlansOverview.tabs.workout'), count: workoutPlans.length, icon: '🏋️' },
-              { id: 'diet', name: t('AdminPlansOverview.tabs.diet'), count: dietPlans.length, icon: '🍎' }
+              { id: 'workout', name: t('AdminPlansOverview.tabs.workout'), count: filteredWorkoutPlans.length, icon: '🏋️' },
+              { id: 'diet', name: t('AdminPlansOverview.tabs.diet'), count: filteredDietPlans.length, icon: '🍎' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -252,19 +318,37 @@ const AdminPlansOverview = () => {
                 </div>
               </div>
             ))}
-            {activeTab === 'diet' && (dietPlans as any[]).map((plan: any) => (
-              <div key={plan.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between mb-4">
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-white">{plan.name}</h4>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center justify_between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('AdminPlansOverview.labels.calories')}</span>
-                    <span className="text-sm font-medium text_gray-900 dark:text-white">{plan.calories} {t('AdminPlansOverview.calorieUnit')}</span>
+            {activeTab === 'diet' && (
+              dietLoading ? (
+                <p className="text-sm text-gray-600 dark:text-gray-400">جاري التحميل...</p>
+              ) : dietError ? (
+                <p className="text-sm text-red-600">{dietError}</p>
+              ) : dietPlans.map((plan) => (
+                <div key={plan._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between mb-4">
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white">{plan.planName}</h4>
+                    <div className="flex gap-2">
+                      <button className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded text-xs" onClick={() => openEditDiet(plan)}>تعديل</button>
+                      <button className="bg-red-600 text-white px-3 py-1 rounded text-xs" onClick={() => setShowDeleteDietModal(plan._id)}>حذف</button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mb-2">اسم المستخدم: {userNameMap[(plan as any).userId] || '...'}</p>
+                  {plan.description && (
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{plan.description}</p>
+                  )}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">الفترة:</span>
+                      <span className="text-gray-900 dark:text-white">{new Date(plan.startDate).toLocaleDateString()} {plan.endDate ? `- ${new Date(plan.endDate).toLocaleDateString()}` : ''}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">عدد الوجبات:</span>
+                      <span className="text-gray-900 dark:text-white">{plan.meals?.length || 0} وجبة</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -365,6 +449,114 @@ const AdminPlansOverview = () => {
                 alert(e.message || 'فشل إنشاء الخطة');
               } finally {
                 setLoading(false);
+              }
+            }}>حفظ</button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Create Diet Plan Modal */}
+    {showCreateDietModal && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify_center z-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">إنشاء خطة غذائية</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-sm mb-1">المستخدم (الأعضاء فقط)</label>
+              <input
+                className="mb-2 w-full border rounded px-3 py-2 bg-white dark:bg-gray-900"
+                placeholder="ابحث بالاسم أو الهاتف أو الإيميل"
+                value={memberSearch}
+                onChange={(e) => setMemberSearch(e.target.value)}
+              />
+              <select value={createDietUserId} onChange={(e) => setCreateDietUserId(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900">
+                <option value="">اختر عضو...</option>
+                {members
+                  .filter((m) => {
+                    const q = memberSearch.trim().toLowerCase();
+                    if (!q) return true;
+                    const phone = (m.phone || '').toLowerCase();
+                    const name = (m.name || '').toLowerCase();
+                    const email = (m.email || '').toLowerCase();
+                    return phone.includes(q) || name.includes(q) || email.includes(q);
+                  })
+                  .map((m) => (
+                    <option key={m._id} value={m._id}>{(m.phone || 'بدون هاتف')} - {m.name}</option>
+                  ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm mb-1">اسم الخطة</label>
+              <input value={createDietName} onChange={(e) => setCreateDietName(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="مثال: خطة غذائية" />
+            </div>
+            <div>
+              <label className="block text-sm mb-1">الوصف</label>
+              <input value={createDietDesc} onChange={(e) => setCreateDietDesc(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" placeholder="وصف مختصر" />
+            </div>
+            <div>
+              <label className="block text-sm mb-1">تاريخ البداية</label>
+              <input type="date" value={createDietStart} onChange={(e) => setCreateDietStart(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" />
+            </div>
+            <div>
+              <label className="block text-sm mb-1">تاريخ النهاية</label>
+              <input type="date" value={createDietEnd} onChange={(e) => setCreateDietEnd(e.target.value)} className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" />
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-medium">الوجبات</h4>
+              <button className="px-3 py-1 bg-green-600 text-white rounded" onClick={() => setCreateDietMeals((prev) => [...prev, { mealName: '', calories: 1, quantity: '1', notes: '' }])}>إضافة وجبة</button>
+            </div>
+            <div className="grid grid-cols-12 gap-2 text-xs text-gray-600 mb-1">
+              <span className="col-span-3">اسم الوجبة</span>
+              <span className="col-span-2">السعرات</span>
+              <span className="col-span-2">الكمية</span>
+              <span className="col-span-4">ملاحظات</span>
+              <span className="col-span-1">إجراء</span>
+            </div>
+            {createDietMeals.length === 0 && (
+              <p className="text-sm text-gray-500">لا يوجد وجبات</p>
+            )}
+            <div className="space-y-3 max-h-60 overflow-auto pr-1">
+              {createDietMeals.map((meal, idx) => (
+                <div key={idx} className="grid grid-cols-12 gap-2 items-center">
+                  <input className="col-span-3 border rounded px-2 py-1 bg-white dark:bg-gray-900" placeholder="مثال: فطور" value={meal.mealName} onChange={(e)=> setCreateDietMeals(prev => prev.map((m,i)=> i===idx ? { ...m, mealName: e.target.value } : m))} />
+                  <input type="number" className="col-span-2 border rounded px-2 py-1 bg-white dark:bg-gray-900" placeholder="مثال: 300" value={meal.calories} onChange={(e)=> setCreateDietMeals(prev => prev.map((m,i)=> i===idx ? { ...m, calories: Number(e.target.value) } : m))} />
+                  <input className="col-span-2 border rounded px-2 py-1 bg-white dark:bg-gray-900" placeholder="مثال: 1 طبق" value={meal.quantity} onChange={(e)=> setCreateDietMeals(prev => prev.map((m,i)=> i===idx ? { ...m, quantity: e.target.value } : m))} />
+                  <input className="col-span-4 border rounded px-2 py-1 bg-white dark:bg-gray-900" placeholder="اختياري" value={meal.notes || ''} onChange={(e)=> setCreateDietMeals(prev => prev.map((m,i)=> i===idx ? { ...m, notes: e.target.value } : m))} />
+                  <button className="col-span-1 text-red-600" onClick={()=> setCreateDietMeals(prev => prev.filter((_,i)=> i!==idx))}>حذف</button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {createDietError && <p className="text-xs text-red-600 mt-2">{createDietError}</p>}
+
+          <div className="mt-6 flex justify-end space-x-2">
+            <button className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded" onClick={() => setShowCreateDietModal(false)}>إلغاء</button>
+            <button className={`px-4 py-2 rounded text-white ${createDietLoading ? 'bg-blue-300 cursor-wait' : 'bg-blue-600 hover:bg-blue-700'}`} disabled={createDietLoading} onClick={async () => {
+              if (!createDietUserId) { setCreateDietError('يجب اختيار عضو'); return; }
+              if (!createDietName.trim()) { setCreateDietError('اسم الخطة مطلوب'); return; }
+              if (!createDietStart) { setCreateDietError('تاريخ البداية مطلوب'); return; }
+              try {
+                setCreateDietLoading(true);
+                const created = await dietService.createDietPlan({
+                  userId: createDietUserId,
+                  planName: createDietName.trim(),
+                  description: createDietDesc,
+                  startDate: new Date(createDietStart) as any,
+                  endDate: createDietEnd ? new Date(createDietEnd) as any : undefined,
+                  meals: createDietMeals as any,
+                });
+                setDietPlans((prev) => [created as any, ...prev]);
+                setShowCreateDietModal(false);
+                setCreateDietMeals([]);
+              } catch (e: any) {
+                setCreateDietError(e.message || 'فشل إنشاء الخطة الغذائية');
+              } finally {
+                setCreateDietLoading(false);
               }
             }}>حفظ</button>
           </div>
@@ -478,6 +670,171 @@ const AdminPlansOverview = () => {
                 setShowDeleteModal(null);
               } catch (e:any) {
                 alert(e.message || 'فشل حذف الخطة');
+              }
+            }}>حذف</button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Edit Diet Modal */}
+    {showEditDietModal && editingDietPlan && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">تعديل الخطة الغذائية</h3>
+          <div className="mb-4">
+            <label className="block text-sm mb-1">اسم الخطة</label>
+            <input className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" value={dietPlanNameInput} onChange={(e)=>setDietPlanNameInput(e.target.value)} />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm mb-1">الوصف</label>
+            <textarea className="w-full border rounded px-3 py-2 bg-white dark:bg-gray-900" value={dietPlanDescInput} onChange={(e)=>setDietPlanDescInput(e.target.value)} />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm mb-1">الوجبات</label>
+            <button className="px-3 py-1 bg-green-600 text-white rounded mb-2" onClick={async () => {
+              if (!editingDietPlan) return;
+              try {
+                setDietMealsLoading(true);
+                const updatedMeal = await dietService.addMealToPlan(editingDietPlan._id, { mealName: 'وجبة جديدة', calories: 1, quantity: '1', notes: '' });
+                await refreshDietPlan(editingDietPlan._id);
+              } catch (e: any) {
+                setDietMealsError(e.message || 'فشل إضافة الوجبة');
+              } finally {
+                setDietMealsLoading(false);
+              }
+            }}>إضافة وجبة</button>
+            <div className="grid grid-cols-12 gap-2 text-xs text-gray-600 mb-1">
+              <span className="col-span-3">اسم الوجبة</span>
+              <span className="col-span-2">السعرات</span>
+              <span className="col-span-2">الكمية</span>
+              <span className="col-span-3">ملاحظات</span>
+              <span className="col-span-2">إجراء</span>
+            </div>
+            <div className="space-y-3 max-h-60 overflow-auto pr-1">
+              {(editingDietPlan.meals || []).map((meal) => (
+                <div key={meal.mealId} className="grid grid-cols-12 gap-2 items-center mb-2">
+                  <input className="col-span-3 border rounded px-2 py-1 bg-white dark:bg-gray-900" defaultValue={meal.mealName} onBlur={async (e) => {
+                    if (!editingDietPlan) return;
+                    try {
+                      setDietMealsLoading(true);
+                      const updatedMeal = await dietService.updateMealInPlan(editingDietPlan._id, meal.mealId, {
+                        mealName: e.target.value,
+                        calories: meal.calories,
+                        quantity: meal.quantity,
+                        notes: meal.notes || ''
+                      });
+                      await refreshDietPlan(editingDietPlan._id);
+                    } catch (err: any) {
+                      setDietMealsError(err.message || 'تعذر تحديث الوجبة');
+                    } finally {
+                      setDietMealsLoading(false);
+                    }
+                  }} />
+                  <input type="number" className="col-span-2 border rounded px-2 py-1 bg-white dark:bg-gray-900" defaultValue={meal.calories} onBlur={async (e) => {
+                    if (!editingDietPlan) return;
+                    try {
+                      setDietMealsLoading(true);
+                      const updatedMeal = await dietService.updateMealInPlan(editingDietPlan._id, meal.mealId, {
+                        mealName: meal.mealName,
+                        calories: Number(e.target.value),
+                        quantity: meal.quantity,
+                        notes: meal.notes || ''
+                      });
+                      await refreshDietPlan(editingDietPlan._id);
+                    } catch (err: any) {
+                      setDietMealsError(err.message || 'تعذر تحديث الوجبة');
+                    } finally {
+                      setDietMealsLoading(false);
+                    }
+                  }} />
+                  <input className="col-span-2 border rounded px-2 py-1 bg-white dark:bg-gray-900" defaultValue={meal.quantity} onBlur={async (e) => {
+                    if (!editingDietPlan) return;
+                    try {
+                      setDietMealsLoading(true);
+                      const updatedMeal = await dietService.updateMealInPlan(editingDietPlan._id, meal.mealId, {
+                        mealName: meal.mealName,
+                        calories: meal.calories,
+                        quantity: e.target.value,
+                        notes: meal.notes || ''
+                      });
+                      await refreshDietPlan(editingDietPlan._id);
+                    } catch (err: any) {
+                      setDietMealsError(err.message || 'تعذر تحديث الوجبة');
+                    } finally {
+                      setDietMealsLoading(false);
+                    }
+                  }} />
+                  <input className="col-span-3 border rounded px-2 py-1 bg-white dark:bg-gray-900" defaultValue={meal.notes || ''} onBlur={async (e) => {
+                    if (!editingDietPlan) return;
+                    try {
+                      setDietMealsLoading(true);
+                      const updatedMeal = await dietService.updateMealInPlan(editingDietPlan._id, meal.mealId, {
+                        mealName: meal.mealName,
+                        calories: meal.calories,
+                        quantity: meal.quantity,
+                        notes: e.target.value
+                      });
+                      await refreshDietPlan(editingDietPlan._id);
+                    } catch (err: any) {
+                      setDietMealsError(err.message || 'تعذر تحديث الوجبة');
+                    } finally {
+                      setDietMealsLoading(false);
+                    }
+                  }} />
+                  <button className="col-span-2 text-red-600" onClick={async () => {
+                    if (!editingDietPlan) return;
+                    try {
+                      setDietMealsLoading(true);
+                      const deleted = await dietService.removeMealFromPlan(editingDietPlan._id, meal.mealId);
+                      await refreshDietPlan(editingDietPlan._id);
+                    } catch (err: any) {
+                      setDietMealsError(err.message || 'تعذر حذف الوجبة');
+                    } finally {
+                      setDietMealsLoading(false);
+                    }
+                  }}>حذف</button>
+                </div>
+              ))}
+            </div>
+            {dietMealsError && <p className="text-red-600 text-xs mt-2">{dietMealsError}</p>}
+          </div>
+          <div className="mt-6 flex justify-end space-x-2">
+            <button className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded" onClick={() => { setShowEditDietModal(false); setEditingDietPlan(null); }}>إلغاء</button>
+            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded" onClick={async ()=>{
+              if(!editingDietPlan) return;
+              try{
+                setDietMealsLoading(true);
+                const updated = await dietService.updateDietPlan(editingDietPlan._id, { planName: dietPlanNameInput, description: dietPlanDescInput });
+                await refreshDietPlan(editingDietPlan._id);
+                setEditingDietPlan(updated);
+                setShowEditDietModal(false);
+              }catch(err:any){
+                setDietMealsError(err.message || 'فشل حفظ الخطة الغذائية');
+              }finally{
+                setDietMealsLoading(false);
+              }
+            }}>حفظ</button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Delete Diet Confirm */}
+    {showDeleteDietModal && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">تأكيد حذف الخطة الغذائية</h3>
+          <p className="text-sm text-gray-700 dark:text-gray-300">هل أنت متأكد من حذف هذه الخطة الغذائية؟</p>
+          <div className="mt-6 flex justify-end space-x-2">
+            <button className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded" onClick={() => setShowDeleteDietModal(null)}>إلغاء</button>
+            <button className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded" onClick={async () => {
+              try {
+                await dietService.deleteDietPlan(showDeleteDietModal as string);
+                setDietPlans((prev) => prev.filter((p) => p._id !== showDeleteDietModal));
+                setShowDeleteDietModal(null);
+              } catch (e: any) {
+                alert(e.message || 'فشل حذف الخطة الغذائية');
               }
             }}>حذف</button>
           </div>

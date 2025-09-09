@@ -12,7 +12,7 @@ import ManagerQuickActions from '@/components/manager/ManagerQuickActions';
 import ManagerRecentActivity from '@/components/manager/ManagerRecentActivity';
 import ManagerUsersTable from '@/components/manager/ManagerUsersTable';
 import ManagerSessionsOverview from '@/components/manager/ManagerSessionsOverview';
-import ManagerPlansOverview from '@/components/manager/ManagerPlansOverview';
+import AdminPlansOverview from '@/components/admin/AdminPlansOverview';
 import AdminAttendance from '@/components/admin/AdminAttendance';
 import AdminPayments from '@/components/admin/AdminPayments';
 import AdminPurchases from '@/components/admin/AdminPurchases';
@@ -206,7 +206,7 @@ const ManagerDashboard = () => {
 
         {activeTab === 'plans' && (
           <div className="space-y-8">
-            <ManagerPlansOverview />
+            <AdminPlansOverview />
           </div>
         )}
 

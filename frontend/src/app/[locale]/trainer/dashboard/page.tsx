@@ -12,7 +12,7 @@ import TrainerQuickActions from '@/components/trainer/TrainerQuickActions';
 import TrainerRecentActivity from '@/components/trainer/TrainerRecentActivity';
 import TrainerSessionsOverview from '@/components/trainer/TrainerSessionsOverview';
 import TrainerClientsOverview from '@/components/trainer/TrainerClientsOverview';
-import TrainerPlansOverview from '@/components/trainer/TrainerPlansOverview';
+import TrainerPlansManager from '@/components/trainer/TrainerPlansManager';
 import TrainerProgressOverview from '@/components/trainer/TrainerProgressOverview';
 import TrainerProfile from '@/components/trainer/TrainerProfile';
 import TrainerAttendance from '@/components/trainer/TrainerAttendance';
@@ -192,7 +192,7 @@ const TrainerDashboard = () => {
 
         {activeTab === 'plans' && (
           <div className="space-y-8">
-            <TrainerPlansOverview />
+            <TrainerPlansManager />
           </div>
         )}
 

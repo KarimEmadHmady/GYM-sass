@@ -99,3 +99,8 @@ export const getDietPlanByIdService = async (id) => {
   return plan;
 };
 
+// جلب جميع الخطط الغذائية (للاستخدام الإداري)
+export const getAllDietPlansService = async () => {
+  return await DietPlan.find().sort({ createdAt: -1 });
+};
+

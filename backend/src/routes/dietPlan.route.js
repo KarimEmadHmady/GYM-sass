@@ -10,13 +10,15 @@ import {
   addMealToPlan,
   updateMealInPlan,
   deleteMealFromPlan,
-  getDietPlanById
+  getDietPlanById,
+  getAllDietPlans
 } from '../controllers/dietPlan.controller.js';
 import { authorizeRole } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
 // الخطط الغذائية
+router.get('/', authenticate,  authorizeRole(['admin','manager', 'trainer']), getAllDietPlans);
 router.post('/', authenticate,  authorizeRole(['admin','manager', 'trainer']), createDietPlan);
 router.get('/user/:userId', authenticate,  authorizeRole(['admin','manager', 'trainer']), getDietPlansByUser); // Changed to be more specific
 router.get('/:id', authenticate,  authorizeRole(['admin','manager', 'trainer', 'member']), getDietPlanById);

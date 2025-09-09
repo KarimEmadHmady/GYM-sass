@@ -2,13 +2,17 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import type { WorkoutPlan } from '@/types';
-import { workoutService, userService } from '@/services';
+import { workoutService, userService, dietService } from '@/services';
+import type { DietPlan } from '@/types';
 
 const ManagerPlansOverview = () => {
   const [activeTab, setActiveTab] = useState('workout');
   const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dietPlans, setDietPlans] = useState<DietPlan[]>([]);
+  const [dietLoading, setDietLoading] = useState(false);
+  const [dietError, setDietError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState<null | string>(null);
@@ -42,6 +46,22 @@ const ManagerPlansOverview = () => {
       }
     };
     fetchPlans();
+  }, []);
+
+  useEffect(() => {
+    const fetchDietPlans = async () => {
+      try {
+        setDietLoading(true);
+        setDietError(null);
+        const res: any = await dietService.getDietPlans();
+        setDietPlans((res?.data || res || []) as DietPlan[]);
+      } catch (e: any) {
+        setDietError(e.message || 'فشل تحميل الخطط الغذائية');
+      } finally {
+        setDietLoading(false);
+      }
+    };
+    fetchDietPlans();
   }, []);
 
   useEffect(() => {
@@ -81,41 +101,7 @@ const ManagerPlansOverview = () => {
   };
   const canSubmitCreate = useMemo(() => creatingUserId && formPlanName && formStartDate && formEndDate, [creatingUserId, formPlanName, formStartDate, formEndDate]);
 
-  const dietPlans = [
-    {
-      id: 1,
-      name: 'خطة التخسيس الغذائية',
-      type: 'weight_loss',
-      calories: 1500,
-      meals: 5,
-      members: 20,
-      status: 'active',
-      createdBy: 'سارة أحمد',
-      createdAt: '2024-01-12'
-    },
-    {
-      id: 2,
-      name: 'خطة بناء العضلات الغذائية',
-      type: 'muscle_gain',
-      calories: 2500,
-      meals: 6,
-      members: 12,
-      status: 'active',
-      createdBy: 'علي محمود',
-      createdAt: '2024-01-05'
-    },
-    {
-      id: 3,
-      name: 'خطة الصحة العامة',
-      type: 'general_health',
-      calories: 2000,
-      meals: 4,
-      members: 35,
-      status: 'active',
-      createdBy: 'سارة أحمد',
-      createdAt: '2024-01-03'
-    }
-  ];
+  // removed static dietPlans
 
   const currentPlans = activeTab === 'workout' ? workoutPlans : (dietPlans as any[]);
 
@@ -162,6 +148,32 @@ const ManagerPlansOverview = () => {
                 </span>
               </button>
             ))}
+            {activeTab === 'diet' && (
+              dietLoading ? (
+                <p className="text-sm text-gray-600 dark:text-gray-400">جاري التحميل...</p>
+              ) : dietError ? (
+                <p className="text-sm text-red-600">{dietError}</p>
+              ) : dietPlans.map((plan) => (
+                <div key={plan._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between mb-4">
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white">{plan.planName}</h4>
+                  </div>
+                  {plan.description && (
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{plan.description}</p>
+                  )}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">الفترة:</span>
+                      <span className="text-gray-900 dark:text-white">{new Date(plan.startDate).toLocaleDateString()} {plan.endDate ? `- ${new Date(plan.endDate).toLocaleDateString()}` : ''}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">عدد الوجبات:</span>
+                      <span className="text-gray-900 dark:text-white">{plan.meals?.length || 0} وجبة</span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </nav>
         </div>
 
@@ -189,9 +201,9 @@ const ManagerPlansOverview = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600 dark:text-gray-400">التمارين:</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">{plan.exercises?.length || 0} تمرين</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">المدة:</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">المدة:</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">{new Date(plan.startDate).toLocaleDateString()} - {new Date(plan.endDate).toLocaleDateString()}</span>
                   </div>
                 </div>

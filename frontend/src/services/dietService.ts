@@ -1,5 +1,6 @@
 import { BaseService } from './baseService';
 import { API_ENDPOINTS } from '@/lib/constants';
+import { apiRequest } from '@/lib/api';
 import type { DietPlan, Meal, PaginationParams, PaginatedResponse } from '@/types';
 
 export class DietService extends BaseService {
@@ -67,9 +68,12 @@ export class DietService extends BaseService {
 
   // Remove meal from diet plan
   async removeMealFromPlan(planId: string, mealId: string): Promise<DietPlan> {
-    return this.apiCall<DietPlan>(`/${planId}/meals/${mealId}`, {
+    // This endpoint returns 204 No Content, so don't parse JSON
+    await apiRequest(`${this.baseEndpoint}/${planId}/meals/${mealId}`, {
       method: 'DELETE',
     });
+    // Return the updated plan by refetching to keep caller logic simple
+    return this.getDietPlan(planId);
   }
 
   // Get daily meal plan
