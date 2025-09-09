@@ -8,45 +8,47 @@ export class WorkoutService extends BaseService {
   }
 
   // Get all workout plans
-  async getWorkoutPlans(params?: PaginationParams): Promise<PaginatedResponse<WorkoutPlan>> {
+  async getAllWorkoutPlans(params?: PaginationParams): Promise<PaginatedResponse<WorkoutPlan>> {
     return this.getAll<WorkoutPlan>(params);
   }
 
   // Get workout plan by ID
   async getWorkoutPlan(id: string): Promise<WorkoutPlan> {
-    return this.getById<WorkoutPlan>(id);
+    return this.apiCall<WorkoutPlan>(`/plan/${id}`);
   }
 
   // Create new workout plan
-  async createWorkoutPlan(workoutData: Partial<WorkoutPlan>): Promise<WorkoutPlan> {
-    return this.create<WorkoutPlan>(workoutData);
+  async createWorkoutPlan(userId: string, workoutData: Partial<WorkoutPlan>): Promise<WorkoutPlan> {
+    return this.apiCall<WorkoutPlan>(`/${userId}`, {
+      method: 'POST',
+      body: JSON.stringify(workoutData),
+    });
   }
 
   // Update workout plan
   async updateWorkoutPlan(id: string, workoutData: Partial<WorkoutPlan>): Promise<WorkoutPlan> {
-    return this.update<WorkoutPlan>(id, workoutData);
+    return this.apiCall<WorkoutPlan>(`/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(workoutData),
+    });
   }
 
   // Delete workout plan
   async deleteWorkoutPlan(id: string): Promise<void> {
-    return this.delete(id);
+    await this.apiCall<void>(`/${id}`, {
+      method: 'DELETE',
+    });
   }
 
   // Get workout plans for specific user
   async getUserWorkoutPlans(userId: string, params?: PaginationParams): Promise<PaginatedResponse<WorkoutPlan>> {
     const queryParams = new URLSearchParams();
-    
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
     if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
     if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
-
-    return this.apiCall<PaginatedResponse<WorkoutPlan>>(`/user/${userId}?${queryParams.toString()}`);
-  }
-
-  // Get active workout plan for user
-  async getActiveWorkoutPlan(userId: string): Promise<WorkoutPlan | null> {
-    return this.apiCall<WorkoutPlan | null>(`/user/${userId}/active`);
+    const qs = queryParams.toString();
+    return this.apiCall<PaginatedResponse<WorkoutPlan>>(`/${userId}${qs ? `?${qs}` : ''}`);
   }
 
   // Add exercise to workout plan
@@ -55,6 +57,16 @@ export class WorkoutService extends BaseService {
       method: 'POST',
       body: JSON.stringify(exercise),
     });
+  }
+
+  // Get exercises by plan id
+  async getExercisesByPlanId(planId: string): Promise<Exercise[]> {
+    return this.apiCall<Exercise[]>(`/${planId}/exercises`);
+  }
+
+  // Get exercise by id
+  async getExerciseById(planId: string, exerciseId: string): Promise<Exercise> {
+    return this.apiCall<Exercise>(`/${planId}/exercises/${exerciseId}`);
   }
 
   // Update exercise in workout plan
@@ -69,33 +81,6 @@ export class WorkoutService extends BaseService {
   async removeExerciseFromPlan(planId: string, exerciseId: string): Promise<WorkoutPlan> {
     return this.apiCall<WorkoutPlan>(`/${planId}/exercises/${exerciseId}`, {
       method: 'DELETE',
-    });
-  }
-
-  // Duplicate workout plan
-  async duplicateWorkoutPlan(planId: string, newPlanName: string, userId: string): Promise<WorkoutPlan> {
-    return this.apiCall<WorkoutPlan>(`/${planId}/duplicate`, {
-      method: 'POST',
-      body: JSON.stringify({
-        newPlanName,
-        userId
-      }),
-    });
-  }
-
-  // Get workout plan templates
-  async getWorkoutTemplates(): Promise<WorkoutPlan[]> {
-    return this.apiCall<WorkoutPlan[]>('/templates');
-  }
-
-  // Create workout plan from template
-  async createFromTemplate(templateId: string, userId: string, planName: string): Promise<WorkoutPlan> {
-    return this.apiCall<WorkoutPlan>(`/templates/${templateId}/create`, {
-      method: 'POST',
-      body: JSON.stringify({
-        userId,
-        planName
-      }),
     });
   }
 }

@@ -1,38 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import type { WorkoutPlan } from '@/types';
+import { workoutService } from '@/services';
 
 const MemberPlansOverview = () => {
+  const { user } = useAuth();
+  const currentUserId = useMemo(() => ((user as any)?._id ?? (user as any)?.id ?? ''), [user]);
   const [activeTab, setActiveTab] = useState('workout');
-
-  const workoutPlans = [
-    {
-      id: 1,
-      name: 'خطة التخسيس للمبتدئين',
-      type: 'weight_loss',
-      difficulty: 'beginner',
-      duration: '8 أسابيع',
-      currentWeek: 3,
-      progress: 37.5,
-      exercises: 12,
-      trainer: 'سارة أحمد',
-      status: 'active',
-      nextSession: '2024-01-22'
-    },
-    {
-      id: 2,
-      name: 'خطة بناء العضلات',
-      type: 'muscle_gain',
-      difficulty: 'intermediate',
-      duration: '12 أسبوع',
-      currentWeek: 2,
-      progress: 16.7,
-      exercises: 18,
-      trainer: 'علي محمود',
-      status: 'active',
-      nextSession: '2024-01-23'
-    }
-  ];
+  const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const dietPlans = [
     {
@@ -114,7 +93,25 @@ const MemberPlansOverview = () => {
     return 'bg-red-500';
   };
 
-  const currentPlans = activeTab === 'workout' ? workoutPlans : dietPlans;
+  useEffect(() => {
+    const fetchMyPlans = async () => {
+      if (!currentUserId) return;
+      try {
+        setLoading(true);
+        setError(null);
+        const res: any = await workoutService.getUserWorkoutPlans(currentUserId);
+        const plans = (res?.data || res || []) as WorkoutPlan[];
+        setWorkoutPlans(plans);
+      } catch (e: any) {
+        setError(e.message || 'فشل تحميل خطط التمرين');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMyPlans();
+  }, [currentUserId]);
+
+  const currentPlans: any[] = activeTab === 'workout' ? (workoutPlans as any[]) : dietPlans;
 
   return (
     <div className="space-y-6">
@@ -125,9 +122,6 @@ const MemberPlansOverview = () => {
             خططي
           </h3>
           <div className="flex space-x-2">
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
-              طلب خطة جديدة
-            </button>
             <button className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
               تصدير البيانات
             </button>
@@ -164,114 +158,73 @@ const MemberPlansOverview = () => {
 
         {/* Plans List */}
         <div className="p-6">
+          {loading && <p className="text-sm text-gray-600 dark:text-gray-400">جاري التحميل...</p>}
+          {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {currentPlans.map((plan) => (
+            {activeTab === 'workout' && (workoutPlans as any[]).map((plan: any) => (
               <div
-                key={plan.id}
+                key={plan._id}
                 className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
                   <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-                    {plan.name}
+                    {plan.planName}
                   </h4>
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(plan.status)}`}>
-                    {getStatusText(plan.status)}
-                  </span>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">النوع:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">الفترة:</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {getTypeText(plan.type)}
+                      {new Date(plan.startDate).toLocaleDateString()} - {new Date(plan.endDate).toLocaleDateString()}
                     </span>
                   </div>
-
-                  {activeTab === 'workout' ? (
-                    <>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">المستوى:</span>
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getDifficultyColor(plan.difficulty)}`}>
-                          {getDifficultyText(plan.difficulty)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">المدة:</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {plan.duration}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">التمارين:</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {plan.exercises} تمرين
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">السعرات:</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {plan.calories} سعرة
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">الوجبات:</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {plan.meals} وجبة
-                        </span>
-                      </div>
-                    </>
-                  )}
-
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">المدرب:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">عدد التمارين:</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {plan.trainer}
+                      {plan.exercises?.length || 0} تمرين
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">الأسبوع الحالي:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">الوصف:</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {plan.currentWeek} من {plan.duration.split(' ')[0]}
+                      {plan.description || '-'}
                     </span>
                   </div>
 
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">التقدم:</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {plan.progress}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full ${getProgressColor(plan.progress)}`}
-                        style={{ width: `${plan.progress}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {activeTab === 'workout' ? 'الحصة القادمة:' : 'الوجبة القادمة:'}
-                    </span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      {activeTab === 'workout' ? plan.nextSession : plan.nextMeal}
-                    </span>
+                  {/* تمارين الخطة */}
+                  <div className="mt-4">
+                    <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">التمارين</h5>
+                    {(!plan.exercises || plan.exercises.length === 0) ? (
+                      <p className="text-xs text-gray-500">لا توجد تمارين في هذه الخطة.</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {plan.exercises.map((ex: any, idx: number) => (
+                          <li key={ex._id || idx} className="flex items-center justify-between bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded p-2">
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">{idx+1}</span>
+                              <span className="text-sm text-gray-900 dark:text-white">{ex.name}</span>
+                            </div>
+                            <div className="text-xs text-gray-700 dark:text-gray-300 text-right">
+                              <div>المجموعات: {ex.sets}</div>
+                              <div>التكرارات: {ex.reps}</div>
+                              {ex.notes ? (
+                                <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">ملاحظات: {ex.notes}</div>
+                              ) : null}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 </div>
-
-                <div className="mt-6 flex space-x-2">
-                  <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md text-sm hover:bg-blue-700 transition-colors">
-                    عرض التفاصيل
-                  </button>
-                  <button className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                    تحديث التقدم
-                  </button>
-                </div>
+              </div>
+            ))}
+            {activeTab === 'diet' && dietPlans.map((plan) => (
+              <div key={plan.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{plan.name}</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">السعرات: {plan.calories} - الوجبات: {plan.meals}</p>
               </div>
             ))}
           </div>
@@ -282,3 +235,4 @@ const MemberPlansOverview = () => {
 };
 
 export default MemberPlansOverview;
+
