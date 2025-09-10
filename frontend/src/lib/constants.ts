@@ -379,11 +379,12 @@ export const API_ENDPOINTS = {
   },
   // Progress
   progress: {
-    list: '/client-progress',
-    create: '/client-progress',
-    update: (id: string) => `/client-progress/${id}`,
-    delete: (id: string) => `/client-progress/${id}`,
-    user: (userId: string) => `/client-progress/user/${userId}`
+    list: '/progress',
+    create: '/progress',
+    update: (id: string) => `/progress/${id}`,
+    delete: (id: string) => `/progress/${id}`,
+    user: (userId: string) => `/progress/${userId}`,
+    trainer: (trainerId: string) => `/progress/trainer/${trainerId}`
   },
   // Payments
   payments: {

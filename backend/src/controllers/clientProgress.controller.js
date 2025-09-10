@@ -3,7 +3,8 @@ import {
     getClientProgressByUserService,
     updateClientProgressService,
     deleteClientProgressService,
-    getAllClientProgressService
+    getAllClientProgressService,
+    getClientProgressByTrainerService
   } from '../services/clientProgress.service.js';
   
   // إنشاء سجل تقدم جديد
@@ -33,6 +34,16 @@ import {
       res.status(200).json(progress);
     } catch (err) {
       res.status(400).json({ message: err.message });
+    }
+  };
+
+  // جلب كل السجلات لمدرب
+  export const getClientProgressByTrainer = async (req, res) => {
+    try {
+      const progress = await getClientProgressByTrainerService(req.params.trainerId);
+      res.status(200).json(progress);
+    } catch (err) {
+      res.status(404).json({ message: err.message });
     }
   };
   

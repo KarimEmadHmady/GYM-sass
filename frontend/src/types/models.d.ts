@@ -205,17 +205,20 @@ export interface Message {
 export interface ClientProgress {
   _id: string;
   userId: string;
+  trainerId?: string;
   date: Date;
   weight?: number;
-  bodyFat?: number;
-  muscleMass?: number;
-  measurements?: {
-    chest?: number;
-    waist?: number;
-    hips?: number;
-    arms?: number;
-    thighs?: number;
-  };
+  bodyFatPercentage?: number;
+  muscleMass?: number; // الكتلة العضلية
+  waist?: number; // مقاس الوسط
+  chest?: number; // مقاس الصدر
+  arms?: number; // مقاس الذراع
+  legs?: number; // مقاس الرجل
+  weightChange?: number; // التغير في الوزن
+  fatChange?: number;    // التغير في الدهون
+  muscleChange?: number; // التغير في العضلات
+  status?: 'ممتاز' | 'جيد' | 'يحتاج لتحسين';
+  advice?: string;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;

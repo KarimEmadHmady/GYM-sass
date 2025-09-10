@@ -6,24 +6,44 @@ import mongoose from "mongoose";
 
 const clientProgressSchema = new mongoose.Schema(
   {
-    // معرف المستخدم المرتبط بالتقدم (يجب أن يكون موجود ومربوط بجدول المستخدمين)
+    // المستخدم صاحب التقدم
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 
-    // تاريخ تسجيل التقدم (إجباري)
+    // المدرب المسؤول (اختياري)
+    trainerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
+    // تاريخ تسجيل التقدم
     date: { type: Date, required: true },
 
-    // وزن العميل (اختياري)
-    weight: { type: Number },
+    // بيانات الجسم
+    weight: { type: Number }, // الوزن
+    bodyFatPercentage: { type: Number }, // نسبة الدهون
+    muscleMass: { type: Number }, // الكتلة العضلية (اختياري)
+    waist: { type: Number }, // مقاس الوسط (اختياري)
+    chest: { type: Number }, // مقاس الصدر (اختياري)
+    arms: { type: Number }, // مقاس الذراع (اختياري)
+    legs: { type: Number }, // مقاس الرجل (اختياري)
 
-    // نسبة الدهون في الجسم (اختياري)
-    bodyFatPercentage: { type: Number },
+    // مقارنة مع التسجيل السابق
+    weightChange: { type: Number }, // + أو - مقارنة بالسابق
+    fatChange: { type: Number },    // + أو - مقارنة بالسابق
+    muscleChange: { type: Number }, // + أو - مقارنة بالسابق
 
-    // ملاحظات إضافية عن حالة العميل أو التدريب (افتراضي فارغ)
+    // حالة عامة (كويس / متوسط / ممتاز ...)
+    status: {
+      type: String,
+      enum: ["ممتاز", "جيد", "يحتاج لتحسين"],
+      default: "جيد",
+    },
+
+    // نصائح أو ملاحظات من المدرب
+    advice: { type: String, default: "" },
+
+    // ملاحظات إضافية عامة
     notes: { type: String, default: "" },
   },
   { timestamps: true }
 );
 
-// إنشاء الموديل وتصديره
 const ClientProgress = mongoose.model("ClientProgress", clientProgressSchema);
 export default ClientProgress;

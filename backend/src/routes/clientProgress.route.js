@@ -6,7 +6,8 @@ import {
   getClientProgressByUser,
   updateClientProgress,
   deleteClientProgress,
-  getAllClientProgress
+  getAllClientProgress,
+  getClientProgressByTrainer
 } from '../controllers/clientProgress.controller.js';
 
 const router = express.Router();
@@ -17,8 +18,11 @@ router.post('/', authenticate,  authorizeRole(['admin','manager', 'trainer']), c
 // جلب كل سجلات التقدم
 router.get('/', authenticate,  authorizeRole(['admin','manager', 'trainer']), getAllClientProgress);
 
+// جلب كل سجلات تقدم لمدرب
+router.get('/trainer/:trainerId', authenticate,  authorizeRole(['admin','manager', 'trainer']), getClientProgressByTrainer);
+
 // جلب كل سجلات تقدم مستخدم
-router.get('/:userId', authenticate,  authorizeRole(['admin','manager', 'trainer', 'member']), getClientProgressByUser);
+router.get('/:userId', authenticate, getClientProgressByUser);
 
 // تعديل سجل تقدم
 router.put('/:id', authenticate,  authorizeRole(['admin','manager', 'trainer']), updateClientProgress);

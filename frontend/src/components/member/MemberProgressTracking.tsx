@@ -1,198 +1,106 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { ProgressService } from '@/services/progressService';
 
 const MemberProgressTracking = () => {
-  const [activeTab, setActiveTab] = useState('weight');
+  const { user } = useAuth();
+  const userId = (user as any)?._id ?? user?.id ?? '';
+  const [progressList, setProgressList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const progressService = new ProgressService();
 
-  const progressData = {
-    weight: {
-      current: 80,
-      start: 83.2,
-      target: 75,
-      change: -3.2,
-      unit: 'كغ'
-    },
-    muscle: {
-      current: 1.1,
-      start: 0,
-      target: 2.5,
-      change: 1.1,
-      unit: 'كغ'
-    },
-    bodyFat: {
-      current: 18.5,
-      start: 22.3,
-      target: 15,
-      change: -3.8,
-      unit: '%'
-    },
-    strength: {
-      current: 85,
-      start: 60,
-      target: 100,
-      change: 25,
-      unit: '%'
-    }
-  };
-
-  const weeklyProgress = [
-    { week: 1, weight: 83.2, muscle: 0, bodyFat: 22.3, strength: 60 },
-    { week: 2, weight: 82.1, muscle: 0.3, bodyFat: 21.8, strength: 65 },
-    { week: 3, weight: 81.5, muscle: 0.7, bodyFat: 21.2, strength: 70 },
-    { week: 4, weight: 80.8, muscle: 0.9, bodyFat: 20.5, strength: 75 },
-    { week: 5, weight: 80.0, muscle: 1.1, bodyFat: 18.5, strength: 85 }
-  ];
-
-  const getProgressColor = (change: number, type: string) => {
-    if (type === 'weight' || type === 'bodyFat') {
-      return change < 0 ? 'text-green-600' : 'text-red-600';
-    }
-    return change > 0 ? 'text-green-600' : 'text-red-600';
-  };
-
-  const getProgressIcon = (change: number, type: string) => {
-    if (type === 'weight' || type === 'bodyFat') {
-      return change < 0 ? '📉' : '📈';
-    }
-    return change > 0 ? '📈' : '📉';
-  };
-
-  const getProgressPercentage = (current: number, start: number, target: number) => {
-    const totalChange = Math.abs(target - start);
-    const currentChange = Math.abs(current - start);
-    return Math.min((currentChange / totalChange) * 100, 100);
-  };
+  useEffect(() => {
+    const fetchProgress = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const list = await progressService.getUserProgress(userId);
+        setProgressList(list);
+      } catch {
+        setError('تعذر جلب سجلات التقدم');
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (userId) fetchProgress();
+  }, [userId]);
 
   return (
     <div className="space-y-6">
-      {/* Progress Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {Object.entries(progressData).map(([key, data]) => (
-          <div
-            key={key}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                {key === 'weight' ? 'الوزن' : 
-                 key === 'muscle' ? 'بناء العضلات' : 
-                 key === 'bodyFat' ? 'دهون الجسم' : 'القوة'}
-              </h3>
-              <span className="text-2xl">
-                {getProgressIcon(data.change, key)}
-              </span>
-            </div>
-            
-            <div className="space-y-2">
+      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 text-center">سجلات تقدمي</h2>
+      {loading ? (
+        <div className="text-center py-8">جاري التحميل...</div>
+      ) : error ? (
+        <div className="text-center text-red-600 py-8">{error}</div>
+      ) : progressList.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">لا يوجد سجلات تقدم بعد</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {progressList.map((p) => (
+            <div key={p._id} className="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-5 flex flex-col gap-2">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-block w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-200 text-base">📅</span>
+                <span className="font-bold text-gray-900 dark:text-white text-base">{p.date ? new Date(p.date).toLocaleDateString() : '-'}</span>
+              </div>
               <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {data.current}{data.unit}
-                </span>
-                <span className={`text-sm font-medium ${getProgressColor(data.change, key)}`}>
-                  {data.change > 0 ? '+' : ''}{data.change}{data.unit}
-                </span>
+                <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400"><span className="text-blue-400">⚖️</span> الوزن (كجم):</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{p.weight ?? '-'}</span>
               </div>
-              
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                الهدف: {data.target}{data.unit}
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400"><span className="text-yellow-400">💧</span> نسبة الدهون %:</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{p.bodyFatPercentage ?? '-'}</span>
               </div>
-              
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div
-                  className="bg-blue-500 h-2 rounded-full"
-                  style={{ width: `${getProgressPercentage(data.current, data.start, data.target)}%` }}
-                ></div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">💪 الكتلة العضلية (كجم):</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{p.muscleMass ?? '-'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">📏 مقاس الوسط (سم):</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{p.waist ?? '-'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">📏 مقاس الصدر (سم):</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{p.chest ?? '-'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">💪 مقاس الذراع (سم):</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{p.arms ?? '-'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">🦵 مقاس الرجل (سم):</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{p.legs ?? '-'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">🔄 تغير الوزن (كجم):</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{p.weightChange ?? '-'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">🔄 تغير الدهون (%):</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{p.fatChange ?? '-'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">🔄 تغير الكتلة العضلية (كجم):</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{p.muscleChange ?? '-'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">📊 الحالة العامة:</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{p.status ?? '-'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">💡 نصيحة المدرب:</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{p.advice ?? '-'}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400"><span className="text-green-400">📝</span> ملاحظات:</span>
+                <span className="text-gray-700 dark:text-gray-200 text-xs">{p.notes || '-'}</span>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Progress Chart */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-          تقدمي الأسبوعي
-        </h3>
-        
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  الأسبوع
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  الوزن
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  بناء العضلات
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  دهون الجسم
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  القوة
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {weeklyProgress.map((week, index) => (
-                <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                    الأسبوع {week.week}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {week.weight} كغ
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {week.muscle} كغ
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {week.bodyFat}%
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {week.strength}%
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          ))}
         </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-          تسجيل تقدمي
-        </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-center">
-            <div className="text-2xl mb-2">⚖️</div>
-            <h4 className="font-medium text-gray-900 dark:text-white">تسجيل الوزن</h4>
-            <p className="text-sm text-gray-500 dark:text-gray-400">تسجيل وزنك الحالي</p>
-          </button>
-          
-          <button className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-center">
-            <div className="text-2xl mb-2">💪</div>
-            <h4 className="font-medium text-gray-900 dark:text-white">تسجيل القوة</h4>
-            <p className="text-sm text-gray-500 dark:text-gray-400">تسجيل قوتك الحالية</p>
-          </button>
-          
-          <button className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-center">
-            <div className="text-2xl mb-2">📏</div>
-            <h4 className="font-medium text-gray-900 dark:text-white">قياسات الجسم</h4>
-            <p className="text-sm text-gray-500 dark:text-gray-400">تسجيل قياسات جسمك</p>
-          </button>
-          
-          <button className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-center">
-            <div className="text-2xl mb-2">📸</div>
-            <h4 className="font-medium text-gray-900 dark:text-white">صور التقدم</h4>
-            <p className="text-sm text-gray-500 dark:text-gray-400">رفع صور تقدمك</p>
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
