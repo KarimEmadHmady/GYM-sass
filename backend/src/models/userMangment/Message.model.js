@@ -27,6 +27,13 @@ const messageSchema = new mongoose.Schema(
       trim: true 
     },
 
+    // موضوع الرسالة - اختياري
+    subject: { 
+      type: String, 
+      trim: true,
+      default: ''
+    },
+
     // تاريخ إرسال الرسالة - يتم تحديده تلقائياً إذا لم يتم إدخاله
     date: { 
       type: Date, 

@@ -2,8 +2,10 @@ import {
     createMessageService,
     getMessagesForUserService,
     updateMessageStatusService,
+    updateMessageService,
     deleteMessageService,
-    getAllMessagesService
+    getAllMessagesService,
+    markMessageAsReadService
   } from '../services/message.service.js';
   
   // إنشاء رسالة جديدة
@@ -35,6 +37,16 @@ import {
       res.status(400).json({ message: err.message });
     }
   };
+
+  // تحديث محتوى الرسالة
+  export const updateMessage = async (req, res) => {
+    try {
+      const message = await updateMessageService(req.params.id, req.body);
+      res.status(200).json(message);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  };
   
   // حذف رسالة
   export const deleteMessage = async (req, res) => {
@@ -51,6 +63,19 @@ import {
     try {
       const messages = await getAllMessagesService();
       res.status(200).json(messages);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  };
+
+  // تحديد الرسالة كمقروءة
+  export const markMessageAsRead = async (req, res) => {
+    try {
+      const message = await markMessageAsReadService(req.params.id);
+      res.status(200).json({ 
+        message: 'Message marked as read successfully',
+        data: message 
+      });
     } catch (err) {
       res.status(400).json({ message: err.message });
     }

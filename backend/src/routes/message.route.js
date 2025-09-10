@@ -4,8 +4,10 @@ import {
   createMessage,
   getMessagesForUser,
   updateMessageStatus,
+  updateMessage,
   deleteMessage,
-  getAllMessages
+  getAllMessages,
+  markMessageAsRead
 } from '../controllers/message.controller.js';
 
 const router = express.Router();
@@ -21,6 +23,12 @@ router.get('/:userId', authenticate, getMessagesForUser);
 
 // تحديث حالة قراءة الرسالة
 router.put('/:id/read', authenticate, updateMessageStatus);
+
+// تحديث محتوى الرسالة
+router.put('/:id', authenticate, updateMessage);
+
+// تحديد الرسالة كمقروءة (عند فتح الرسالة)
+router.patch('/:id/mark-read', authenticate, markMessageAsRead);
 
 // حذف رسالة
 router.delete('/:id', authenticate, deleteMessage);

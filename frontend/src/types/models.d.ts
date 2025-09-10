@@ -190,11 +190,13 @@ export interface Feedback {
 // Message
 export interface Message {
   _id: string;
-  senderId: string;
-  receiverId: string;
-  subject: string;
-  content: string;
-  isRead: boolean;
+  userId: string; // المستلم
+  fromUserId: string; // المرسل
+  message: string; // نص الرسالة
+  content?: string; // محتوى الرسالة (للتوافق مع الواجهة)
+  subject?: string; // موضوع الرسالة
+  date: Date; // تاريخ الإرسال
+  read: boolean; // حالة القراءة
   createdAt: Date;
   updatedAt: Date;
 }

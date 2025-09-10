@@ -19,6 +19,7 @@ import MemberPayments from '@/components/member/MemberPayments';
 import MemberSubscription from '@/components/member/MemberSubscription';
 import MemberPurchases from '@/components/member/MemberPurchases';
 import MemberTrainer from '@/components/member/MemberTrainer';
+import MemberMessages from '@/components/member/MemberMessages';
 import MemberSettings from '@/components/member/MemberSettings';
 
 const MemberProfile = () => {
@@ -74,6 +75,7 @@ const MemberProfile = () => {
     { id: 'sessions', name: t('Tabs.sessions'), icon: '🏋️' },
     { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
     { id: 'trainer', name: 'مدربي', icon: '👨‍🏫' },
+    { id: 'messages', name: 'الرسائل', icon: '💬' },
     { id: 'progress', name: t('Tabs.progress'), icon: '📈' },
     { id: 'loyalty', name: t('Tabs.loyalty'), icon: '⭐' },
     { id: 'rewards', name: 'الجوائز', icon: '🏆' },
@@ -217,6 +219,12 @@ const MemberProfile = () => {
         {activeTab === 'trainer' && (
           <div className="space-y-8">
             <MemberTrainer />
+          </div>
+        )}
+
+        {activeTab === 'messages' && (
+          <div className="space-y-8">
+            <MemberMessages />
           </div>
         )}
 

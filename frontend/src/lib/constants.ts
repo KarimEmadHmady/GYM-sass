@@ -373,7 +373,9 @@ export const API_ENDPOINTS = {
     create: '/messages',
     update: (id: string) => `/messages/${id}`,
     delete: (id: string) => `/messages/${id}`,
-    markRead: (id: string) => `/messages/${id}/read`
+    markRead: (id: string) => `/messages/${id}/mark-read`,
+    updateStatus: (id: string) => `/messages/${id}/read`,
+    userMessages: (userId: string) => `/messages/${userId}`
   },
   // Progress
   progress: {

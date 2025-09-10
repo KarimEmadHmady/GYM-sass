@@ -19,7 +19,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 
-const AdminMessages = () => {
+const ManagerMessages = () => {
   const { user: currentUser } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -259,23 +259,23 @@ const AdminMessages = () => {
 
       {/* Messages Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200 dark:border-gray-700">
-              <th className="text-right py-2 px-2 font-semibold text-gray-900 dark:text-white text-start">المرسل</th>
-              <th className="text-right py-2 px-2 font-semibold text-gray-900 dark:text-white text-start">المستلم</th>
-              <th className="text-right py-2 px-2 font-semibold text-gray-900 dark:text-white text-start">معاينة</th>
-              <th className="text-right py-2 px-2 font-semibold text-gray-900 dark:text-white text-start">التاريخ</th>
-              <th className="text-right py-2 px-2 font-semibold text-gray-900 dark:text-white text-start">الحالة</th>
-              <th className="text-right py-2 px-2 font-semibold text-gray-900 dark:text-white text-start">الإجراءات</th>
+              <th className="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white text-start">المرسل</th>
+              <th className="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white text-start">المستلم</th>
+              <th className="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white text-start">معاينة</th>
+              <th className="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white text-start">التاريخ</th>
+              <th className="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white text-start">الحالة</th>
+              <th className="text-right py-3 px-4 font-semibold text-gray-900 dark:text-white text-start">الإجراءات</th>
             </tr>
           </thead>
           <tbody>
             {filteredMessages.map((message) => (
               <tr key={message._id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                <td className="py-2 px-2 whitespace-nowrap max-w-[120px] truncate">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-7 h-7 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                <td className="py-4 px-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
                       <UserIcon className="w-4 h-4 text-blue-600" />
                     </div>
                     <div>
@@ -284,9 +284,9 @@ const AdminMessages = () => {
                     </div>
                   </div>
                 </td>
-                <td className="py-2 px-2 whitespace-nowrap max-w-[120px] truncate">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-7 h-7 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                <td className="py-4 px-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
                       <UserIcon className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
@@ -295,23 +295,23 @@ const AdminMessages = () => {
                     </div>
                   </div>
                 </td>
-                <td className="py-2 px-2 whitespace-nowrap max-w-[100px] truncate">
+                <td className="py-4 px-4">
                   <button
                     onClick={() => handleViewMessage(message)}
-                    className="flex items-center space-x-1 px-2 py-1 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-xs font-medium transition-colors"
+                    className="flex items-center space-x-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium transition-colors"
                   >
                     <MessageSquare className="w-4 h-4" />
                     <span>عرض الرسالة</span>
                   </button>
                 </td>
-                <td className="py-2 px-2 whitespace-nowrap max-w-[90px] truncate">
-                  <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
+                <td className="py-4 px-4">
+                  <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
                     <Calendar className="w-4 h-4" />
                     <span>{formatDate(message.date)}</span>
                   </div>
                 </td>
-                <td className="py-2 px-2 whitespace-nowrap max-w-[70px] truncate">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                <td className="py-4 px-4">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     message.read 
                       ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
                       : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
@@ -319,8 +319,8 @@ const AdminMessages = () => {
                     {message.read ? 'مقروءة' : 'غير مقروءة'}
                   </span>
                 </td>
-                <td className="py-2 px-2 whitespace-nowrap max-w-[90px] truncate">
-                  <div className="flex items-center space-x-1">
+                <td className="py-4 px-4">
+                  <div className="flex items-center space-x-2">
                     {!message.read && (
                       <button
                         onClick={() => handleMarkAsRead(message._id)}
@@ -610,12 +610,10 @@ const AdminMessages = () => {
           <button onClick={() => setError(null)} className="ml-2 text-red-700 hover:text-red-900">
             ×
           </button>
-      </div>
+        </div>
       )}
     </div>
   );
 };
 
-export default AdminMessages;
-
-
+export default ManagerMessages;
