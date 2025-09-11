@@ -401,5 +401,13 @@ export const API_ENDPOINTS = {
     update: (id: string) => `/purchases/${id}`,
     delete: (id: string) => `/purchases/${id}`,
     user: (userId: string) => `/purchases/user/${userId}`
-  }
+  },
+  // Session Schedules
+  sessionSchedules: {
+    list: '/schedules',
+    create: (userId: string) => `/schedules/${userId}`,
+    update: (id: string) => `/schedules/${id}`,
+    delete: (id: string) => `/schedules/${id}`,
+    user: (userId: string) => `/schedules/${userId}`,
+  },
 };

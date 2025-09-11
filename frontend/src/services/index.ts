@@ -9,6 +9,7 @@ export { DietService } from './dietService';
 export { LoyaltyService } from './loyaltyService';
 export { PurchaseService } from './purchaseService';
 export { MessageService } from './messageService';
+export { SessionScheduleService } from './sessionScheduleService';
 
 // Import classes for instantiation
 import { UserService } from './userService';
@@ -18,6 +19,7 @@ import { DietService } from './dietService';
 import { LoyaltyService } from './loyaltyService';
 import { PurchaseService } from './purchaseService';
 import { MessageService } from './messageService';
+import { SessionScheduleService } from './sessionScheduleService';
 
 // Service instances for easy access
 export const userService = new UserService();
@@ -27,3 +29,4 @@ export const dietService = new DietService();
 export const loyaltyService = new LoyaltyService();
 export const purchaseService = new PurchaseService();
 export const messageService = new MessageService();
+export const sessionScheduleService = new SessionScheduleService();

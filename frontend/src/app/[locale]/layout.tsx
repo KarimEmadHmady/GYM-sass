@@ -3,7 +3,6 @@ import {notFound} from 'next/navigation';
 import {routing} from '@/i18n/routing';
 import GymNavbar from '@/components/ui/Navbar/Navbar';
 import ReduxProvider from '@/redux/ReduxProvider';
-import { BackgroundGradientAnimation } from '@/components/ui/background-gradient-animation';
 import ConditionalSplashCursorAlt from '@/components/ui/ConditionalSplashCursorAlt';
 
 async function getMessages(locale: string) {
@@ -37,20 +36,7 @@ export default async function LocaleLayout({
         <ReduxProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>
             {/* خلفية متحركة للموقع بأكمله */}
-            <BackgroundGradientAnimation
-              gradientBackgroundStart="rgb(108, 0, 162)"
-              gradientBackgroundEnd="rgb(0, 17, 82)"
-              firstColor="18, 113, 255"
-              secondColor="221, 74, 255"
-              thirdColor="100, 220, 255"
-              fourthColor="200, 50, 50"
-              fifthColor="180, 180, 50"
-              pointerColor="140, 100, 255"
-              size="80%"
-              blendingValue="hard-light"
-              interactive={true}
-              containerClassName="fixed inset-0 -z-10"
-            />
+
             
             {/* تأثير الماوس المشروط */}
             <ConditionalSplashCursorAlt />

@@ -223,3 +223,21 @@ export interface ClientProgress {
   createdAt: Date;
   updatedAt: Date;
 }
+
+// Session Schedule (جدولة الحصص)
+export interface SessionSchedule {
+  _id: string;
+  userId: string; // المتدرب
+  trainerId: string; // المدرب
+  date: Date;
+  startTime: string;
+  endTime: string;
+  duration?: number; // بالدقايق
+  sessionType: 'شخصية' | 'جماعية' | 'أونلاين' | 'تغذية';
+  status: 'مجدولة' | 'مكتملة' | 'ملغاة';
+  location?: string;
+  price?: number;
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

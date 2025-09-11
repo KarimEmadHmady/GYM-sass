@@ -3,13 +3,13 @@
 import React from 'react';
 import SessionSchedulesManagement from '../admin/SessionSchedulesManagement';
 
-const ManagerSessionsOverview = () => {
+const ManagerSessionsManagement = () => {
   return (
     <SessionSchedulesManagement 
       userRole="manager" 
-      viewMode="overview" 
+      viewMode="management" 
     />
   );
 };
 
-export default ManagerSessionsOverview;
+export default ManagerSessionsManagement;

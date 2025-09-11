@@ -118,6 +118,6 @@ export class UserService extends BaseService {
   async getClientsOfTrainer(trainerId: string): Promise<User[]> {
     const url = `${API_ENDPOINTS.users.myClients}?trainerId=${encodeURIComponent(trainerId)}`;
     const res = await this.apiCall<{ clients: User[] }>(url);
-    return res.clients;
+    return res.clients || [];
   }
 }

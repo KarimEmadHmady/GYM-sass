@@ -37,6 +37,12 @@ export const apiRequest = async (
 ): Promise<Response> => {
   const token = getAuthToken();
   
+  console.log('API Request:', {
+    endpoint: `${apiConfig.baseURL}${endpoint}`,
+    token: token ? 'Present' : 'Missing',
+    method: options.method || 'GET'
+  });
+  
   const config: RequestInit = {
     ...options,
     headers: {
@@ -50,6 +56,11 @@ export const apiRequest = async (
   
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    console.error('API Error:', {
+      status: response.status,
+      statusText: response.statusText,
+      error: errorData
+    });
     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
   }
   

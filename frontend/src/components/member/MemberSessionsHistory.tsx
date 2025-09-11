@@ -1,102 +1,182 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { SessionSchedule } from '@/types';
+import { SessionScheduleService } from '@/services/sessionScheduleService';
+import CustomAlert from '@/components/ui/CustomAlert';
+import { useCustomAlert } from '@/hooks/useCustomAlert';
+import { userService } from '@/services';
+
+const sessionScheduleService = new SessionScheduleService();
 
 const MemberSessionsHistory = () => {
+  const { alertState, showSuccess, showError, showWarning, hideAlert } = useCustomAlert();
   const [activeTab, setActiveTab] = useState('upcoming');
+  const [sessions, setSessions] = useState<SessionSchedule[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [trainerNames, setTrainerNames] = useState<Record<string, string>>({});
 
-  const sessions = [
-    {
-      id: 1,
-      title: 'حصة تدريبية - المجموعة أ',
-      trainer: 'سارة أحمد',
-      type: 'group',
-      time: '09:00 - 10:00',
-      date: '2024-01-20',
-      status: 'upcoming',
-      location: 'القاعة الرئيسية'
-    },
-    {
-      id: 2,
-      title: 'حصة شخصية',
-      trainer: 'سارة أحمد',
-      type: 'personal',
-      time: '11:00 - 12:00',
-      date: '2024-01-20',
-      status: 'upcoming',
-      location: 'القاعة الخاصة'
-    },
-    {
-      id: 3,
-      title: 'حصة تدريبية - المجموعة ب',
-      trainer: 'علي محمود',
-      type: 'group',
-      time: '14:00 - 15:00',
-      date: '2024-01-19',
-      status: 'completed',
-      location: 'القاعة الرئيسية',
-      rating: 5,
-      notes: 'حصة ممتازة، تم التركيز على تمارين القوة'
-    },
-    {
-      id: 4,
-      title: 'حصة تدريبية - المجموعة ج',
-      trainer: 'سارة أحمد',
-      type: 'group',
-      time: '16:00 - 17:00',
-      date: '2024-01-18',
-      status: 'completed',
-      location: 'القاعة الرئيسية',
-      rating: 4,
-      notes: 'حصة جيدة، تم التركيز على الكارديو'
-    },
-    {
-      id: 5,
-      title: 'حصة شخصية',
-      trainer: 'سارة أحمد',
-      type: 'personal',
-      time: '10:00 - 11:00',
-      date: '2024-01-17',
-      status: 'cancelled',
-      location: 'القاعة الخاصة',
-      reason: 'إلغاء من المدرب'
+  // Get current member ID from auth context or localStorage
+  const getCurrentMemberId = () => {
+    // Try multiple ways to get user data
+    const user = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    const authToken = localStorage.getItem('authToken');
+    
+    console.log('Raw user from localStorage:', user);
+    console.log('Token from localStorage:', token);
+    console.log('AuthToken from localStorage:', authToken);
+    
+    if (user) {
+      try {
+        const userData = JSON.parse(user);
+        console.log('Parsed user data:', userData);
+        return userData._id || userData.id;
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
     }
-  ];
+    
+    // Try to get from token if available
+    if (token) {
+      try {
+        const tokenData = JSON.parse(atob(token.split('.')[1]));
+        console.log('Token data:', tokenData);
+        return tokenData.userId || tokenData._id || tokenData.id;
+      } catch (error) {
+        console.error('Error parsing token:', error);
+      }
+    }
+    
+    // Try to get from authToken if available
+    if (authToken) {
+      try {
+        const tokenData = JSON.parse(atob(authToken.split('.')[1]));
+        console.log('AuthToken data:', tokenData);
+        return tokenData.userId || tokenData._id || tokenData.id;
+      } catch (error) {
+        console.error('Error parsing authToken:', error);
+      }
+    }
+    
+    return null;
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const memberId = getCurrentMemberId();
+      console.log('Member ID:', memberId);
+      
+      if (!memberId) {
+        showError('خطأ في المصادقة', 'لم يتم العثور على بيانات العضو. يرجى تسجيل الدخول مرة أخرى.');
+        console.log('Available localStorage keys:', Object.keys(localStorage));
+        return;
+      }
+
+      // Load member's sessions only
+      console.log('Loading sessions...');
+      const sessionsData = await sessionScheduleService.getSessionsByUser(memberId);
+      console.log('Sessions data:', sessionsData);
+      setSessions(sessionsData || []);
+
+      // جلب أسماء المدربين لكل trainerId بدون تكرار
+      const uniqueTrainerIds = Array.from(new Set((sessionsData || []).map((s: any) => s.trainerId).filter(Boolean)));
+      const namesMap: Record<string, string> = {};
+      await Promise.all(uniqueTrainerIds.map(async (id) => {
+        try {
+          const trainer = await userService.getUser(id);
+          namesMap[id] = trainer?.name || 'غير محدد';
+        } catch {
+          namesMap[id] = 'غير محدد';
+        }
+      }));
+      setTrainerNames(namesMap);
+
+      // If no sessions are available, show a specific message
+      if (!sessionsData || sessionsData.length === 0) {
+        showWarning('لا توجد حصص', 'لم يتم العثور على حصص مرتبطة بهذا العضو');
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+      showError('خطأ في التحميل', `حدث خطأ في تحميل البيانات: ${error instanceof Error ? error.message : String(error)}`);
+      setSessions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTrainerName = (trainerId: string) => {
+    if (!trainerId) return 'غير محدد';
+    return trainerNames[trainerId] || 'غير محدد';
+  };
 
   const getStatusColor = (status: string) => {
     const colors = {
-      upcoming: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      completed: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-      in_progress: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+      'مكتملة': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      'مجدولة': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+      'ملغاة': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
     };
     return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
 
   const getStatusText = (status: string) => {
-    const texts = {
-      upcoming: 'قادمة',
-      completed: 'مكتملة',
-      cancelled: 'ملغية',
-      in_progress: 'جارية'
-    };
-    return texts[status as keyof typeof texts] || status;
+    return status; // Already in Arabic from API
   };
 
   const getTypeIcon = (type: string) => {
-    return type === 'group' ? '👥' : '👤';
+    const icons = {
+      'شخصية': '👤',
+      'جماعية': '👥',
+      'أونلاين': '💻',
+      'تغذية': '🥗'
+    };
+    return icons[type as keyof typeof icons] || '👤';
   };
 
-  const filteredSessions = sessions.filter(session => {
+  // حساب الفرق بين وقتين بصيغة HH:mm
+  const getTimeDiffString = (start: string, end: string) => {
+    if (!start || !end) return '';
+    const [startH, startM] = start.split(':').map(Number);
+    const [endH, endM] = end.split(':').map(Number);
+    let startMinutes = startH * 60 + startM;
+    let endMinutes = endH * 60 + endM;
+    // إذا كان وقت النهاية أصغر من البداية (مثلاً عبر منتصف الليل)
+    if (endMinutes < startMinutes) {
+      endMinutes += 24 * 60;
+    }
+    let diff = endMinutes - startMinutes;
+    const hours = Math.floor(diff / 60);
+    const minutes = diff % 60;
+    let result = '';
+    if (hours > 0) result += `(${hours} ساعة)`;
+    if (minutes > 0) result += (result ? ' ' : '') + `(${minutes} دقيقة)`;
+    if (!result) result = '0 دقيقة';
+    return result;
+  };
+
+  const filteredSessions = sessions?.filter(session => {
     if (activeTab === 'upcoming') {
-      return session.status === 'upcoming';
+      return session.status === 'مجدولة';
     } else if (activeTab === 'completed') {
-      return session.status === 'completed';
+      return session.status === 'مكتملة';
     } else if (activeTab === 'cancelled') {
-      return session.status === 'cancelled';
+      return session.status === 'ملغاة';
     }
     return true;
-  });
+  }) || [];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -107,9 +187,6 @@ const MemberSessionsHistory = () => {
             حصصي التدريبية
           </h3>
           <div className="flex space-x-2">
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
-              حجز حصة جديدة
-            </button>
             <button className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
               تصدير البيانات
             </button>
@@ -122,10 +199,10 @@ const MemberSessionsHistory = () => {
         <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex space-x-8 px-6">
             {[
-              { id: 'upcoming', name: 'القادمة', count: sessions.filter(s => s.status === 'upcoming').length },
-              { id: 'completed', name: 'المكتملة', count: sessions.filter(s => s.status === 'completed').length },
-              { id: 'cancelled', name: 'الملغية', count: sessions.filter(s => s.status === 'cancelled').length },
-              { id: 'all', name: 'الكل', count: sessions.length }
+              { id: 'upcoming', name: 'المجدولة', count: sessions?.filter(s => s.status === 'مجدولة').length || 0 },
+              { id: 'completed', name: 'المكتملة', count: sessions?.filter(s => s.status === 'مكتملة').length || 0 },
+              { id: 'cancelled', name: 'الملغاة', count: sessions?.filter(s => s.status === 'ملغاة').length || 0 },
+              { id: 'all', name: 'الكل', count: sessions?.length || 0 }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -150,39 +227,45 @@ const MemberSessionsHistory = () => {
           <div className="space-y-4">
             {filteredSessions.map((session) => (
               <div
-                key={session.id}
+                key={session._id}
                 className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4">
                     <div className="text-2xl">
-                      {getTypeIcon(session.type)}
+                      {getTypeIcon(session.sessionType)}
                     </div>
                     <div className="flex-1">
                       <h4 className="text-lg font-medium text-gray-900 dark:text-white">
-                        {session.title}
+                        {session.sessionType}
                       </h4>
                       <div className="mt-2 space-y-1">
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          <span className="font-medium">المدرب:</span> {session.trainer}
+                          <span className="font-medium">المدرب:</span> {getTrainerName(session.trainerId)}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          <span className="font-medium">الوقت:</span> {session.time}
+                          <span className="font-medium">الوقت:</span> {session.startTime} - {session.endTime}
+                          {session.startTime && session.endTime && (
+                            <span className="ml-2 text-xs text-purple-600 dark:text-purple-400 "><br/>{getTimeDiffString(session.startTime, session.endTime)}</span>
+                          )}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          <span className="font-medium">التاريخ:</span> {session.date}
+                          <span className="font-medium">التاريخ:</span> {new Date(session.date).toLocaleDateString('ar-EG')}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <span className="font-medium">المدة:</span> {session.duration} دقيقة
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           <span className="font-medium">الموقع:</span> {session.location}
                         </p>
-                        {session.notes && (
+                        {session.description && (
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            <span className="font-medium">ملاحظات:</span> {session.notes}
+                            <span className="font-medium">الوصف:</span> {session.description}
                           </p>
                         )}
-                        {session.reason && (
-                          <p className="text-sm text-red-600 dark:text-red-400">
-                            <span className="font-medium">سبب الإلغاء:</span> {session.reason}
+                        {session.price && session.price > 0 && (
+                          <p className="text-sm text-green-600 dark:text-green-400">
+                            <span className="font-medium">السعر:</span> ج.م {session.price}
                           </p>
                         )}
                       </div>
@@ -192,26 +275,7 @@ const MemberSessionsHistory = () => {
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(session.status)}`}>
                       {getStatusText(session.status)}
                     </span>
-                    {session.rating && (
-                      <div className="flex items-center">
-                        <span className="text-yellow-500">⭐</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white mr-1">
-                          {session.rating}
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex space-x-2">
-                      {session.status === 'upcoming' && (
-                        <button className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 text-sm">
-                          إلغاء
-                        </button>
-                      )}
-                      {session.status === 'completed' && (
-                        <button className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 text-sm">
-                          تقييم
-                        </button>
-                      )}
-                    </div>
+                    {/* Read-only view - no action buttons */}
                   </div>
                 </div>
               </div>
@@ -219,6 +283,16 @@ const MemberSessionsHistory = () => {
           </div>
         </div>
       </div>
+
+      {/* Custom Alert */}
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        onClose={hideAlert}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+        duration={alertState.duration}
+      />
     </div>
   );
 };

@@ -47,4 +47,5 @@ export type {
   Feedback,
   Message,
   ClientProgress,
+  SessionSchedule,
 } from './models';

@@ -75,6 +75,8 @@ const AdminProgress = () => {
   const [editMuscleChange, setEditMuscleChange] = useState('');
   const [editStatus, setEditStatus] = useState<'ممتاز' | 'جيد' | 'يحتاج لتحسين'>('جيد');
   const [editAdvice, setEditAdvice] = useState('');
+  // 1. State جديد لبوب أب التفاصيل
+  const [selectedProgressDetails, setSelectedProgressDetails] = useState<ClientProgress | null>(null);
 
   useEffect(() => {
     const run = async () => {
@@ -315,9 +317,11 @@ const AdminProgress = () => {
                       }}
                       className="w-full text-left text-sm flex items-center justify-between px-2 py-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800"
                     >
-                      <div>
-                        <div className="font-medium text-gray-900 dark:text-white">{c.name}</div>
-                        <div className="text-xs text-gray-500">{c.email}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-900 dark:text-white">{c.name}</span>
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs font-bold">
+                          {trainerProgress.filter(p => p.userId === c._id).length}
+                        </span>
                       </div>
                       <span className="text-xs text-gray-400">عرض السجلات</span>
                     </button>
@@ -351,71 +355,38 @@ const AdminProgress = () => {
                 </div>
                 <div className="space-y-2 max-h-72 overflow-y-auto">
                   {trainerProgress.map(p => (
-                    <div key={p._id} className="flex items-center gap-4 border rounded-xl p-4 bg-white dark:bg-gray-800 dark:border-gray-700 shadow-sm mb-2">
-                      <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4 items-center">
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">التاريخ</div>
-                          <div className="font-bold text-[12px] text-gray-900 dark:text-white">{new Date(p.date).toLocaleDateString()}</div>
+                    <div key={p._id} className="flex items-center gap-2 border rounded-xl p-3 bg-white dark:bg-gray-800 dark:border-gray-700 shadow-sm mb-2">
+                      {/* مختصر: التاريخ، الوزن، نسبة الدهون - بجانب بعض */}
+                      <div className="flex flex-row items-center gap-2 flex-wrap">
+                        <div className="flex flex-col items-center min-w-[70px]">
+                          <div className="text-xs text-gray-500">التاريخ</div>
+                          <div className="font-bold text-xs text-gray-900 dark:text-white">{new Date(p.date).toLocaleDateString()}</div>
                         </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">الوزن (كجم)</div>
-                          <div className="font-bold text-sm text-gray-900 dark:text-white">{p.weight ?? '-'}</div>
+                        <div className="flex flex-col items-center min-w-[70px]">
+                          <div className="text-xs text-gray-500">الوزن</div>
+                          <div className="font-bold text-xs text-gray-900 dark:text-white">{p.weight ?? '-'}</div>
                         </div>
-                        <div>
-                          <div className="text-[10px]  text-gray-500 mb-1">نسبة الدهون %</div>
-                          <div className="font-bold text-[12px] text-gray-900 dark:text-white">{p.bodyFatPercentage ?? '-'}</div>
-                        </div>
-                        <div className="col-span-2 md:col-span-1">
-                          <div className="text-xs text-gray-500 mb-1">ملاحظات</div>
-                          <div className="text-gray-800 dark:text-gray-200 text-xs break-words">{p.notes || '-'}</div>
-                        </div>
-                        {/* داخل map(trainerProgress.map(...)) أضف أعمدة جديدة لكل حقل جديد مع تسمية عربية واضحة */}
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">الكتلة العضلية</div>
-                          <div className="font-bold text-sm text-gray-900 dark:text-white">{p.muscleMass ?? '-'}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">مقاس الوسط</div>
-                          <div className="font-bold text-sm text-gray-900 dark:text-white">{p.waist ?? '-'}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">مقاس الصدر</div>
-                          <div className="font-bold text-sm text-gray-900 dark:text-white">{p.chest ?? '-'}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">مقاس الذراع</div>
-                          <div className="font-bold text-sm text-gray-900 dark:text-white">{p.arms ?? '-'}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">مقاس الرجل</div>
-                          <div className="font-bold text-sm text-gray-900 dark:text-white">{p.legs ?? '-'}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">تغير الوزن</div>
-                          <div className="font-bold text-sm text-gray-900 dark:text-white">{p.weightChange ?? '-'}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">تغير الدهون</div>
-                          <div className="font-bold text-sm text-gray-900 dark:text-white">{p.fatChange ?? '-'}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">تغير الكتلة العضلية</div>
-                          <div className="font-bold text-sm text-gray-900 dark:text-white">{p.muscleChange ?? '-'}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">الحالة العامة</div>
-                          <div className="font-bold text-sm text-gray-900 dark:text-white">{p.status ?? '-'}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-1">نصيحة المدرب</div>
-                          <div className="font-bold text-sm text-gray-900 dark:text-white">{p.advice ?? '-'}</div>
+                        <div className="flex flex-col items-center min-w-[70px]">
+                          <div className="text-xs text-gray-500">الدهون %</div>
+                          <div className="font-bold text-xs text-gray-900 dark:text-white">{p.bodyFatPercentage ?? '-'}</div>
                         </div>
                       </div>
-                      <div className="flex flex-col gap-2 items-center justify-center min-w-[40px]">
+                      <div className="flex flex-row gap-1 items-center justify-center min-w-[40px] ml-auto">
+                        <button
+                          title="عرض المزيد"
+                          onClick={() => setSelectedProgressDetails(p)}
+                          className="p-2 rounded hover:bg-blue-100 dark:hover:bg-blue-900"
+                        >
+                          {/* SVG أيقونة عين */}
+                          <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
+                            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="#2563eb" strokeWidth="2"/>
+                            <circle cx="12" cy="12" r="3" stroke="#2563eb" strokeWidth="2"/>
+                          </svg>
+                        </button>
                         <button
                           title="تعديل"
                           onClick={() => {
-                            const progress = trainerProgress.find(p => p._id === p._id);
+                            const progress = trainerProgress.find(x => x._id === p._id);
                             if (progress) {
                               setEditProgressId(p._id);
                               setEditProgressData({
@@ -428,7 +399,6 @@ const AdminProgress = () => {
                           }}
                           className="p-2 rounded hover:bg-blue-100 dark:hover:bg-blue-900"
                         >
-                          {/* أيقونة قلم داخل مربع */}
                           <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" stroke="#2563eb" strokeWidth="2"/><path d="M8 16l7.5-7.5a1.06 1.06 0 0 1 1.5 1.5L9.5 17.5H8v-1.5Z" stroke="#2563eb" strokeWidth="2"/></svg>
                         </button>
                         <button
@@ -436,7 +406,6 @@ const AdminProgress = () => {
                           onClick={() => setDeleteProgressId(p._id)}
                           className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900"
                         >
-                          {/* أيقونة سلة مهملات */}
                           <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><rect x="5" y="7" width="14" height="12" rx="2" stroke="#dc2626" strokeWidth="2"/><path d="M3 7h18M10 11v4M14 11v4M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke="#dc2626" strokeWidth="2"/></svg>
                         </button>
                       </div>
@@ -928,6 +897,34 @@ const AdminProgress = () => {
                 className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-60"
                 disabled={!addMemberProgressPopup.userId || !addMemberProgressData.date || saving}
               >حفظ</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* بوب أب التفاصيل الكاملة */}
+      {selectedProgressDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setSelectedProgressDetails(null)} />
+          <div className="relative z-10 bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-lg overflow-y-auto max-h-[80vh]">
+            <div className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">تفاصيل سجل التقدم</div>
+            <div className="grid grid-cols-2 gap-4">
+              <div><span className="font-bold">التاريخ:</span> {new Date(selectedProgressDetails.date).toLocaleDateString()}</div>
+              <div><span className="font-bold">الوزن:</span> {selectedProgressDetails.weight ?? '-'}</div>
+              <div><span className="font-bold">نسبة الدهون:</span> {selectedProgressDetails.bodyFatPercentage ?? '-'}</div>
+              <div><span className="font-bold">الكتلة العضلية:</span> {selectedProgressDetails.muscleMass ?? '-'}</div>
+              <div><span className="font-bold">مقاس الوسط:</span> {selectedProgressDetails.waist ?? '-'}</div>
+              <div><span className="font-bold">مقاس الصدر:</span> {selectedProgressDetails.chest ?? '-'}</div>
+              <div><span className="font-bold">مقاس الذراع:</span> {selectedProgressDetails.arms ?? '-'}</div>
+              <div><span className="font-bold">مقاس الرجل:</span> {selectedProgressDetails.legs ?? '-'}</div>
+              <div><span className="font-bold">تغير الوزن:</span> {selectedProgressDetails.weightChange ?? '-'}</div>
+              <div><span className="font-bold">تغير الدهون:</span> {selectedProgressDetails.fatChange ?? '-'}</div>
+              <div><span className="font-bold">تغير الكتلة العضلية:</span> {selectedProgressDetails.muscleChange ?? '-'}</div>
+              <div><span className="font-bold">الحالة العامة:</span> {selectedProgressDetails.status ?? '-'}</div>
+              <div className="col-span-2"><span className="font-bold">ملاحظات:</span> {selectedProgressDetails.notes ?? '-'}</div>
+              <div className="col-span-2"><span className="font-bold">نصيحة المدرب:</span> {selectedProgressDetails.advice ?? '-'}</div>
+            </div>
+            <div className="flex justify-end mt-6">
+              <button onClick={() => setSelectedProgressDetails(null)} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-800">إغلاق</button>
             </div>
           </div>
         </div>

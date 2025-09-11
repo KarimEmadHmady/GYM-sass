@@ -11,7 +11,8 @@ export const createSessionSchedule = async (req, res) => {
   try {
     const session = await createSessionScheduleService({
       ...req.body,
-      userId: req.params.userId
+      userId: req.body.userId || req.params.userId,
+      trainerId: req.body.trainerId
     });
     res.status(201).json(session);
   } catch (error) {
@@ -19,7 +20,7 @@ export const createSessionSchedule = async (req, res) => {
   }
 };
 
-// جلب جميع الحصص لمستخدم
+// جلب جميع الحصص لمستخدم (كعميل أو مدرب)
 export const getSessionSchedulesByUser = async (req, res) => {
   try {
     const sessions = await getSessionSchedulesByUserService(req.params.userId);

@@ -11,17 +11,17 @@ import { authorizeRole } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
-// إنشاء حصة جديدة
+// إنشاء حصة جديدة (يجب إرسال userId و trainerId)
 router.post("/:userId", authenticate,  authorizeRole(['admin','manager', 'trainer']), createSessionSchedule);
 
-// جلب جميع الحصص لمستخدم
-router.get("/:userId", authenticate,  authorizeRole(['admin','manager', 'trainer']), getSessionSchedulesByUser);
+// جلب جميع الحصص لمستخدم (كعميل أو مدرب)
+router.get("/:userId", authenticate,  getSessionSchedulesByUser);
 
 // جلب جميع الحصص
-router.get("/", authenticate,  authorizeRole(['admin','manager']), getAllSessionSchedules);
+router.get("/", authenticate,  authorizeRole(['admin','manager', 'trainer']), getAllSessionSchedules);
 
 // تعديل حصة
-router.put("/:id", authenticate,  authorizeRole(['admin','manager']), updateSessionSchedule);
+router.put("/:id", authenticate,  authorizeRole(['admin','manager', 'trainer']), updateSessionSchedule);
 
 // حذف حصة
 router.delete("/:id", authenticate,  authorizeRole(['admin','manager']), deleteSessionSchedule);

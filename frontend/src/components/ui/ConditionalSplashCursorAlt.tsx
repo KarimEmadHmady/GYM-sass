@@ -9,7 +9,7 @@ const ConditionalSplashCursorAlt = () => {
   // تحديد الصفحات التي يجب إظهار تأثير الماوس فيها
   // نزيل locale prefix من pathname
   const cleanPathname = pathname.replace(/^\/[a-z]{2}/, '') || '/';
-  const allowedRoutes = ['/', '/login'];
+  const allowedRoutes = ['/'];
   const shouldShowCursor = allowedRoutes.includes(cleanPathname);
   
   // إخفاء المكون إذا لم يكن في الصفحات المسموحة
