@@ -178,11 +178,11 @@ export interface Payroll {
 // Feedback
 export interface Feedback {
   _id: string;
-  userId: string;
-  type: 'complaint' | 'suggestion' | 'compliment';
-  message: string;
-  status: 'pending' | 'reviewed' | 'resolved';
-  response?: string;
+  toUserId: string;
+  fromUserId?: string;
+  rating: number;
+  comment?: string;
+  date: Date;
   createdAt: Date;
   updatedAt: Date;
 }

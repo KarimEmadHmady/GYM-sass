@@ -365,7 +365,8 @@ export const API_ENDPOINTS = {
     list: '/feedback',
     create: '/feedback',
     update: (id: string) => `/feedback/${id}`,
-    delete: (id: string) => `/feedback/${id}`
+    delete: (id: string) => `/feedback/${id}`,
+    user: (userId: string) => `/feedback/${userId}`,
   },
   // Messages
   messages: {

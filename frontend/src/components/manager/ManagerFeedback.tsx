@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { getAllFeedback, deleteFeedback, createFeedback, updateFeedback } from '@/services/feedbackService';
 import { userService } from '@/services';
 import type { Feedback, User } from '@/types/models';
-import { Star, X, AlertTriangle, Trash2 } from 'lucide-react';
+import { Star, X } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const initialForm = {
   fromUserId: '',
@@ -13,7 +14,8 @@ const initialForm = {
   comment: '',
 };
 
-const AdminFeedback = () => {
+const ManagerFeedback = () => {
+  const { user } = useAuth();
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +27,6 @@ const AdminFeedback = () => {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [search, setSearch] = useState('');
   const [selectedTrainer, setSelectedTrainer] = useState('');
-  const [deleteModal, setDeleteModal] = useState<{ show: boolean; feedback: Feedback | null }>({ show: false, feedback: null });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,40 +66,23 @@ const AdminFeedback = () => {
     return user ? user.name : 'غير معروف';
   };
 
-  const openDeleteModal = (feedback: Feedback) => {
-    setDeleteModal({ show: true, feedback });
-  };
-
-  const closeDeleteModal = () => {
-    setDeleteModal({ show: false, feedback: null });
-  };
-
-  const handleDelete = async () => {
-    if (!deleteModal.feedback) return;
-    
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذا التقييم؟')) return;
     try {
-      await deleteFeedback(deleteModal.feedback._id);
-      setFeedbacks(prev => prev.filter(f => f._id !== deleteModal.feedback!._id));
-      closeDeleteModal();
+      await deleteFeedback(id);
+      setFeedbacks(prev => prev.filter(f => f._id !== id));
     } catch (err: any) {
       alert('فشل الحذف: ' + (err.message || 'خطأ غير معروف'));
     }
   };
 
   const openAddModal = () => {
-    setForm(initialForm);
+    if (!user || !user.id) {
+      alert('حدث خطأ في تحميل بيانات المستخدم. أعد تحميل الصفحة.');
+      return;
+    }
+    setForm({ ...initialForm, fromUserId: user.id });
     setEditId(null);
-    setShowModal(true);
-  };
-
-  const openEditModal = (fb: Feedback) => {
-    setForm({
-      fromUserId: fb.fromUserId ? String(fb.fromUserId) : '',
-      toUserId: fb.toUserId ? String(fb.toUserId) : '',
-      rating: fb.rating,
-      comment: fb.comment || '',
-    });
-    setEditId(fb._id);
     setShowModal(true);
   };
 
@@ -112,19 +96,20 @@ const AdminFeedback = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.fromUserId || !form.toUserId || !form.rating) {
+    if (!form.toUserId || !form.rating) {
       alert('يرجى تعبئة جميع الحقول المطلوبة');
       return;
     }
     setSaving(true);
     try {
-      if (editId) {
-        const updated = await updateFeedback(editId, form);
-        setFeedbacks(prev => prev.map(f => f._id === editId ? { ...f, ...updated } : f));
-      } else {
-        const created = await createFeedback(form);
-        setFeedbacks(prev => [created, ...prev]);
-      }
+      const payload: any = {
+        toUserId: form.toUserId,
+        rating: form.rating,
+        comment: form.comment,
+      };
+      if (form.fromUserId) payload.fromUserId = form.fromUserId;
+      const created = await createFeedback(payload);
+      setFeedbacks(prev => [created, ...prev]);
       setShowModal(false);
     } catch (err: any) {
       alert('فشل الحفظ: ' + (err.message || 'خطأ غير معروف'));
@@ -156,7 +141,18 @@ const AdminFeedback = () => {
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">التقييمات والملاحظات</h3>
-        <button onClick={openAddModal} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">إضافة تقييم</button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openAddModal}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={!user || !user.id}
+          >
+            إضافة تقييم
+          </button>
+          {(!user || !user.id) && (
+            <span className="text-xs text-gray-500">جاري تحميل بيانات المستخدم...</span>
+          )}
+        </div>
       </div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2 md:gap-4">
         <div className="flex-1">
@@ -197,7 +193,6 @@ const AdminFeedback = () => {
                 <th className="py-2 px-3">التقييم</th>
                 <th className="py-2 px-3">التعليق</th>
                 <th className="py-2 px-3">التاريخ</th>
-                <th className="py-2 px-3">إجراءات</th>
               </tr>
             </thead>
             <tbody>
@@ -214,10 +209,6 @@ const AdminFeedback = () => {
                   </td>
                   <td className="py-2 px-3">{fb.comment || '-'}</td>
                   <td className="py-2 px-3">{new Date(fb.date).toLocaleDateString()}</td>
-                  <td className="py-2 px-3 flex gap-2">
-                    <button onClick={() => openEditModal(fb)} className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded text-xs">تعديل</button>
-                    <button onClick={() => openDeleteModal(fb)} className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs">حذف</button>
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -230,17 +221,9 @@ const AdminFeedback = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md relative">
             <button onClick={() => setShowModal(false)} className="absolute left-3 top-3 text-gray-400 hover:text-red-500"><X size={22} /></button>
-            <h4 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{editId ? 'تعديل تقييم' : 'إضافة تقييم'}</h4>
+            <h4 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">إضافة تقييم</h4>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block mb-1 text-sm">المرسل</label>
-                <select name="fromUserId" value={form.fromUserId} onChange={handleFormChange} className="w-full rounded border px-2 py-1">
-                  <option value="" className="text-black">اختر المرسل</option>
-                  {senderOptions.map(u => (
-                    <option key={u._id} value={String(u._id)} className="text-black">{u.name} ({u.role})</option>
-                  ))}
-                </select>
-              </div>
+              {/* لا يوجد حقل مرسل */}
               <div>
                 <label className="block mb-1 text-sm">المستلم</label>
                 <select name="toUserId" value={form.toUserId} onChange={handleFormChange} className="w-full rounded border px-2 py-1">
@@ -279,87 +262,9 @@ const AdminFeedback = () => {
                 <textarea name="comment" value={form.comment} onChange={handleFormChange} className="w-full rounded border px-2 py-1 min-h-[60px]" />
               </div>
               <button type="submit" disabled={saving} className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md mt-2">
-                {saving ? 'جارٍ الحفظ...' : editId ? 'تحديث' : 'إضافة'}
+                {saving ? 'جارٍ الحفظ...' : 'إضافة'}
               </button>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {deleteModal.show && deleteModal.feedback && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 transform transition-all duration-300 scale-100">
-            <div className="flex items-center justify-center mb-4">
-              <div className="bg-red-100 dark:bg-red-900/20 p-3 rounded-full">
-                <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
-              </div>
-            </div>
-            
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                تأكيد الحذف
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
-                هل أنت متأكد من حذف هذا التقييم؟
-              </p>
-              
-              {/* Feedback Details */}
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 text-right">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">المرسل:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {getUserName(deleteModal.feedback.fromUserId)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">المستلم:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    {getUserName(deleteModal.feedback.toUserId)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">التقييم:</span>
-                  <div className="flex">
-                    {[1,2,3,4,5].map(i => (
-                      <Star 
-                        key={i} 
-                        size={16} 
-                        className={
-                          'inline-block mx-0.5 ' + 
-                          (i <= (deleteModal.feedback?.rating || 0) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300')
-                        } 
-                        fill={i <= (deleteModal.feedback?.rating || 0) ? '#facc15' : 'none'} 
-                      />
-                    ))}
-                  </div>
-                </div>
-                {deleteModal.feedback.comment && (
-                  <div className="mt-2">
-                    <span className="text-sm text-gray-500 dark:text-gray-400 block mb-1">التعليق:</span>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 p-2 rounded border">
-                      {deleteModal.feedback.comment}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={closeDeleteModal}
-                className="px-6 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg font-medium transition-colors duration-200"
-              >
-                إلغاء
-              </button>
-              <button
-                onClick={handleDelete}
-                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
-              >
-                <Trash2 size={16} />
-                حذف التقييم
-              </button>
-            </div>
           </div>
         </div>
       )}
@@ -367,6 +272,5 @@ const AdminFeedback = () => {
   );
 };
 
-export default AdminFeedback;
-
+export default ManagerFeedback;
 

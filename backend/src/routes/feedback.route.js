@@ -12,18 +12,18 @@ import { authorizeRole } from '../middlewares/role.middleware.js';
 const router = express.Router();
 
 // إضافة تقييم جديد
-router.post('/', authenticate,  createFeedback);
+router.post('/', authenticate, authorizeRole(['admin','manager', 'member']),  createFeedback);
 
 // جلب جميع التقييمات
-router.get('/', authenticate,  authorizeRole(['admin','manager', 'trainer']), getAllFeedback);
+router.get('/', authenticate,   getAllFeedback);
 
 // جلب جميع التقييمات الخاصة بمستخدم معين
-router.get('/:userId', authenticate,  authorizeRole(['admin','manager', 'trainer', 'member']), getFeedbackForUser);
+router.get('/:userId', authenticate,   getFeedbackForUser);
 
 // تعديل تقييم
-router.put('/:id', authenticate,  authorizeRole(['admin','manager', 'trainer']), updateFeedback);
+router.put('/:id', authenticate,  authorizeRole(['admin']), updateFeedback);
 
 // حذف تقييم
-router.delete('/:id', authenticate,  authorizeRole(['admin','manager']), deleteFeedback);
+router.delete('/:id', authenticate,  authorizeRole(['admin']), deleteFeedback);
 
 export default router;

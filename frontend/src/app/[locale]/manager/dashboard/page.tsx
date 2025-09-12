@@ -18,12 +18,12 @@ import AdminPayments from '@/components/admin/AdminPayments';
 import AdminPurchases from '@/components/admin/AdminPurchases';
 import AdminMessages from '@/components/admin/AdminMessages';
 import AdminProgress from '@/components/admin/AdminProgress';
-import AdminFeedback from '@/components/admin/AdminFeedback';
 import AdminRewards from '@/components/admin/AdminRewards';
 import AdminLoyalty from '@/components/admin/AdminLoyalty';
 import AdminSearch from '@/components/admin/AdminSearch';
 import ManagerSettings from '@/components/manager/ManagerSettings';
 import TrainersDirectory from '@/components/shared/TrainersDirectory';
+import ManagerFeedback from '@/components/manager/ManagerFeedback';
 
 const ManagerDashboard = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -255,7 +255,7 @@ const ManagerDashboard = () => {
 
         {activeTab === 'feedback' && (
           <div className="space-y-8">
-            <AdminFeedback />
+            <ManagerFeedback />
           </div>
         )}
 

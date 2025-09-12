@@ -21,6 +21,8 @@ import MemberPurchases from '@/components/member/MemberPurchases';
 import MemberTrainer from '@/components/member/MemberTrainer';
 import MemberMessages from '@/components/member/MemberMessages';
 import MemberSettings from '@/components/member/MemberSettings';
+import ManagerFeedback from '@/components/manager/ManagerFeedback';
+import MemberFeedback from '@/components/member/MemberFeedback';
 
 const MemberProfile = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -77,6 +79,7 @@ const MemberProfile = () => {
     { id: 'trainer', name: 'مدربي', icon: '👨‍🏫' },
     { id: 'messages', name: 'الرسائل', icon: '💬' },
     { id: 'progress', name: t('Tabs.progress'), icon: '📈' },
+    { id: 'feedback', name: 'التقييمات', icon: '⭐' },
     { id: 'loyalty', name: t('Tabs.loyalty'), icon: '⭐' },
     { id: 'rewards', name: 'الجوائز', icon: '🏆' },
     { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' }
@@ -225,6 +228,12 @@ const MemberProfile = () => {
         {activeTab === 'messages' && (
           <div className="space-y-8">
             <MemberMessages />
+          </div>
+        )}
+
+        {activeTab === 'feedback' && (
+          <div className="space-y-8">
+            <MemberFeedback />
           </div>
         )}
 
