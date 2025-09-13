@@ -48,4 +48,13 @@ export type {
   Message,
   ClientProgress,
   SessionSchedule,
+  // New Loyalty Points types
+  LoyaltyPointsHistory,
+  RedeemableReward,
+  UserPointsResponse,
+  RedeemableRewardsResponse,
+  RewardRedemptionResponse,
+  LoyaltyPointsStatsResponse,
+  RewardsStatsResponse,
+  PointsHistoryResponse,
 } from './models';

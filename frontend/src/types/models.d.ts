@@ -116,7 +116,45 @@ export interface DietPlan {
   updatedAt: Date;
 }
 
-// Reward/Loyalty Points
+// Loyalty Points History
+export interface LoyaltyPointsHistory {
+  _id: string;
+  userId: string;
+  points: number;
+  type: 'earned' | 'redeemed' | 'admin_added' | 'admin_deducted' | 'payment_bonus' | 'attendance_bonus' | 'expired';
+  reason: string;
+  rewardId?: string;
+  paymentId?: string;
+  attendanceId?: string;
+  remainingPoints: number;
+  adminId?: string;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Redeemable Reward (الجوائز القابلة للاستبدال)
+export interface RedeemableReward {
+  _id: string;
+  name: string;
+  description: string;
+  pointsRequired: number;
+  category: 'discount' | 'free_session' | 'merchandise' | 'subscription_extension' | 'premium_feature' | 'gift_card';
+  isActive: boolean;
+  stock: number; // -1 = unlimited
+  imageUrl?: string;
+  validUntil?: Date;
+  minMembershipLevel: 'basic' | 'silver' | 'gold' | 'platinum';
+  value?: number;
+  valueUnit?: string;
+  conditions?: string;
+  maxRedemptionsPerUser: number;
+  totalRedemptions: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Legacy Reward (للتوافق مع الكود القديم)
 export interface Reward {
   _id: string;
   userId: string;
@@ -240,4 +278,81 @@ export interface SessionSchedule {
   description?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+// ==================== Loyalty Points API Response Types ====================
+
+// User Points Response
+export interface UserPointsResponse {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    loyaltyPoints: number;
+  };
+  history: LoyaltyPointsHistory[];
+}
+
+// Redeemable Rewards Response
+export interface RedeemableRewardsResponse {
+  user: {
+    loyaltyPoints: number;
+    membershipLevel: string;
+  };
+  rewards: RedeemableReward[];
+}
+
+// Reward Redemption Response
+export interface RewardRedemptionResponse {
+  user: User;
+  reward: {
+    id: string;
+    name: string;
+    description: string;
+    pointsUsed: number;
+    category: string;
+  };
+  message: string;
+}
+
+// Loyalty Points Stats Response
+export interface LoyaltyPointsStatsResponse {
+  stats: {
+    totalPoints: number;
+    totalUsers: number;
+    avgPoints: number;
+    maxPoints: number;
+  };
+  topUsers: Array<{
+    _id: string;
+    name: string;
+    email: string;
+    loyaltyPoints: number;
+    avatarUrl?: string;
+  }>;
+}
+
+// Rewards Stats Response
+export interface RewardsStatsResponse {
+  general: {
+    totalRewards: number;
+    activeRewards: number;
+    totalRedemptions: number;
+    avgPointsRequired: number;
+  };
+  byCategory: Array<{
+    _id: string;
+    count: number;
+    totalRedemptions: number;
+  }>;
+}
+
+// Points History Response
+export interface PointsHistoryResponse {
+  history: LoyaltyPointsHistory[];
+  totalCount: number;
+  pagination: {
+    limit: number;
+    total: number;
+  };
 }

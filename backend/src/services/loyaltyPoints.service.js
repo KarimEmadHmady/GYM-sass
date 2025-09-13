@@ -1,5 +1,6 @@
 import User from '../models/user.model.js';
-import Reward from '../models/userMangment/Reward.model.js';
+import RedeemableReward from '../models/userMangment/RedeemableReward.model.js';
+import LoyaltyPointsHistory from '../models/userMangment/LoyaltyPointsHistory.model.js';
 
 /**
  * إضافة نقاط ولاء للمستخدم
@@ -26,12 +27,13 @@ export const addLoyaltyPoints = async (userId, points, reason) => {
     { new: true }
   );
 
-  // تسجيل العملية في جدول Rewards
-  await Reward.create({
+  // تسجيل العملية في سجل النقاط
+  await LoyaltyPointsHistory.create({
     userId,
     points,
-    redeemedFor: reason,
-    date: new Date()
+    type: 'earned',
+    reason,
+    remainingPoints: updatedUser.loyaltyPoints
   });
 
   return updatedUser;
@@ -66,11 +68,12 @@ export const redeemLoyaltyPoints = async (userId, points, reward) => {
   );
 
   // تسجيل الاستبدال
-  await Reward.create({
+  await LoyaltyPointsHistory.create({
     userId,
     points: -points,
-    redeemedFor: reward,
-    date: new Date()
+    type: 'redeemed',
+    reason: reward,
+    remainingPoints: updatedUser.loyaltyPoints
   });
 
   return updatedUser;
@@ -88,9 +91,10 @@ export const getUserLoyaltyPoints = async (userId) => {
   }
 
   // جلب سجل النقاط
-  const rewardsHistory = await Reward.find({ userId })
-    .sort({ date: -1 })
-    .limit(10);
+  const rewardsHistory = await LoyaltyPointsHistory.find({ userId })
+    .sort({ createdAt: -1 })
+    .limit(10)
+    .populate('rewardId', 'name category');
 
   return {
     user: {
@@ -120,12 +124,28 @@ export const calculatePointsFromPayment = (amount) => {
  * @param {string} paymentType - نوع الدفع
  * @returns {Object} المستخدم المحدث
  */
-export const addPointsFromPayment = async (userId, amount, paymentType) => {
+export const addPointsFromPayment = async (userId, amount, paymentType, paymentId = null) => {
   const points = calculatePointsFromPayment(amount);
   
   if (points > 0) {
     const reason = `دفع ${paymentType} - ${amount} جنيه`;
-    return await addLoyaltyPoints(userId, points, reason);
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $inc: { loyaltyPoints: points } },
+      { new: true }
+    );
+
+    // تسجيل العملية في سجل النقاط
+    await LoyaltyPointsHistory.create({
+      userId,
+      points,
+      type: 'payment_bonus',
+      reason,
+      paymentId,
+      remainingPoints: updatedUser.loyaltyPoints
+    });
+
+    return updatedUser;
   }
   
   return await User.findById(userId);
@@ -165,7 +185,7 @@ export const getLoyaltyPointsStats = async () => {
  * @param {number} attendanceStreak - عدد أيام الحضور المتتالية
  * @returns {Object} المستخدم المحدث
  */
-export const addAttendancePoints = async (userId, attendanceStreak) => {
+export const addAttendancePoints = async (userId, attendanceStreak, attendanceId = null) => {
   let points = 0;
   let reason = '';
 
@@ -180,5 +200,275 @@ export const addAttendancePoints = async (userId, attendanceStreak) => {
     reason = 'حضور اليوم';
   }
 
-  return await addLoyaltyPoints(userId, points, reason);
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $inc: { loyaltyPoints: points } },
+    { new: true }
+  );
+
+  // تسجيل العملية في سجل النقاط
+  await LoyaltyPointsHistory.create({
+    userId,
+    points,
+    type: 'attendance_bonus',
+    reason,
+    attendanceId,
+    remainingPoints: updatedUser.loyaltyPoints
+  });
+
+  return updatedUser;
+};
+
+/**
+ * جلب الجوائز القابلة للاستبدال للمستخدم
+ * @param {string} userId - معرف المستخدم
+ * @returns {Array} قائمة الجوائز المتاحة
+ */
+export const getRedeemableRewards = async (userId) => {
+  const user = await User.findById(userId).select('loyaltyPoints membershipLevel');
+  if (!user) {
+    throw new Error('المستخدم غير موجود');
+  }
+
+  const rewards = await RedeemableReward.find({ 
+    isActive: true,
+    pointsRequired: { $lte: user.loyaltyPoints },
+    minMembershipLevel: { $lte: user.membershipLevel },
+    $or: [
+      { validUntil: { $exists: false } },
+      { validUntil: { $gt: new Date() } }
+    ]
+  }).sort({ pointsRequired: 1 });
+
+  return {
+    user: {
+      loyaltyPoints: user.loyaltyPoints,
+      membershipLevel: user.membershipLevel
+    },
+    rewards
+  };
+};
+
+/**
+ * استبدال نقاط بجائزة
+ * @param {string} userId - معرف المستخدم
+ * @param {string} rewardId - معرف الجائزة
+ * @returns {Object} نتيجة الاستبدال
+ */
+export const redeemReward = async (userId, rewardId) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error('المستخدم غير موجود');
+  }
+
+  const reward = await RedeemableReward.findById(rewardId);
+  if (!reward) {
+    throw new Error('الجائزة غير موجودة');
+  }
+
+  if (!reward.isActive) {
+    throw new Error('الجائزة غير متاحة حالياً');
+  }
+
+  if (reward.validUntil && reward.validUntil < new Date()) {
+    throw new Error('انتهت صلاحية هذه الجائزة');
+  }
+
+  if (user.loyaltyPoints < reward.pointsRequired) {
+    throw new Error('نقاط غير كافية للاستبدال');
+  }
+
+  if (user.membershipLevel < reward.minMembershipLevel) {
+    throw new Error('مستوى العضوية غير كافي لهذه الجائزة');
+  }
+
+  // التحقق من المخزون
+  if (reward.stock !== -1 && reward.totalRedemptions >= reward.stock) {
+    throw new Error('نفد المخزون من هذه الجائزة');
+  }
+
+  // خصم النقاط
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $inc: { loyaltyPoints: -reward.pointsRequired } },
+    { new: true }
+  );
+
+  // تسجيل الاستبدال
+  await LoyaltyPointsHistory.create({
+    userId,
+    points: -reward.pointsRequired,
+    type: 'redeemed',
+    reason: `استبدال: ${reward.name}`,
+    rewardId: reward._id,
+    remainingPoints: updatedUser.loyaltyPoints
+  });
+
+  // تحديث عدد مرات الاستبدال
+  await RedeemableReward.findByIdAndUpdate(
+    rewardId,
+    { $inc: { totalRedemptions: 1 } }
+  );
+
+  return {
+    user: updatedUser,
+    reward: {
+      id: reward._id,
+      name: reward.name,
+      description: reward.description,
+      pointsUsed: reward.pointsRequired,
+      category: reward.category
+    },
+    message: 'تم استبدال النقاط بالجائزة بنجاح'
+  };
+};
+
+/**
+ * جلب جميع الجوائز (للمدير)
+ * @param {Object} filters - فلاتر البحث
+ * @returns {Array} قائمة الجوائز
+ */
+export const getAllRedeemableRewards = async (filters = {}) => {
+  const query = {};
+  
+  if (filters.category) {
+    query.category = filters.category;
+  }
+  
+  if (filters.isActive !== undefined) {
+    query.isActive = filters.isActive;
+  }
+
+  if (filters.minPoints) {
+    query.pointsRequired = { $gte: filters.minPoints };
+  }
+
+  if (filters.maxPoints) {
+    query.pointsRequired = { ...query.pointsRequired, $lte: filters.maxPoints };
+  }
+
+  const rewards = await RedeemableReward.find(query)
+    .sort({ createdAt: -1 })
+    .limit(filters.limit || 50);
+
+  return rewards;
+};
+
+/**
+ * إنشاء جائزة جديدة (للمدير)
+ * @param {Object} rewardData - بيانات الجائزة
+ * @returns {Object} الجائزة المنشأة
+ */
+export const createRedeemableReward = async (rewardData) => {
+  const reward = new RedeemableReward(rewardData);
+  return await reward.save();
+};
+
+/**
+ * تحديث جائزة (للمدير)
+ * @param {string} rewardId - معرف الجائزة
+ * @param {Object} updateData - البيانات المحدثة
+ * @returns {Object} الجائزة المحدثة
+ */
+export const updateRedeemableReward = async (rewardId, updateData) => {
+  const reward = await RedeemableReward.findByIdAndUpdate(
+    rewardId,
+    updateData,
+    { new: true, runValidators: true }
+  );
+  
+  if (!reward) {
+    throw new Error('الجائزة غير موجودة');
+  }
+  
+  return reward;
+};
+
+/**
+ * حذف جائزة (للمدير)
+ * @param {string} rewardId - معرف الجائزة
+ * @returns {boolean} نجح الحذف
+ */
+export const deleteRedeemableReward = async (rewardId) => {
+  const reward = await RedeemableReward.findByIdAndDelete(rewardId);
+  return !!reward;
+};
+
+/**
+ * جلب إحصائيات الجوائز
+ * @returns {Object} إحصائيات الجوائز
+ */
+export const getRewardsStats = async () => {
+  const stats = await RedeemableReward.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalRewards: { $sum: 1 },
+        activeRewards: {
+          $sum: { $cond: ['$isActive', 1, 0] }
+        },
+        totalRedemptions: { $sum: '$totalRedemptions' },
+        avgPointsRequired: { $avg: '$pointsRequired' }
+      }
+    }
+  ]);
+
+  const categoryStats = await RedeemableReward.aggregate([
+    {
+      $group: {
+        _id: '$category',
+        count: { $sum: 1 },
+        totalRedemptions: { $sum: '$totalRedemptions' }
+      }
+    }
+  ]);
+
+  return {
+    general: stats[0] || {
+      totalRewards: 0,
+      activeRewards: 0,
+      totalRedemptions: 0,
+      avgPointsRequired: 0
+    },
+    byCategory: categoryStats
+  };
+};
+
+/**
+ * جلب سجل نقاط الولاء للمستخدم
+ * @param {string} userId - معرف المستخدم
+ * @param {Object} filters - فلاتر البحث
+ * @returns {Object} سجل النقاط
+ */
+export const getLoyaltyPointsHistory = async (userId, filters = {}) => {
+  const query = { userId };
+  
+  if (filters.type) {
+    query.type = filters.type;
+  }
+  
+  if (filters.startDate) {
+    query.createdAt = { ...query.createdAt, $gte: new Date(filters.startDate) };
+  }
+  
+  if (filters.endDate) {
+    query.createdAt = { ...query.createdAt, $lte: new Date(filters.endDate) };
+  }
+
+  const history = await LoyaltyPointsHistory.find(query)
+    .sort({ createdAt: -1 })
+    .limit(filters.limit || 50)
+    .populate('rewardId', 'name category pointsRequired')
+    .populate('adminId', 'name email');
+
+  const totalCount = await LoyaltyPointsHistory.countDocuments(query);
+
+  return {
+    history,
+    totalCount,
+    pagination: {
+      limit: filters.limit || 50,
+      total: totalCount
+    }
+  };
 };

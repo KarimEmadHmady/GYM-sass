@@ -353,12 +353,31 @@ export const API_ENDPOINTS = {
   },
   // Loyalty Points
   loyalty: {
-    user: (userId: string) => `/loyalty-points/user/${userId}`,
+    // User Points
+    user: (userId: string) => `/loyalty-points/${userId}`,
     myPoints: '/loyalty-points/my-points',
+    history: '/loyalty-points/history',
+    
+    // Points Management
     add: '/loyalty-points/add',
     redeem: '/loyalty-points/redeem',
     stats: '/loyalty-points/stats',
-    topUsers: '/loyalty-points/top-users'
+    topUsers: '/loyalty-points/top-users',
+    
+    // Payment & Attendance Points
+    paymentPoints: '/loyalty-points/payment-points',
+    attendancePoints: '/loyalty-points/attendance-points',
+    
+    // Rewards (User)
+    rewards: '/loyalty-points/rewards',
+    redeemReward: '/loyalty-points/redeem-reward',
+    
+    // Rewards Management (Admin)
+    adminRewards: '/loyalty-points/admin/rewards',
+    adminRewardsStats: '/loyalty-points/admin/rewards/stats',
+    createReward: 'admin/rewards',
+    updateReward: (rewardId: string) => `/loyalty-points/admin/rewards/${rewardId}`,
+    deleteReward: (rewardId: string) => `/loyalty-points/admin/rewards/${rewardId}`
   },
   // Feedback
   feedback: {

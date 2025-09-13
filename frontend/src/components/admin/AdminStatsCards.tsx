@@ -1,14 +1,44 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { UserService } from '@/services/userService';
+import { useLoyaltyStats } from '@/hooks/useLoyaltyStats';
+
+const userService = new UserService();
 
 const AdminStatsCards = () => {
   const t = useTranslations('AdminDashboard.Stats');
+  const { loyaltyStats, loading: loyaltyLoading } = useLoyaltyStats();
+  const [usersCount, setUsersCount] = useState<number>(0);
+  const [usersLoading, setUsersLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsersCount = async () => {
+      try {
+        const usersRes = await userService.getUsers({ limit: 1 });
+        if (Array.isArray(usersRes)) {
+          setUsersCount(usersRes.length);
+        } else if (usersRes.data && Array.isArray(usersRes.data)) {
+          setUsersCount(usersRes.data.length);
+        } else {
+          setUsersCount(0);
+        }
+      } catch (error) {
+        console.log('Error fetching users count:', error);
+        setUsersCount(0);
+      } finally {
+        setUsersLoading(false);
+      }
+    };
+
+    fetchUsersCount();
+  }, []);
+
   const stats = [
     {
       title: t('totalMembers'),
-      value: '1,234',
+      value: usersLoading ? '...' : usersCount.toLocaleString(),
       change: '+12%',
       changeType: 'positive',
       icon: '👥',
@@ -56,7 +86,7 @@ const AdminStatsCards = () => {
     },
     {
       title: t('loyaltyPoints'),
-      value: '12,456',
+      value: loyaltyLoading ? '...' : (loyaltyStats?.stats?.totalPoints || 0).toLocaleString(),
       change: '+8%',
       changeType: 'positive',
       icon: '⭐',

@@ -66,3 +66,64 @@ export const apiRequest = async (
   
   return response;
 };
+
+// ==================== Loyalty Points API Helpers ====================
+
+// Helper function for loyalty points API calls
+export const loyaltyApiRequest = async (
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<Response> => {
+  return apiRequest(`/loyalty-points${endpoint}`, options);
+};
+
+// Helper function for admin loyalty points API calls
+export const adminLoyaltyApiRequest = async (
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<Response> => {
+  return apiRequest(`/loyalty-points/admin${endpoint}`, options);
+};
+
+// Helper function to handle API responses with error handling
+export const handleApiResponse = async <T>(response: Response): Promise<T> => {
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.message || 'An error occurred');
+  }
+  
+  return data;
+};
+
+// Helper function for GET requests
+export const apiGet = async <T>(endpoint: string): Promise<T> => {
+  const response = await apiRequest(endpoint);
+  return handleApiResponse<T>(response);
+};
+
+// Helper function for POST requests
+export const apiPost = async <T>(endpoint: string, data: any): Promise<T> => {
+  const response = await apiRequest(endpoint, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  return handleApiResponse<T>(response);
+};
+
+// Helper function for PUT requests
+export const apiPut = async <T>(endpoint: string, data: any): Promise<T> => {
+  const response = await apiRequest(endpoint, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+  return handleApiResponse<T>(response);
+};
+
+// Helper function for DELETE requests
+export const apiDelete = async <T>(endpoint: string): Promise<T> => {
+  const response = await apiRequest(endpoint, {
+    method: 'DELETE',
+  });
+  return handleApiResponse<T>(response);
+};

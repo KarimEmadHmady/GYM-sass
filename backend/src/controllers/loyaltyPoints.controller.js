@@ -4,7 +4,15 @@ import {
   getUserLoyaltyPoints,
   addPointsFromPayment,
   getLoyaltyPointsStats,
-  addAttendancePoints
+  addAttendancePoints,
+  getRedeemableRewards,
+  redeemReward,
+  getAllRedeemableRewards,
+  createRedeemableReward,
+  updateRedeemableReward,
+  deleteRedeemableReward,
+  getRewardsStats,
+  getLoyaltyPointsHistory
 } from '../services/loyaltyPoints.service.js';
 
 /**
@@ -138,6 +146,147 @@ export const getTopUsers = async (req, res) => {
       .select('name email loyaltyPoints avatarUrl');
 
     res.json(topUsers);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ==================== وظائف الجوائز ====================
+
+/**
+ * جلب الجوائز القابلة للاستبدال للمستخدم
+ */
+export const getRedeemableRewardsController = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const rewardsData = await getRedeemableRewards(userId);
+    res.json(rewardsData);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * استبدال نقاط بجائزة
+ */
+export const redeemRewardController = async (req, res) => {
+  try {
+    const { rewardId } = req.body;
+    const userId = req.user.id;
+    
+    if (!rewardId) {
+      return res.status(400).json({ 
+        message: 'معرف الجائزة مطلوب' 
+      });
+    }
+
+    const result = await redeemReward(userId, rewardId);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * جلب جميع الجوائز (للمدير)
+ */
+export const getAllRedeemableRewardsController = async (req, res) => {
+  try {
+    const filters = {
+      category: req.query.category,
+      isActive: req.query.isActive !== undefined ? req.query.isActive === 'true' : undefined,
+      minPoints: req.query.minPoints ? parseInt(req.query.minPoints) : undefined,
+      maxPoints: req.query.maxPoints ? parseInt(req.query.maxPoints) : undefined,
+      limit: req.query.limit ? parseInt(req.query.limit) : undefined
+    };
+
+    const rewards = await getAllRedeemableRewards(filters);
+    res.json(rewards);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * إنشاء جائزة جديدة (للمدير)
+ */
+export const createRedeemableRewardController = async (req, res) => {
+  try {
+    const rewardData = req.body;
+    const reward = await createRedeemableReward(rewardData);
+    res.status(201).json({
+      message: 'تم إنشاء الجائزة بنجاح',
+      reward
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * تحديث جائزة (للمدير)
+ */
+export const updateRedeemableRewardController = async (req, res) => {
+  try {
+    const { rewardId } = req.params;
+    const updateData = req.body;
+    
+    const reward = await updateRedeemableReward(rewardId, updateData);
+    res.json({
+      message: 'تم تحديث الجائزة بنجاح',
+      reward
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * حذف جائزة (للمدير)
+ */
+export const deleteRedeemableRewardController = async (req, res) => {
+  try {
+    const { rewardId } = req.params;
+    
+    const deleted = await deleteRedeemableReward(rewardId);
+    if (!deleted) {
+      return res.status(404).json({ message: 'الجائزة غير موجودة' });
+    }
+    
+    res.json({ message: 'تم حذف الجائزة بنجاح' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * جلب إحصائيات الجوائز (للمدير)
+ */
+export const getRewardsStatsController = async (req, res) => {
+  try {
+    const stats = await getRewardsStats();
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * جلب سجل نقاط الولاء للمستخدم
+ */
+export const getLoyaltyPointsHistoryController = async (req, res) => {
+  try {
+    // استخدم userId من الباراميتر إذا وُجد (للأدمن)، وإلا استخدم المستخدم الحالي
+    const userId = req.params.userId || req.user.id;
+    const filters = {
+      type: req.query.type,
+      startDate: req.query.startDate,
+      endDate: req.query.endDate,
+      limit: req.query.limit ? parseInt(req.query.limit) : undefined
+    };
+
+    const history = await getLoyaltyPointsHistory(userId, filters);
+    res.json(history);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
