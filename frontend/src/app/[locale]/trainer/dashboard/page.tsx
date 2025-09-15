@@ -20,6 +20,7 @@ import TrainerClientSessions from '@/components/trainer/TrainerClientSessions';
 import TrainerClientDetail from '@/components/trainer/TrainerClientDetail';
 import TrainerFeedback from '@/components/trainer/TrainerFeedback';
 import TrainerMessages from '@/components/trainer/TrainerMessages';
+import TrainerLoyaltyPoints from '@/components/trainer/TrainerLoyaltyPoints';
 
 const TrainerDashboard = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -77,6 +78,7 @@ const TrainerDashboard = () => {
     { id: 'clientDetail', name: 'تفاصيل عميل', icon: '📄' },
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
     { id: 'messages', name: 'الرسائل', icon: '✉️' },
+    { id: 'loyalty', name: 'نقاط الولاء', icon: '🎁' },
     { id: 'schedule', name: t('Tabs.schedule'), icon: '📅' }
   ];
 
@@ -235,6 +237,12 @@ const TrainerDashboard = () => {
         {activeTab === 'messages' && (
           <div className="space-y-8">
             <TrainerMessages />
+          </div>
+        )}
+
+        {activeTab === 'loyalty' && (
+          <div className="space-y-8">
+            <TrainerLoyaltyPoints />
           </div>
         )}
 

@@ -29,6 +29,20 @@ export class LoyaltyService extends BaseService {
     return this.apiCall('/my-points');
   }
 
+  // Get current user's points with membership level
+  async getMyPointsWithLevel(): Promise<{
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      loyaltyPoints: number;
+      membershipLevel: string;
+    };
+    history: LoyaltyPointsHistory[];
+  }> {
+    return this.apiCall('/my-points');
+  }
+
   // Add points to user (Admin only)
   async addPoints(userId: string, points: number, reason: string): Promise<Reward> {
     return this.apiCall('/add', {
@@ -93,11 +107,14 @@ export class LoyaltyService extends BaseService {
   }
 
   // Get user's point history
-  async getUserPointHistory(userId: string, params?: PaginationParams): Promise<import('@/types').PointsHistoryResponse> {
+  async getUserPointHistory(userId: string, params?: any): Promise<import('@/types').PointsHistoryResponse> {
     const queryParams = new URLSearchParams();
-    
-    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.type) queryParams.append('type', params.type);
+    if (params?.rewardId) queryParams.append('rewardId', params.rewardId);
+    if (params?.startDate) queryParams.append('startDate', params.startDate);
+    if (params?.endDate) queryParams.append('endDate', params.endDate);
     if (params?.limit) queryParams.append('limit', params.limit.toString());
+    if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
     if (params?.sortOrder) queryParams.append('sortOrder', params.sortOrder);
 
@@ -235,5 +252,21 @@ export class LoyaltyService extends BaseService {
         attendanceId
       }),
     });
+  }
+
+  // Get all points history for admin
+  async getAllPointsHistory(filters?: {
+    type?: string;
+    startDate?: string;
+    endDate?: string;
+    limit?: number;
+  }): Promise<PointsHistoryResponse> {
+    const queryParams = new URLSearchParams();
+    if (filters?.type) queryParams.append('type', filters.type);
+    if (filters?.startDate) queryParams.append('startDate', filters.startDate);
+    if (filters?.endDate) queryParams.append('endDate', filters.endDate);
+    if (filters?.limit) queryParams.append('limit', filters.limit.toString());
+    const queryString = queryParams.toString();
+    return this.apiCall(`/admin/history${queryString ? `?${queryString}` : ''}`);
   }
 }

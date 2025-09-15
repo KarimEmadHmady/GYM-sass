@@ -44,6 +44,9 @@ const AdminLoyalty = () => {
   const [modalError, setModalError] = useState<string | null>(null);
   const [modalSuccess, setModalSuccess] = useState<string | null>(null);
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'rewards' | 'redemptions' | 'history' | 'addPoints'>('rewards');
+
   const { user: currentUser } = useAuth();
 
   // إضافة نقاط يدوياً
@@ -65,6 +68,17 @@ const AdminLoyalty = () => {
   // أفضل المستخدمين
   const [topUsers, setTopUsers] = useState<any[]>([]);
   const [topUsersLoading, setTopUsersLoading] = useState(false);
+
+  // الاستبدالات
+  const [redemptions, setRedemptions] = useState<any[]>([]);
+  const [redemptionsLoading, setRedemptionsLoading] = useState(false);
+  const [redemptionsError, setRedemptionsError] = useState<string | null>(null);
+  const [redemptionsFilter, setRedemptionsFilter] = useState({
+    userId: '',
+    rewardId: '',
+    startDate: '',
+    endDate: ''
+  });
 
   // جلب المستخدمين
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -124,8 +138,8 @@ const AdminLoyalty = () => {
         const res = await loyaltyService.getUserPointHistory(historyFilterUserId, filters);
         setPointsHistory(res?.history || []);
       } else {
-        // جلب كل السجل
-        const res = await loyaltyService.getPointsHistory(filters);
+        // جلب كل السجل من endpoint الإداري
+        const res = await loyaltyService.getAllPointsHistory(filters);
         setPointsHistory(res?.history || []);
       }
     } catch {
@@ -134,9 +148,37 @@ const AdminLoyalty = () => {
       setHistoryLoading(false);
     }
   };
+
+  // جلب الاستبدالات
+  const fetchRedemptions = async () => {
+    setRedemptionsLoading(true);
+    setRedemptionsError(null);
+    try {
+      const filters = {
+        type: 'redeemed',
+        rewardId: redemptionsFilter.rewardId,
+        startDate: redemptionsFilter.startDate,
+        endDate: redemptionsFilter.endDate,
+      };
+      let res;
+      if (redemptionsFilter.userId) {
+        res = await loyaltyService.getUserPointHistory(redemptionsFilter.userId, filters);
+      } else {
+        // جلب كل السجل من endpoint الإداري
+        res = await loyaltyService.getAllPointsHistory(filters);
+      }
+      setRedemptions(res?.history || []);
+    } catch {
+      setRedemptionsError('تعذر جلب بيانات الاستبدالات');
+    } finally {
+      setRedemptionsLoading(false);
+    }
+  };
   useEffect(() => {
+    // عند فتح التاب لأول مرة، يتم جلب كل الاستبدالات لجميع المستخدمين (userId فارغ)
     fetchTopUsers();
     fetchPointsHistory();
+    fetchRedemptions();
   }, []);
 
   // Reset form when opening modal
@@ -296,6 +338,36 @@ const AdminLoyalty = () => {
     }
   };
 
+  // فلترة سجل النقاط في الواجهة فقط
+  const filteredHistory = historyFilterUserId
+    ? pointsHistory.filter(h => h.userId === historyFilterUserId)
+    : pointsHistory;
+
+  // فلترة الاستبدالات في الواجهة فقط (تشمل الفلترة حسب الجائزة)
+  const filteredRedemptions = redemptions.filter(r => {
+    // دعم حالتي rewardId: string أو كائن
+    let rewardMatch = true;
+    if (redemptionsFilter.rewardId) {
+      if (r.rewardId && typeof r.rewardId === 'object' && r.rewardId._id) {
+        rewardMatch = r.rewardId._id === redemptionsFilter.rewardId;
+      } else {
+        rewardMatch = r.rewardId === redemptionsFilter.rewardId;
+      }
+    }
+    return (
+      r.type === 'redeemed' &&
+      (!redemptionsFilter.userId || r.userId === redemptionsFilter.userId) &&
+      rewardMatch
+    );
+  });
+
+  // Debug: اطبع أول عنصر من redemptions عند تغيير الفلتر
+  React.useEffect(() => {
+    if (redemptions.length > 0) {
+      console.log('Sample redemption:', redemptions[0]);
+    }
+  }, [redemptions, redemptionsFilter.rewardId]);
+  
   // فلترة سجل النقاط
   const handleHistoryFilter = (e: React.FormEvent) => {
     e.preventDefault();
@@ -307,6 +379,24 @@ const AdminLoyalty = () => {
     setHistoryFilterUserId('');
     setHistoryFilterType('');
     fetchPointsHistory();
+  };
+
+  // فلترة الاستبدالات
+  const handleRedemptionsFilter = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchRedemptions();
+  };
+
+  // إعادة تعيين فلاتر الاستبدالات
+  const handleResetRedemptionsFilters = () => {
+    // عند إعادة التعيين، يتم تعيين userId إلى فارغ لجلب كل الاستبدالات لجميع المستخدمين
+    setRedemptionsFilter({
+      userId: '',
+      rewardId: '',
+      startDate: '',
+      endDate: ''
+    });
+    fetchRedemptions();
   };
   
   // تحديث تلقائي عند تغيير الفلاتر
@@ -370,6 +460,33 @@ const AdminLoyalty = () => {
 
   return (
     <div className="space-y-8">
+      {/* التبويبات */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="border-b border-gray-200 dark:border-gray-700">
+          <nav className="flex space-x-8 px-6">
+            {[
+              { id: 'rewards', name: 'إدارة الجوائز', icon: '🎁' },
+              { id: 'redemptions', name: 'الاستبدالات', icon: '🔄' },
+              { id: 'history', name: 'سجل النقاط', icon: '📊' },
+              { id: 'addPoints', name: 'إضافة نقاط', icon: '➕' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                <span className="mr-2">{tab.icon}</span>
+                {tab.name}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </div>
+
       {/* إحصائيات النقاط والجوائز */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col items-center">
@@ -382,7 +499,9 @@ const AdminLoyalty = () => {
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col items-center">
           <span className="text-gray-500 text-sm">متوسط النقاط</span>
-          <span className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{loyaltyStats?.stats.avgPoints ?? '--'}</span>
+          <span className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+            {loyaltyStats?.stats.avgPoints ? Number(loyaltyStats.stats.avgPoints).toFixed(2) : '--'}
+          </span>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col items-center">
           <span className="text-gray-500 text-sm">أعلى نقاط</span>
@@ -404,14 +523,16 @@ const AdminLoyalty = () => {
           <span className="text-2xl font-bold text-pink-600 dark:text-pink-400">{rewardsStats?.general.totalRedemptions ?? '--'}</span>
         </div>
       </div>
-      {/* جدول الجوائز */}
+      {/* محتوى التبويبات */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">إدارة الجوائز</h3>
-          <button onClick={handleOpenAddReward} className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">
-            <Plus size={16} /> إضافة جائزة
-          </button>
-        </div>
+        {activeTab === 'rewards' && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">إدارة الجوائز</h3>
+              <button onClick={handleOpenAddReward} className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">
+                <Plus size={16} /> إضافة جائزة
+              </button>
+            </div>
         {loading ? (
           <div className="text-center py-8 text-gray-500">جاري التحميل...</div>
         ) : error ? (
@@ -457,6 +578,271 @@ const AdminLoyalty = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+          </div>
+        )}
+
+        {activeTab === 'redemptions' && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">الاستبدالات</h3>
+            </div>
+            
+            {/* فلاتر الاستبدالات */}
+            <form onSubmit={handleRedemptionsFilter} className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">المستخدم</label>
+                  <select
+                    value={redemptionsFilter.userId}
+                    onChange={(e) => setRedemptionsFilter(prev => ({ ...prev, userId: e.target.value }))}
+                    className="w-full rounded border px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  >
+                    <option value="">كل المستخدمين</option>
+                    {filteredUsers.map(u => (
+                      <option key={u._id} value={u._id}>{u.name} {u.phone ? `(${u.phone})` : ''} - {u.email}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">الجائزة</label>
+                  <select
+                    value={redemptionsFilter.rewardId}
+                    onChange={(e) => setRedemptionsFilter(prev => ({ ...prev, rewardId: e.target.value }))}
+                    className="w-full rounded border px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  >
+                    <option value="">كل الجوائز</option>
+                    {rewards.map(r => (
+                      <option key={r._id} value={r._id}>{r.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">من تاريخ</label>
+                  <input
+                    type="date"
+                    value={redemptionsFilter.startDate}
+                    onChange={(e) => setRedemptionsFilter(prev => ({ ...prev, startDate: e.target.value }))}
+                    className="w-full rounded border px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">إلى تاريخ</label>
+                  <input
+                    type="date"
+                    value={redemptionsFilter.endDate}
+                    onChange={(e) => setRedemptionsFilter(prev => ({ ...prev, endDate: e.target.value }))}
+                    className="w-full rounded border px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 mt-4">
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                  بحث
+                </button>
+                <button type="button" onClick={handleResetRedemptionsFilters} className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-500">
+                  إعادة تعيين
+                </button>
+              </div>
+            </form>
+
+            {/* جدول الاستبدالات */}
+            {redemptionsLoading ? (
+              <div className="text-center py-8 text-gray-500">جاري التحميل...</div>
+            ) : redemptionsError ? (
+              <div className="text-center py-8 text-red-500">{redemptionsError}</div>
+            ) : (
+              <div className="overflow-x-auto">
+                {(() => {
+                  return (
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead>
+                        <tr className="bg-gray-50 dark:bg-gray-700">
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">المستخدم</th>
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">الجائزة</th>
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">النقاط المستخدمة</th>
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">النقاط المتبقية</th>
+                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">التاريخ</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredRedemptions.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="text-center py-8 text-gray-400">لا توجد استبدالات</td>
+                          </tr>
+                        ) : filteredRedemptions.map((redemption, idx) => (
+                          <tr key={redemption._id || idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                            <td className="px-4 py-2 whitespace-nowrap">
+                              {(() => {
+                                const user = allUsers.find(u => u._id === redemption.userId);
+                                if (user) {
+                                  return `${user.name}${user.phone ? ' (' + user.phone + ')' : ''}`;
+                                }
+                                return redemption.userId || '-';
+                              })()}
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap">
+                              {redemption.reason || 'جائزة مستبدلة'}
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap text-center text-red-600 dark:text-red-400 font-medium">
+                              {Math.abs(redemption.points)}
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap text-center">
+                              {redemption.remainingPoints}
+                            </td>
+                            <td className="px-4 py-2 whitespace-nowrap text-xs">
+                              {redemption.createdAt ? new Date(redemption.createdAt).toLocaleString('ar-EG') : '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'history' && (
+          <div>
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">سجل النقاط</h3>
+              <form onSubmit={handleHistoryFilter} className="flex flex-col md:flex-row gap-2 items-center">
+                <div>
+                  <input
+                    type="text"
+                    placeholder="ابحث بالاسم أو الهاتف أو الإيميل"
+                    value={searchUser}
+                    onChange={e => setSearchUser(e.target.value)}
+                    className="rounded border px-2 py-1 mb-2 w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+                  />
+                  <select
+                    value={historyFilterUserId}
+                    onChange={e => setHistoryFilterUserId(e.target.value)}
+                    className="rounded border px-2 py-1 w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+                  >
+                    <option value="">كل المستخدمين</option>
+                    {filteredUsers.map(u => (
+                      <option key={u._id} value={u._id}>{u.name} {u.phone ? `(${u.phone})` : ''} - {u.email}</option>
+                    ))}
+                  </select>
+                </div>
+                <select
+                  value={historyFilterType}
+                  onChange={e => setHistoryFilterType(e.target.value)}
+                  className="rounded border px-2 py-1 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+                >
+                  <option value="">كل الأنواع</option>
+                  <option value="earned">مكتسبة</option>
+                  <option value="redeemed">مستبدلة</option>
+                  <option value="admin_added">مضافة من الإدارة</option>
+                  <option value="admin_deducted">مخصومة من الإدارة</option>
+                  <option value="payment_bonus">مكافأة دفع</option>
+                  <option value="attendance_bonus">مكافأة حضور</option>
+                  <option value="expired">منتهية</option>
+                </select>
+                <button type="submit" className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">بحث</button>
+                <button type="button" onClick={handleResetFilters} className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200">إعادة تعيين</button>
+              </form>
+            </div>
+            {historyLoading ? (
+              <div className="text-center py-8 text-gray-500">جاري التحميل...</div>
+            ) : historyError ? (
+              <div className="text-center py-8 text-red-500">{historyError}</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead>
+                    <tr className="bg-gray-50 dark:bg-gray-700">
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">المستخدم</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">النقاط</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">النوع</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">السبب</th>
+                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">التاريخ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredHistory.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-8 text-gray-400">لا يوجد بيانات</td>
+                      </tr>
+                    ) : filteredHistory.map((h, idx) => (
+                      <tr key={h._id || idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                        <td className="px-4 py-2 whitespace-nowrap">{
+                          (() => {
+                            const user = allUsers.find(u => u._id === h.userId);
+                            if (user) {
+                              return `${user.name}${user.phone ? ' (' + user.phone + ')' : ''}`;
+                            }
+                            return h.userId || '-';
+                          })()
+                        }</td>
+                        <td className="px-4 py-2 whitespace-nowrap text-center">{h.points}</td>
+                        <td className="px-4 py-2 whitespace-nowrap text-center">{h.type}</td>
+                        <td className="px-4 py-2 whitespace-nowrap">{h.reason}</td>
+                        <td className="px-4 py-2 whitespace-nowrap text-xs">{h.createdAt ? new Date(h.createdAt).toLocaleString('ar-EG') : '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'addPoints' && (
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">إضافة نقاط يدوياً</h3>
+            <form onSubmit={handleAddPoints} className="flex flex-col md:flex-row md:items-end gap-4">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder="ابحث بالاسم أو الهاتف أو الإيميل"
+                  value={searchUser}
+                  onChange={e => setSearchUser(e.target.value)}
+                  className="rounded border px-3 py-2 mb-2 w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+                <select
+                  value={addPointsUserId}
+                  onChange={e => setAddPointsUserId(e.target.value)}
+                  className="rounded border px-3 py-2 w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+                  required
+                >
+                  <option value="">اختر المستخدم</option>
+                  {filteredUsers.map(u => (
+                    <option key={u._id} value={u._id}>{u.name} {u.phone ? `(${u.phone})` : ''} - {u.email}</option>
+                  ))}
+                </select>
+              </div>
+              <input
+                type="number"
+                min={1}
+                placeholder="عدد النقاط"
+                value={addPointsValue}
+                onChange={e => setAddPointsValue(Number(e.target.value))}
+                className="rounded border px-3 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white w-32"
+                required
+              />
+              <input
+                type="text"
+                placeholder="السبب"
+                value={addPointsReason}
+                onChange={e => setAddPointsReason(e.target.value)}
+                className="rounded border px-3 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white flex-1"
+                required
+              />
+              <button
+                type="submit"
+                disabled={addPointsLoading}
+                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+              >
+                {addPointsLoading ? 'جاري الإضافة...' : 'إضافة'}
+              </button>
+            </form>
+            {addPointsError && <div className="text-red-500 text-sm mt-2">{addPointsError}</div>}
+            {addPointsSuccess && <div className="text-green-600 text-sm mt-2">{addPointsSuccess}</div>}
           </div>
         )}
       </div>
@@ -555,59 +941,6 @@ const AdminLoyalty = () => {
         </div>
       </Dialog>
 
-      {/* إضافة نقاط يدوياً */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">إضافة نقاط يدوياً</h3>
-        <form onSubmit={handleAddPoints} className="flex flex-col md:flex-row md:items-end gap-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="ابحث بالاسم أو الهاتف أو الإيميل"
-              value={searchUser}
-              onChange={e => setSearchUser(e.target.value)}
-              className="rounded border px-3 py-2 mb-2 w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
-            />
-            <select
-              value={addPointsUserId}
-              onChange={e => setAddPointsUserId(e.target.value)}
-              className="rounded border px-3 py-2 w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
-              required
-            >
-              <option value="">اختر المستخدم</option>
-              {filteredUsers.map(u => (
-                <option key={u._id} value={u._id}>{u.name} {u.phone ? `(${u.phone})` : ''} - {u.email}</option>
-              ))}
-            </select>
-          </div>
-          <input
-            type="number"
-            min={1}
-            placeholder="عدد النقاط"
-            value={addPointsValue}
-            onChange={e => setAddPointsValue(Number(e.target.value))}
-            className="rounded border px-3 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white w-32"
-            required
-          />
-          <input
-            type="text"
-            placeholder="السبب"
-            value={addPointsReason}
-            onChange={e => setAddPointsReason(e.target.value)}
-            className="rounded border px-3 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white flex-1"
-            required
-          />
-          <button
-            type="submit"
-            disabled={addPointsLoading}
-            className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
-          >
-            {addPointsLoading ? 'جاري الإضافة...' : 'إضافة'}
-          </button>
-        </form>
-        {addPointsError && <div className="text-red-500 text-sm mt-2">{addPointsError}</div>}
-        {addPointsSuccess && <div className="text-green-600 text-sm mt-2">{addPointsSuccess}</div>}
-      </div>
-
       {/* أفضل 3 مستخدمين */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">أفضل 3 مستخدمين بالنقاط</h3>
@@ -627,92 +960,6 @@ const AdminLoyalty = () => {
               </div>
             ))}
             {topUsers.length === 0 && <div className="text-gray-400">لا يوجد بيانات</div>}
-          </div>
-        )}
-      </div>
-
-      {/* سجل النقاط */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">سجل النقاط</h3>
-          <form onSubmit={handleHistoryFilter} className="flex flex-col md:flex-row gap-2 items-center">
-            <div>
-              <input
-                type="text"
-                placeholder="ابحث بالاسم أو الهاتف أو الإيميل"
-                value={searchUser}
-                onChange={e => setSearchUser(e.target.value)}
-                className="rounded border px-2 py-1 mb-2 w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
-              />
-              <select
-                value={historyFilterUserId}
-                onChange={e => setHistoryFilterUserId(e.target.value)}
-                className="rounded border px-2 py-1 w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
-              >
-                <option value="">كل المستخدمين</option>
-                {filteredUsers.map(u => (
-                  <option key={u._id} value={u._id}>{u.name} {u.phone ? `(${u.phone})` : ''} - {u.email}</option>
-                ))}
-              </select>
-            </div>
-            <select
-              value={historyFilterType}
-              onChange={e => setHistoryFilterType(e.target.value)}
-              className="rounded border px-2 py-1 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
-            >
-              <option value="">كل الأنواع</option>
-              <option value="earned">مكتسبة</option>
-              <option value="redeemed">مستبدلة</option>
-              <option value="admin_added">مضافة من الإدارة</option>
-              <option value="admin_deducted">مخصومة من الإدارة</option>
-              <option value="payment_bonus">مكافأة دفع</option>
-              <option value="attendance_bonus">مكافأة حضور</option>
-              <option value="expired">منتهية</option>
-            </select>
-            <button type="submit" className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">بحث</button>
-            <button type="button" onClick={handleResetFilters} className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200">إعادة تعيين</button>
-          </form>
-        </div>
-        {historyLoading ? (
-          <div className="text-center py-8 text-gray-500">جاري التحميل...</div>
-        ) : historyError ? (
-          <div className="text-center py-8 text-red-500">{historyError}</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead>
-                <tr className="bg-gray-50 dark:bg-gray-700">
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">المستخدم</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">النقاط</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">النوع</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">السبب</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">التاريخ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pointsHistory.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="text-center py-8 text-gray-400">لا يوجد بيانات</td>
-                  </tr>
-                ) : pointsHistory.map((h, idx) => (
-                  <tr key={h._id || idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                    <td className="px-4 py-2 whitespace-nowrap">{
-                      (() => {
-                        const user = allUsers.find(u => u._id === h.userId);
-                        if (user) {
-                          return `${user.name}${user.phone ? ' (' + user.phone + ')' : ''}`;
-                        }
-                        return h.userId || '-';
-                      })()
-                    }</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-center">{h.points}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-center">{h.type}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{h.reason}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-xs">{h.createdAt ? new Date(h.createdAt).toLocaleString('ar-EG') : '-'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         )}
       </div>

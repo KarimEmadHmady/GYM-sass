@@ -472,3 +472,35 @@ export const getLoyaltyPointsHistory = async (userId, filters = {}) => {
     }
   };
 };
+
+/**
+ * جلب كل سجل النقاط لجميع المستخدمين (للاستخدام الإداري)
+ * @param {Object} filters - فلاتر البحث
+ * @returns {Object} سجل النقاط
+ */
+export const getAllLoyaltyPointsHistory = async (filters = {}) => {
+  const query = {};
+  if (filters.type) {
+    query.type = filters.type;
+  }
+  if (filters.startDate) {
+    query.createdAt = { ...query.createdAt, $gte: new Date(filters.startDate) };
+  }
+  if (filters.endDate) {
+    query.createdAt = { ...query.createdAt, $lte: new Date(filters.endDate) };
+  }
+  const history = await LoyaltyPointsHistory.find(query)
+    .sort({ createdAt: -1 })
+    .limit(filters.limit || 100)
+    .populate('rewardId', 'name category pointsRequired')
+    .populate('adminId', 'name email');
+  const totalCount = await LoyaltyPointsHistory.countDocuments(query);
+  return {
+    history,
+    totalCount,
+    pagination: {
+      limit: filters.limit || 100,
+      total: totalCount
+    }
+  };
+};

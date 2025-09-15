@@ -431,3 +431,80 @@ export const API_ENDPOINTS = {
     user: (userId: string) => `/schedules/${userId}`,
   },
 };
+
+// Loyalty Points Constants
+export const LOYALTY_CONSTANTS = {
+  // Membership Levels
+  MEMBERSHIP_LEVELS: {
+    BRONZE: { name: 'Bronze', minPoints: 0, maxPoints: 199, color: 'from-yellow-600 to-yellow-800' },
+    SILVER: { name: 'Silver', minPoints: 200, maxPoints: 499, color: 'from-gray-400 to-gray-600' },
+    GOLD: { name: 'Gold', minPoints: 500, maxPoints: 999, color: 'from-yellow-400 to-yellow-600' },
+    PLATINUM: { name: 'Platinum', minPoints: 1000, maxPoints: 1999, color: 'from-purple-400 to-purple-600' },
+    DIAMOND: { name: 'Diamond', minPoints: 2000, maxPoints: Infinity, color: 'from-blue-400 to-blue-600' }
+  },
+
+  // Points Earning Rules
+  POINTS_RULES: {
+    ATTENDANCE: 50,
+    PERSONAL_SESSION: 75,
+    WORKOUT_PLAN_COMPLETION: 100,
+    FIVE_STAR_RATING: 25,
+    PAYMENT_BONUS: 10, // per dollar
+    REFERRAL: 200,
+    BIRTHDAY: 100,
+    ANNIVERSARY: 150
+  },
+
+  // Transaction Types
+  TRANSACTION_TYPES: {
+    EARNED: 'earned',
+    REDEEMED: 'redeemed',
+    ADMIN_ADDED: 'admin_added',
+    ADMIN_DEDUCTED: 'admin_deducted',
+    PAYMENT_BONUS: 'payment_bonus',
+    ATTENDANCE_BONUS: 'attendance_bonus',
+    EXPIRED: 'expired'
+  },
+
+  // Reward Categories
+  REWARD_CATEGORIES: {
+    DISCOUNT: 'discount',
+    FREE_SESSION: 'free_session',
+    MERCHANDISE: 'merchandise',
+    SUBSCRIPTION_EXTENSION: 'subscription_extension',
+    PREMIUM_FEATURE: 'premium_feature',
+    GIFT_CARD: 'gift_card'
+  },
+
+  // Icons for different types
+  ICONS: {
+    TRANSACTION: {
+      earned: '🏋️',
+      redeemed: '🎫',
+      admin_added: '➕',
+      admin_deducted: '➖',
+      payment_bonus: '💳',
+      attendance_bonus: '📅',
+      expired: '⏰'
+    },
+    REWARD: {
+      discount: '🎫',
+      free_session: '👤',
+      merchandise: '🎁',
+      subscription_extension: '🏆',
+      premium_feature: '⭐',
+      gift_card: '💳'
+    }
+  },
+
+  // Colors for different transaction types
+  TRANSACTION_COLORS: {
+    earned: 'text-green-600',
+    redeemed: 'text-red-600',
+    admin_added: 'text-blue-600',
+    admin_deducted: 'text-red-600',
+    payment_bonus: 'text-green-600',
+    attendance_bonus: 'text-green-600',
+    expired: 'text-gray-600'
+  }
+};

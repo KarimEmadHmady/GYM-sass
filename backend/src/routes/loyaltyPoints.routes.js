@@ -16,7 +16,8 @@ import {
   updateRedeemableRewardController,
   deleteRedeemableRewardController,
   getRewardsStatsController,
-  getLoyaltyPointsHistoryController
+  getLoyaltyPointsHistoryController,
+  getAllLoyaltyPointsHistoryController
 } from '../controllers/loyaltyPoints.controller.js';
 import {
   addPointsSchema,
@@ -50,8 +51,8 @@ router.get('/user/:userId', authenticate, getUserPoints);
 // جلب نقاط الولاء للمستخدم الحالي
 router.get('/my-points', authenticate, getUserPoints);
 
-// إضافة نقاط ولاء (للمدير فقط)
-router.post('/add', authenticate, authorizeAdmin, validateRequest(addPointsSchema), addPoints);
+// إضافة نقاط ولاء (للمدير والمدرب والمدير فقط)
+router.post('/add', authenticate, authorizeRole(['admin', 'trainer', 'manager']), validateRequest(addPointsSchema), addPoints);
 
 // استبدال نقاط الولاء (للمستخدم نفسه)
 router.post('/redeem', authenticate, validateRequest(redeemPointsSchema), redeemPoints);
@@ -96,5 +97,8 @@ router.get('/history', authenticate, getLoyaltyPointsHistoryController);
 
 // جلب سجل نقاط الولاء لمستخدم معين (للمدير فقط)
 router.get('/user/:userId/history', authenticate, authorizeRole(['admin', 'trainer','manager']), getLoyaltyPointsHistoryController);
+
+// جلب كل سجل النقاط لجميع المستخدمين (للمدير فقط)
+router.get('/admin/history', authenticate, authorizeAdmin, getAllLoyaltyPointsHistoryController);
 
 export default router;

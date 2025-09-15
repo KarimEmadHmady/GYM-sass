@@ -1,96 +1,114 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { LoyaltyService } from '@/services/loyaltyService';
+import { useCustomAlert } from '@/hooks/useCustomAlert';
+import { LOYALTY_CONSTANTS } from '@/lib/constants';
+import type { 
+  UserPointsResponse, 
+  RedeemableRewardsResponse, 
+  LoyaltyPointsHistory,
+  RedeemableReward 
+} from '@/types';
 
 const MemberLoyaltyPoints = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [loading, setLoading] = useState(true);
+  const [loyaltyData, setLoyaltyData] = useState<UserPointsResponse | null>(null);
+  const [rewards, setRewards] = useState<RedeemableReward[]>([]);
+  const [history, setHistory] = useState<LoyaltyPointsHistory[]>([]);
+  const [redeeming, setRedeeming] = useState<string | null>(null);
+  
+  const loyaltyService = new LoyaltyService();
+  const { showAlert } = useCustomAlert();
 
-  const loyaltyData = {
-    totalPoints: 1250,
-    availablePoints: 800,
-    usedPoints: 450,
-    level: 'Gold',
-    nextLevel: 'Platinum',
-    pointsToNext: 250
+  // Load data on component mount
+  useEffect(() => {
+    loadLoyaltyData();
+  }, []);
+
+  const loadLoyaltyData = async () => {
+    try {
+      setLoading(true);
+      const [pointsData, rewardsData, historyData] = await Promise.all([
+        loyaltyService.getMyPoints(),
+        loyaltyService.getRedeemableRewards(),
+        loyaltyService.getPointsHistory({ limit: 10 })
+      ]);
+      
+      
+      setLoyaltyData(pointsData);
+      setRewards(rewardsData.rewards || []);
+      setHistory(historyData.history || []);
+    } catch (error) {
+      console.error('Error loading loyalty data:', error);
+      showAlert('خطأ في تحميل بيانات نقاط الولاء', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const recentTransactions = [
-    {
-      id: 1,
-      type: 'earned',
-      description: 'حضور حصة تدريبية',
-      points: 50,
-      date: '2024-01-20',
-      icon: '🏋️'
-    },
-    {
-      id: 2,
-      type: 'earned',
-      description: 'إكمال خطة تمرين',
-      points: 100,
-      date: '2024-01-19',
-      icon: '📋'
-    },
-    {
-      id: 3,
-      type: 'redeemed',
-      description: 'استبدال قسيمة خصم 10%',
-      points: -200,
-      date: '2024-01-18',
-      icon: '🎫'
-    },
-    {
-      id: 4,
-      type: 'earned',
-      description: 'تقييم 5 نجوم',
-      points: 25,
-      date: '2024-01-17',
-      icon: '⭐'
-    },
-    {
-      id: 5,
-      type: 'earned',
-      description: 'حضور حصة شخصية',
-      points: 75,
-      date: '2024-01-16',
-      icon: '👤'
+  const handleRedeemReward = async (rewardId: string) => {
+    try {
+      setRedeeming(rewardId);
+      await loyaltyService.redeemReward(rewardId);
+      showAlert('تم استبدال الجائزة بنجاح!', 'success');
+      // Reload data to update points and rewards
+      await loadLoyaltyData();
+    } catch (error) {
+      console.error('Error redeeming reward:', error);
+      showAlert('خطأ في استبدال الجائزة', 'error');
+    } finally {
+      setRedeeming(null);
     }
-  ];
+  };
 
-  const rewards = [
-    {
-      id: 1,
-      name: 'قسيمة خصم 10%',
-      points: 200,
-      description: 'خصم 10% على جميع الخدمات',
-      icon: '🎫',
-      available: true
-    },
-    {
-      id: 2,
-      name: 'حصصة شخصية مجانية',
-      points: 500,
-      description: 'حصصة تدريب شخصي مجانية',
-      icon: '👤',
-      available: true
-    },
-    {
-      id: 3,
-      name: 'قسيمة خصم 20%',
-      points: 800,
-      description: 'خصم 20% على جميع الخدمات',
-      icon: '🎫',
-      available: false
-    },
-    {
-      id: 4,
-      name: 'عضوية شهر إضافي',
-      points: 1000,
-      description: 'شهر إضافي من العضوية',
-      icon: '🏆',
-      available: false
-    }
-  ];
+  const getMembershipLevel = (points: number) => {
+    if (points >= 1000) return { level: 'Platinum', nextLevel: 'Diamond', pointsToNext: 0 };
+    if (points >= 500) return { level: 'Gold', nextLevel: 'Platinum', pointsToNext: 1000 - points };
+    if (points >= 200) return { level: 'Silver', nextLevel: 'Gold', pointsToNext: 500 - points };
+    return { level: 'Bronze', nextLevel: 'Silver', pointsToNext: 200 - points };
+  };
+
+  const getLevelThreshold = (level: string) => {
+    const thresholds = {
+      'Bronze': 0,
+      'Silver': 200,
+      'Gold': 500,
+      'Platinum': 1000,
+      'Diamond': 2000
+    };
+    return thresholds[level as keyof typeof thresholds] || 0;
+  };
+
+  // Get transaction icon based on type
+  const getTransactionIcon = (type: string) => {
+    return LOYALTY_CONSTANTS.ICONS.TRANSACTION[type as keyof typeof LOYALTY_CONSTANTS.ICONS.TRANSACTION] || '⭐';
+  };
+
+  // Get reward icon based on category
+  const getRewardIcon = (category: string) => {
+    return LOYALTY_CONSTANTS.ICONS.REWARD[category as keyof typeof LOYALTY_CONSTANTS.ICONS.REWARD] || '🎁';
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
+
+  if (!loyaltyData) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">خطأ في تحميل بيانات نقاط الولاء</p>
+      </div>
+    );
+  }
+
+  const currentPoints = loyaltyData.user.loyaltyPoints;
+  const membershipInfo = getMembershipLevel(currentPoints);
 
   const getLevelColor = (level: string) => {
     const colors = {
@@ -104,11 +122,7 @@ const MemberLoyaltyPoints = () => {
   };
 
   const getTransactionColor = (type: string) => {
-    return type === 'earned' ? 'text-green-600' : 'text-red-600';
-  };
-
-  const getTransactionIcon = (type: string) => {
-    return type === 'earned' ? '➕' : '➖';
+    return LOYALTY_CONSTANTS.TRANSACTION_COLORS[type as keyof typeof LOYALTY_CONSTANTS.TRANSACTION_COLORS] || 'text-gray-600';
   };
 
   return (
@@ -122,7 +136,7 @@ const MemberLoyaltyPoints = () => {
             </div>
             <div className="mr-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">إجمالي النقاط</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{loyaltyData.totalPoints}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{currentPoints}</p>
             </div>
           </div>
         </div>
@@ -134,7 +148,7 @@ const MemberLoyaltyPoints = () => {
             </div>
             <div className="mr-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">النقاط المتاحة</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{loyaltyData.availablePoints}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{currentPoints}</p>
             </div>
           </div>
         </div>
@@ -146,7 +160,7 @@ const MemberLoyaltyPoints = () => {
             </div>
             <div className="mr-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المستوى الحالي</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{loyaltyData.level}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{membershipInfo.level}</p>
             </div>
           </div>
         </div>
@@ -158,7 +172,7 @@ const MemberLoyaltyPoints = () => {
             </div>
             <div className="mr-4">
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">للوصول للمستوى التالي</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{loyaltyData.pointsToNext}</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{membershipInfo.pointsToNext}</p>
             </div>
           </div>
         </div>
@@ -172,23 +186,26 @@ const MemberLoyaltyPoints = () => {
         
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-            {loyaltyData.level}
+            {membershipInfo.level}
           </span>
           <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-            {loyaltyData.nextLevel}
+            {membershipInfo.nextLevel}
           </span>
         </div>
         
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
           <div
-            className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-3 rounded-full"
-            style={{ width: '70%' }}
+            className={`bg-gradient-to-r ${getLevelColor(membershipInfo.level)} h-3 rounded-full`}
+            style={{ 
+              width: membershipInfo.pointsToNext === 0 ? '100%' : 
+                `${Math.min(100, ((currentPoints - getLevelThreshold(membershipInfo.level)) / (getLevelThreshold(membershipInfo.nextLevel) - getLevelThreshold(membershipInfo.level))) * 100)}%` 
+            }}
           ></div>
         </div>
         
         <div className="flex justify-between mt-2">
-          <span className="text-xs text-gray-500 dark:text-gray-400">0</span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">1000</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">{getLevelThreshold(membershipInfo.level)}</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">{getLevelThreshold(membershipInfo.nextLevel)}</span>
         </div>
       </div>
 
@@ -228,19 +245,27 @@ const MemberLoyaltyPoints = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600 dark:text-gray-400">حضور حصة تدريبية</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">+50 نقطة</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">+{LOYALTY_CONSTANTS.POINTS_RULES.ATTENDANCE} نقطة</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600 dark:text-gray-400">حضور حصة شخصية</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">+75 نقطة</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">+{LOYALTY_CONSTANTS.POINTS_RULES.PERSONAL_SESSION} نقطة</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600 dark:text-gray-400">إكمال خطة تمرين</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">+100 نقطة</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">+{LOYALTY_CONSTANTS.POINTS_RULES.WORKOUT_PLAN_COMPLETION} نقطة</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600 dark:text-gray-400">تقييم 5 نجوم</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">+25 نقطة</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">+{LOYALTY_CONSTANTS.POINTS_RULES.FIVE_STAR_RATING} نقطة</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">إحالة صديق</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">+{LOYALTY_CONSTANTS.POINTS_RULES.REFERRAL} نقطة</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">مكافأة الدفع</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">+{LOYALTY_CONSTANTS.POINTS_RULES.PAYMENT_BONUS} نقطة لكل دولار</span>
                     </div>
                   </div>
                 </div>
@@ -248,22 +273,14 @@ const MemberLoyaltyPoints = () => {
                 <div className="space-y-4">
                   <h4 className="font-medium text-gray-900 dark:text-white">مستويات الولاء</h4>
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Bronze</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">0-199 نقطة</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Silver</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">200-499 نقطة</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Gold</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">500-999 نقطة</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">Platinum</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">1000+ نقطة</span>
-                    </div>
+                    {Object.values(LOYALTY_CONSTANTS.MEMBERSHIP_LEVELS).map((level) => (
+                      <div key={level.name} className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{level.name}</span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                          {level.minPoints}-{level.maxPoints === Infinity ? '∞' : level.maxPoints} نقطة
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -275,25 +292,46 @@ const MemberLoyaltyPoints = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">معاملات نقاط الولاء</h3>
               
               <div className="space-y-3">
-                {recentTransactions.map((transaction) => (
-                  <div
-                    key={transaction.id}
+                {history.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">لا توجد معاملات حتى الآن</p>
+                  </div>
+                ) : (
+                  history.map((transaction) => (
+                    <div
+                      key={transaction._id}
                     className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     <div className="flex items-center space-x-4">
-                      <div className="text-2xl">{transaction.icon}</div>
+                        <div className="text-2xl">{getTransactionIcon(transaction.type)}</div>
                       <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white">{transaction.description}</h4>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{transaction.date}</p>
+                          <h4 className="font-medium text-gray-900 dark:text-white">{transaction.reason}</h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {new Date(transaction.createdAt).toLocaleDateString('ar-SA')}
+                          </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className={`font-medium ${getTransactionColor(transaction.type)}`}>
-                        {getTransactionIcon(transaction.type)}{Math.abs(transaction.points)} نقطة
-                      </p>
+                      <div className="text-right">
+                        <p className={`font-medium ${getTransactionColor(transaction.type)}`}>
+                          {getTransactionIcon(transaction.type)}{Math.abs(transaction.points)} نقطة
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          المتبقي: {transaction.remainingPoints}
+                        </p>
+                        {transaction.rewardId && (
+                          <p className="text-xs text-blue-500 dark:text-blue-400">
+                            جائزة: جائزة مستبدلة
+                          </p>
+                        )}
+                        {transaction.adminId && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            من: الإدارة
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -303,37 +341,94 @@ const MemberLoyaltyPoints = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">المكافآت المتاحة</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {rewards.map((reward) => (
-                  <div
-                    key={reward.id}
+                {rewards.length === 0 ? (
+                  <div className="col-span-2 text-center py-8">
+                    <p className="text-gray-500">لا توجد جوائز متاحة حالياً</p>
+                  </div>
+                ) : (
+                  rewards.map((reward) => {
+                    // التحقق من إمكانية الاستبدال بناءً على الموديل
+                    const canRedeem = 
+                      currentPoints >= reward.pointsRequired && 
+                      reward.isActive &&
+                      (reward.stock === -1 || (reward.stock - reward.totalRedemptions) > 0) &&
+                      (!reward.validUntil || new Date(reward.validUntil) > new Date());
+                    
+                    const isRedeeming = redeeming === reward._id;
+                    
+                    return (
+                      <div
+                        key={reward._id}
                     className={`p-4 border rounded-lg transition-colors ${
-                      reward.available
+                          canRedeem
                         ? 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                         : 'border-gray-200 dark:border-gray-700 opacity-50'
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-3">
-                        <div className="text-2xl">{reward.icon}</div>
-                        <h4 className="font-medium text-gray-900 dark:text-white">{reward.name}</h4>
-                      </div>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">
-                        {reward.points} نقطة
-                      </span>
-                    </div>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-3">
+                            {reward.imageUrl ? (
+                              <img 
+                                src={reward.imageUrl} 
+                                alt={reward.name}
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="text-2xl">{getRewardIcon(reward.category)}</div>
+                            )}
+                            <h4 className="font-medium text-gray-900 dark:text-white">{reward.name}</h4>
+                          </div>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            {reward.pointsRequired} نقطة
+                          </span>
+                        </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{reward.description}</p>
+                        
+                        {reward.stock !== -1 && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                            متبقي: {Math.max(0, reward.stock - reward.totalRedemptions)} جائزة
+                          </p>
+                        )}
+                        
+                        {reward.value && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                            القيمة: {reward.value} {reward.valueUnit || 'جنيه'}
+                          </p>
+                        )}
+                        
+                        {reward.validUntil && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                            صالح حتى: {new Date(reward.validUntil).toLocaleDateString('ar-SA')}
+                          </p>
+                        )}
+                        
+                        {reward.conditions && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                            الشروط: {reward.conditions}
+                          </p>
+                        )}
+                        
                     <button
-                      disabled={!reward.available}
+                          onClick={() => handleRedeemReward(reward._id)}
+                          disabled={!canRedeem || isRedeeming}
                       className={`w-full py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-                        reward.available
+                            canRedeem && !isRedeeming
                           ? 'bg-purple-600 text-white hover:bg-purple-700'
                           : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       }`}
-                    >
-                      {reward.available ? 'استبدال' : 'غير متاح'}
-                    </button>
+                        >
+                          {isRedeeming ? 'جاري الاستبدال...' : 
+                           canRedeem ? 'استبدال' : 
+                           currentPoints < reward.pointsRequired ? 'نقاط غير كافية' :
+                           !reward.isActive ? 'غير متاح' :
+                           reward.stock !== -1 && (reward.stock - reward.totalRedemptions) <= 0 ? 'نفد المخزون' :
+                           reward.validUntil && new Date(reward.validUntil) <= new Date() ? 'انتهت الصلاحية' :
+                           'غير متاح'}
+                        </button>
                   </div>
-                ))}
+                    );
+                  })
+                )}
               </div>
             </div>
           )}

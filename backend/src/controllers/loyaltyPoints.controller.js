@@ -12,7 +12,8 @@ import {
   updateRedeemableReward,
   deleteRedeemableReward,
   getRewardsStats,
-  getLoyaltyPointsHistory
+  getLoyaltyPointsHistory,
+  getAllLoyaltyPointsHistory
 } from '../services/loyaltyPoints.service.js';
 
 /**
@@ -286,6 +287,24 @@ export const getLoyaltyPointsHistoryController = async (req, res) => {
     };
 
     const history = await getLoyaltyPointsHistory(userId, filters);
+    res.json(history);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * جلب كل سجل النقاط لجميع المستخدمين (للمدير فقط)
+ */
+export const getAllLoyaltyPointsHistoryController = async (req, res) => {
+  try {
+    const filters = {
+      type: req.query.type,
+      startDate: req.query.startDate,
+      endDate: req.query.endDate,
+      limit: req.query.limit ? parseInt(req.query.limit) : undefined
+    };
+    const history = await getAllLoyaltyPointsHistory(filters);
     res.json(history);
   } catch (error) {
     res.status(500).json({ message: error.message });
