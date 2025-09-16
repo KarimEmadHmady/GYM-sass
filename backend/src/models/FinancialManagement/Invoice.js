@@ -9,6 +9,7 @@ const invoiceSchema = new mongoose.Schema({
   issueDate: { type: Date, default: Date.now },  // تاريخ إصدار الفاتورة
   dueDate: { type: Date },  // تاريخ الاستحقاق
   status: { type: String, enum: ["paid", "pending", "overdue"], default: "pending" },
+  paidAmount: { type: Number, default: 0 }, // إجمالي المبالغ المسددة جزئياً أو كلياً
   items: [
     {
       description: String,

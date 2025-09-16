@@ -32,6 +32,18 @@ const paymentSchema = new mongoose.Schema(
       default: "cash",
     },
 
+    // ربط الدفعة بفاتورة محددة (اختياري)
+    invoiceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Invoice",
+    },
+
+    // الجزء المسدد من الفاتورة في هذه الدفعة (للسداد الجزئي)
+    appliedAmount: {
+      type: Number,
+      min: 0,
+    },
+
     // 📝 ملاحظات إضافية عن الدفع
     notes: {
       type: String,

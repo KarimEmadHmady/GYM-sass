@@ -67,7 +67,7 @@ export const updateInvoiceService = async (id, data) => {
         amount: updated.amount,
         date: new Date(),
         paymentMethod: "cash",
-        sourceType: "other",
+        sourceType: "invoice",
         userId: updated.userId,
         notes: `Auto revenue for invoice ${updated.invoiceNumber}`,
       });

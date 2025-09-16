@@ -192,6 +192,8 @@ export const searchFinancialService = async (filters) => {
             date: r.date,
             userId: r.userId,
             method: r.method,
+            invoiceId: r.invoiceId,
+            appliedAmount: r.appliedAmount,
             notes: r.notes,
             raw: r,
           }))
