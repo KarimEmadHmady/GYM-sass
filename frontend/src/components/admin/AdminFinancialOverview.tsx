@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 
 const AdminFinancialOverview = () => {
@@ -153,6 +154,11 @@ const AdminFinancialOverview = () => {
                 id: 'reports',
                 name: t('AdminFinancialOverview.tabs.reports'),
                 icon: '📈',
+              },
+              {
+                id: 'invoices',
+                name: 'Invoices',
+                icon: '🧾',
               },
             ].map((tab) => (
               <button
@@ -326,6 +332,15 @@ const AdminFinancialOverview = () => {
                   </p>
                 </button>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'invoices' && (
+            <div className="space-y-4">
+              {(() => {
+                const AdminInvoices = dynamic(() => import('./AdminInvoices'), { ssr: false });
+                return <AdminInvoices />;
+              })()}
             </div>
           )}
         </div>

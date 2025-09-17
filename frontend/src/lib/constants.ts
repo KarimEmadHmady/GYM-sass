@@ -349,6 +349,14 @@ export const API_ENDPOINTS = {
       create: '/payroll',
       update: (id: string) => `/payroll/${id}`,
       delete: (id: string) => `/payroll/${id}`
+    },
+    invoices: {
+      list: '/finance/invoices',
+      create: '/finance/invoices',
+      update: (id: string) => `/finance/invoices/${id}`,
+      delete: (id: string) => `/finance/invoices/${id}`,
+      get: (id: string) => `/finance/invoices/${id}`,
+      summary: '/finance/invoices/summary'
     }
   },
   // Loyalty Points

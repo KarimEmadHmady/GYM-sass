@@ -1,6 +1,6 @@
 export const validateCreateInvoice = (req, res, next) => {
   const { invoiceNumber, userId, amount } = req.body;
-  if (!invoiceNumber) return res.status(400).json({ message: "invoiceNumber is required" });
+  // invoiceNumber becomes optional; backend will auto-generate if missing
   if (!userId) return res.status(400).json({ message: "userId is required" });
   if (amount === undefined || isNaN(Number(amount))) return res.status(400).json({ message: "amount is required and must be a number" });
   next();

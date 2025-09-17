@@ -1,4 +1,5 @@
 import Invoice from "../models/FinancialManagement/Invoice.js";
+import Counter from "../models/FinancialManagement/Counter.js";
 import Revenue from "../models/FinancialManagement/Revenue.js";
 
 const parseDateRange = (from, to) => {
@@ -13,8 +14,22 @@ const parseDateRange = (from, to) => {
 };
 
 export const createInvoiceService = async (data) => {
+  // Auto-generate invoice number if not provided
+  let invoiceNumber = data.invoiceNumber;
+  if (!invoiceNumber) {
+    // Atomically increment a counter document for invoices
+    const counter = await Counter.findByIdAndUpdate(
+      "invoice",
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+    const nextSeq = counter.seq;
+    // Format e.g. INV-1001; customize as needed
+    invoiceNumber = `INV-${String(nextSeq).padStart(4, "0")}`;
+  }
+
   const allowed = {
-    invoiceNumber: data.invoiceNumber,
+    invoiceNumber,
     userId: data.userId,
     amount: data.amount,
     issueDate: data.issueDate,
@@ -22,6 +37,7 @@ export const createInvoiceService = async (data) => {
     status: data.status,
     items: data.items,
     notes: data.notes,
+    paidAmount: typeof data.paidAmount === 'number' ? data.paidAmount : undefined,
   };
   return await Invoice.create(allowed);
 };
@@ -31,7 +47,11 @@ export const getInvoicesService = async (filters) => {
   const q = {};
   const dateRange = parseDateRange(from, to);
   if (userId) q.userId = userId;
-  if (invoiceNumber) q.invoiceNumber = invoiceNumber;
+  if (invoiceNumber) {
+    // دعم البحث الجزئي: يسمح بكتابة جزء من رقم الفاتورة (حتى لو أرقام فقط)
+    const escaped = String(invoiceNumber).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    q.invoiceNumber = { $regex: escaped, $options: 'i' };
+  }
   if (status) q.status = status;
   if (dateRange) q.issueDate = dateRange;
   if (minAmount || maxAmount) {

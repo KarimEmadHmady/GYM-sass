@@ -18,7 +18,7 @@ router.post('/', authenticate, authorizeRole(['admin','manager']), createPayment
 router.get('/', authenticate, authorizeRole(['admin','manager']), getAllPayments);
 
 // 📄 جلب جميع الدفعات لمستخدم معين
-router.get('/:userId', authenticate, getPaymentsByUser);
+router.get('/:userId', authenticate, authorizeRole(['admin','manager','member']), getPaymentsByUser);
 
 // ✏️ تعديل دفعة
 router.put('/:id', authenticate, authorizeRole(['admin','manager']), updatePayment);

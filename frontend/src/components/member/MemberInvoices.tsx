@@ -1,0 +1,232 @@
+import React, { useEffect, useState, useMemo } from 'react';
+import { invoiceService } from '@/services/invoiceService';
+import { useAuth } from '@/hooks/useAuth';
+import type { Invoice } from '@/services/invoiceService';
+
+const statusLabel = (s: Invoice['status']) => s === 'paid' ? 'مدفوعة' : s === 'overdue' ? 'متأخرة' : 'قيد الانتظار';
+
+const getStatusBadgeStyle = (status: Invoice['status']) => {
+  switch (status) {
+    case 'paid':
+      return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+    case 'overdue':
+      return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+    case 'pending':
+    default:
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+  }
+};
+
+const getStatusIcon = (status: Invoice['status']) => {
+  switch (status) {
+    case 'paid':
+      return (
+        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      );
+    case 'overdue':
+      return (
+        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+        </svg>
+      );
+    case 'pending':
+    default:
+      return (
+        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+  }
+};
+
+const MemberInvoices: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
+  const userId = useMemo(() => ((user as any)?._id ?? user?.id ?? ''), [user]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isAuthenticated || !userId) return;
+    setLoading(true);
+    setError(null);
+    invoiceService.getInvoices({ userId, sort: 'desc', limit: 100 })
+      .then((res: any) => {
+        setInvoices(Array.isArray(res.results) ? res.results : []);
+      })
+      .catch(e => setError('تعذر جلب الفواتير'))
+      .finally(() => setLoading(false));
+  }, [isAuthenticated, userId]);
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+          <h3 className="text-xl font-bold text-white flex items-center gap-2">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            فواتيري
+          </h3>
+        </div>
+
+        {/* Content */}
+        <div className="p-6">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                جارٍ التحميل...
+              </div>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="text-red-500 text-4xl mb-2">⚠️</div>
+                <div className="text-red-600 font-medium">{error}</div>
+              </div>
+            </div>
+          ) : invoices.length === 0 ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="text-gray-400 text-4xl mb-2">📄</div>
+                <div className="text-gray-500 dark:text-gray-400 font-medium">لا توجد فواتير</div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Summary Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">إجمالي الفواتير</div>
+                      <div className="text-xl font-bold text-gray-900 dark:text-white">{invoices.length}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">مدفوعة</div>
+                      <div className="text-xl font-bold text-gray-900 dark:text-white">
+                        {invoices.filter(inv => inv.status === 'paid').length}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-yellow-100 dark:bg-yellow-900/40 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">قيد الانتظار</div>
+                      <div className="text-xl font-bold text-gray-900 dark:text-white">
+                        {invoices.filter(inv => inv.status === 'pending').length}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-white text-start">
+                        رقم الفاتورة
+                      </th>
+                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-white text-start">
+                        المبلغ
+                      </th>
+                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-white text-start">
+                        تاريخ الإصدار
+                      </th>
+                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-white text-start">
+                        تاريخ الاستحقاق
+                      </th>
+                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-white text-start">
+                        الحالة
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {invoices.map((inv, index) => (
+                      <tr 
+                        key={inv._id} 
+                        className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 ${
+                          index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50 dark:bg-gray-800/50'
+                        }`}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span className="font-mono font-semibold text-gray-900 dark:text-white">
+                              {inv.invoiceNumber}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="font-bold text-lg text-gray-900 dark:text-white">
+                            ج.م {inv.amount.toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span className="text-gray-700 dark:text-gray-300">
+                              {new Date(inv.issueDate).toLocaleDateString('ar-EG')}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span className="text-gray-700 dark:text-gray-300">
+                              {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('ar-EG') : '-'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeStyle(inv.status)}`}>
+                            {getStatusIcon(inv.status)}
+                            {statusLabel(inv.status)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MemberInvoices;

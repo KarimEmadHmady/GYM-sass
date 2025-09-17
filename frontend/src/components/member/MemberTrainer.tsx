@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { usePermissions } from '@/hooks/usePermissions';
 import type { User as UserModel } from '@/types/models';
 import { UserService } from '@/services/userService';
 
 const MemberTrainer: React.FC = () => {
+  const router = useRouter();
   const { user: authUser } = usePermissions();
   const [member, setMember] = useState<UserModel | null>(null);
   const [trainer, setTrainer] = useState<UserModel | null>(null);
@@ -45,11 +47,11 @@ const MemberTrainer: React.FC = () => {
   };
   const goToMessage = (trainerId?: string) => {
     if (!trainerId) return;
-    window.location.href = `/member/messages?to=${trainerId}`;
+    router.push(`/member/profile?tab=messages&to=${trainerId}`);
   };
   const goToFeedback = (trainerId?: string) => {
     if (!trainerId) return;
-    window.location.href = `/member/feedback?to=${trainerId}`;
+    router.push(`/member/profile?tab=feedback&to=${trainerId}`);
   };
 
   const trainerIdValue = trainer ? (trainer as any)._id : undefined;

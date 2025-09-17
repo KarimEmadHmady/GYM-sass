@@ -40,9 +40,17 @@ export const getPurchases = async (req, res) => {
 export const getPurchasesByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
+    const role = req.user?.role;
+    const requesterId = req.user?.id;
+
     if (!userId) {
       return res.status(400).json({ message: "userId مطلوب" });
     }
+
+    if (role === 'member' && String(userId) !== String(requesterId)) {
+      return res.status(403).json({ message: "غير مصرح: لا يمكنك الوصول لمشتريات مستخدم آخر" });
+    }
+
     const purchases = await getPurchasesByUserIdService(userId);
     res.json(purchases);
   } catch (error) {

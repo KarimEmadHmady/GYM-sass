@@ -19,7 +19,15 @@ import {
   // 📄 جلب جميع الدفعات لمستخدم
   export const getPaymentsByUser = async (req, res) => {
     try {
-      const payments = await getPaymentsByUserService(req.params.userId);
+      const requesterRole = req.user?.role;
+      const requesterId = req.user?.id;
+      const { userId } = req.params;
+  
+      if (requesterRole === 'member' && String(userId) !== String(requesterId)) {
+        return res.status(403).json({ message: 'غير مصرح: لا يمكنك الوصول لمدفوعات مستخدم آخر' });
+      }
+  
+      const payments = await getPaymentsByUserService(userId);
       res.status(200).json(payments);
     } catch (err) {
       res.status(404).json({ message: err.message });

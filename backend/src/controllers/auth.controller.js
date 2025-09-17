@@ -52,7 +52,7 @@ export const login = async (req, res) => {
 
 export const me = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id || req.user._id;
     const user = await User.findById(userId).select('-passwordHash');
     
     if (!user) {
