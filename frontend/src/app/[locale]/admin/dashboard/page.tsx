@@ -22,7 +22,6 @@ import AdminPurchases from '@/components/admin/AdminPurchases';
 import AdminMessages from '@/components/admin/AdminMessages';
 import AdminProgress from '@/components/admin/AdminProgress';
 import AdminFeedback from '@/components/admin/AdminFeedback';
-import AdminRewards from '@/components/admin/AdminRewards';
 import AdminLoyalty from '@/components/admin/AdminLoyalty';
 import AdminSearch from '@/components/admin/AdminSearch';
 import TrainersDirectory from '@/components/shared/TrainersDirectory';
@@ -86,7 +85,6 @@ const AdminDashboard = () => {
     { id: 'messages', name: 'رسائل', icon: '✉️' },
     { id: 'progress', name: 'تقدم العملاء', icon: '📈' },
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
-    { id: 'rewards', name: 'الجوائز', icon: '🏆' },
     { id: 'loyalty', name: 'نقاط الولاء', icon: '🎯' },
     { id: 'search', name: 'بحث', icon: '🔎' },
     { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' }
@@ -262,11 +260,6 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {activeTab === 'rewards' && (
-          <div className="space-y-8">
-            <AdminRewards />
-          </div>
-        )}
 
         {activeTab === 'loyalty' && (
           <div className="space-y-8">

@@ -135,7 +135,7 @@ const AdminPurchases = () => {
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full mx-4 p-6 relative">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold">إضافة مشتري</h2>
-              <button className="text-white bg-gray-700 hover:bg-gray-900 text-xl absolute left-4 top-4 rounded-full w-8 h-8 flex items-center justify-center" onClick={()=>setModalOpen(false)}>×</button>
+              <button className="text-white hover:text-red-500 text-xl absolute right-4 top-4 w-8 h-8 flex items-center justify-center" onClick={()=>setModalOpen(false)}>×</button>
             </div>
             <form onSubmit={async e=>{e.preventDefault(); if(!selectedUserId && !editing) return; setSaving(true); try { const payload = { userId: selectedUserId || editing?.userId || '', itemName: form.itemName.trim(), price: Number(form.price), date: form.date ? new Date(form.date).toISOString() : undefined }; if (editing) { const updated = await purchaseSvc.updatePurchase(editing._id, payload as any); setPurchases(prev => prev.map(x => x._id === editing._id ? updated : x)); } else { const created = await purchaseSvc.createPurchase(payload as any); setPurchases(prev => [created, ...prev]); } setModalOpen(false); setEditing(null); } catch (e:any){ alert(e?.message || 'فشل الحفظ'); } finally { setSaving(false); } }} className="space-y-4">
               <div>

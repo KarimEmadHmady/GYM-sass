@@ -176,7 +176,7 @@ const AdminFeedback = () => {
           >
             <option value="">كل المدربين</option>
             {recipientOptions.map(u => (
-              <option key={u._id} value={u._id} className="text-black">{u.name} ({u.phone || 'بدون هاتف'})</option>
+              <option key={u._id} value={u._id} className="text-black dark:text-white">{u.name} ({u.phone || 'بدون هاتف'})</option>
             ))}
           </select>
         </div>
@@ -227,26 +227,26 @@ const AdminFeedback = () => {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-40">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md relative">
-            <button onClick={() => setShowModal(false)} className="absolute left-3 top-3 text-gray-400 hover:text-red-500"><X size={22} /></button>
+            <button onClick={() => setShowModal(false)} className="absolute right-3 top-3 text-gray-400 hover:text-red-500"><X size={22} /></button>
             <h4 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{editId ? 'تعديل تقييم' : 'إضافة تقييم'}</h4>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block mb-1 text-sm">المرسل</label>
-                <select name="fromUserId" value={form.fromUserId} onChange={handleFormChange} className="w-full rounded border px-2 py-1">
-                  <option value="" className="text-black">اختر المرسل</option>
+                <select name="fromUserId" value={form.fromUserId} onChange={handleFormChange} className="w-full rounded border px-2 py-1 dark:text-white dark:bg-gray-900">
+                  <option value="" className="text-black dark:text-white">اختر المرسل</option>
                   {senderOptions.map(u => (
-                    <option key={u._id} value={String(u._id)} className="text-black">{u.name} ({u.role})</option>
+                    <option key={u._id} value={String(u._id)} className="text-black dark:text-white">{u.name} ({u.role})</option>
                   ))}
                 </select>
               </div>
               <div>
                 <label className="block mb-1 text-sm">المستلم</label>
-                <select name="toUserId" value={form.toUserId} onChange={handleFormChange} className="w-full rounded border px-2 py-1">
-                  <option value="" className="text-black">اختر المدرب المستلم</option>
+                <select name="toUserId" value={form.toUserId} onChange={handleFormChange} className="w-full rounded border px-2 py-1 dark:text-white dark:bg-gray-900">
+                  <option value="" className="text-black dark:text-white">اختر المدرب المستلم</option>
                   {recipientOptions.map(u => (
-                    <option key={u._id} value={String(u._id)} className="text-black">{u.name} ({u.role})</option>
+                    <option key={u._id} value={String(u._id)} className="text-black dark:text-white">{u.name} ({u.role})</option>
                   ))}
                 </select>
               </div>

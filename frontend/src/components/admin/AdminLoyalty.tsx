@@ -57,6 +57,7 @@ const AdminLoyalty = () => {
   const [addPointsError, setAddPointsError] = useState<string | null>(null);
   const [addPointsSuccess, setAddPointsSuccess] = useState<string | null>(null);
   const [deleteSuccess, setDeleteSuccess] = useState<string | null>(null);
+  const [confirmDeleteRewardId, setConfirmDeleteRewardId] = useState<string | null>(null);
 
   // سجل النقاط
   const [pointsHistory, setPointsHistory] = useState<any[]>([]);
@@ -428,7 +429,6 @@ const AdminLoyalty = () => {
     setIsRewardModalOpen(true);
   };
   const handleDeleteReward = async (rewardId: string) => {
-    if (!window.confirm('هل أنت متأكد من حذف الجائزة؟')) return;
     setLoading(true);
     try {
       await loyaltyService.deleteRedeemableReward(rewardId);
@@ -572,7 +572,7 @@ const AdminLoyalty = () => {
                     </td>
                     <td className="px-4 py-2 whitespace-nowrap flex gap-2 justify-center">
                       <button onClick={() => handleOpenEditReward(reward)} className="p-2 rounded hover:bg-blue-100 dark:hover:bg-blue-900 text-blue-600 dark:text-blue-400" title="تعديل"><Edit size={16} /></button>
-                      <button onClick={() => handleDeleteReward(reward._id)} className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900 text-red-600 dark:text-red-400" title="حذف"><Trash size={16} /></button>
+                      <button onClick={() => setConfirmDeleteRewardId(reward._id)} className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-900 text-red-600 dark:text-red-400" title="حذف"><Trash size={16} /></button>
                     </td>
                   </tr>
                 ))}
@@ -849,8 +849,17 @@ const AdminLoyalty = () => {
       {/* مودال إضافة/تعديل جائزة */}
       <Dialog open={isRewardModalOpen} onClose={() => setIsRewardModalOpen(false)} className="fixed z-50 inset-0 overflow-y-auto">
         <div className="flex items-center justify-center min-h-screen px-4">
-          <div className="fixed inset-0 bg-black bg-opacity-30 z-40" />
-          <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-lg mx-auto p-6 z-50">
+          <div className="fixed inset-0 bg-black/50 bg-opacity-30 z-40" />
+          <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-3xl mx-auto p-6 z-50 h-[80vh] max-h-[80vh] overflow-y-auto">
+            <button
+              onClick={() => setIsRewardModalOpen(false)}
+              className="absolute top-3 right-3 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              aria-label="Close"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
             <Dialog.Title className="text-lg font-bold mb-4 text-gray-900 dark:text-white">
               {editReward ? 'تعديل جائزة' : 'إضافة جائزة'}
             </Dialog.Title>
@@ -940,6 +949,42 @@ const AdminLoyalty = () => {
           </div>
         </div>
       </Dialog>
+
+      {/* تأكيد حذف الجائزة */}
+      {confirmDeleteRewardId && (
+        <Dialog open={true} onClose={() => setConfirmDeleteRewardId(null)} className="fixed z-50 inset-0 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <div className="fixed inset-0 bg-black/50 z-40" />
+            <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-md mx-auto p-6 z-50">
+              <button
+                onClick={() => setConfirmDeleteRewardId(null)}
+                className="absolute top-3 right-3 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                aria-label="Close"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <h3 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">تأكيد الحذف</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">هل أنت متأكد من حذف هذه الجائزة؟ لا يمكن التراجع عن هذا الإجراء.</p>
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setConfirmDeleteRewardId(null)} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">إلغاء</button>
+                <button
+                  onClick={async () => {
+                    const id = confirmDeleteRewardId;
+                    setConfirmDeleteRewardId(null);
+                    if (id) await handleDeleteReward(id);
+                  }}
+                  disabled={loading}
+                  className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+                >
+                  حذف
+                </button>
+              </div>
+            </div>
+          </div>
+        </Dialog>
+      )}
 
       {/* أفضل 3 مستخدمين */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">

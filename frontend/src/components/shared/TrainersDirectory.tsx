@@ -88,45 +88,43 @@ const TrainersDirectory: React.FC<TrainersDirectoryProps> = ({ scope }) => {
       ) : trainers.length === 0 ? (
         <div className="text-gray-600 dark:text-gray-300">لا يوجد مدربون حتى الآن.</div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {trainers.map((t) => (
             <div
               key={t._id}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-5 flex flex-col transition-transform duration-200 hover:scale-105 hover:shadow-2xl border border-gray-100 dark:border-gray-700 group"
-              style={{ minHeight: 160 }}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 flex flex-col items-center border border-gray-100 dark:border-gray-700 group transition-transform duration-200 hover:scale-105 hover:shadow-2xl relative"
+              style={{ minHeight: 200 }}
             >
-              <div className="flex items-center gap-4 mb-3">
+              <div className="relative mb-3">
                 {t.avatarUrl ? (
                   <img
                     src={t.avatarUrl}
                     alt={t.name}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-blue-500 group-hover:border-indigo-500 shadow-sm transition-all duration-200"
+                    className="w-20 h-20 rounded-full object-cover border-4 border-gradient-to-tr from-blue-500 to-indigo-500 shadow-md"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xl border-2 border-blue-500 group-hover:border-indigo-500 shadow-sm">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-3xl border-4 border-blue-500 shadow-md">
                     {t.name?.charAt(0)?.toUpperCase()}
                   </div>
                 )}
-                <div className="min-w-0 flex-1">
-                  <div className="text-gray-900 dark:text-white font-bold text-lg truncate group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors duration-200">
-                    {t.name}
-                  </div>
-                  <div className="text-gray-500 dark:text-gray-400 text-sm truncate">{t.email}</div>
-                  <div className="text-gray-400 dark:text-gray-500 text-xs mt-0.5 truncate">{t.phone || '- لا يوجد رقم هاتف -'}</div>
-                </div>
+                <span className="absolute -top-2 -right-2 bg-gradient-to-tr from-blue-500 to-indigo-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold shadow-lg border-2 border-white dark:border-gray-800">
+                  {trainerClientCount[t._id] ?? 0}
+                </span>
               </div>
-              <div className="mt-auto flex items-center justify-between pt-2">
-                <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-1">
-                  <span className="inline-block text-blue-500"><svg width='16' height='16' fill='currentColor' viewBox='0 0 20 20'><path d='M10 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V10a3 3 0 0 1 3-3h1V6a4 4 0 0 1 4-4zm2 5V6a2 2 0 1 0-4 0v1h4z'/></svg></span>
-                  {trainerClientCount[t._id] ?? 0} عملاء
+              <div className="text-center w-full">
+                <div className="text-gray-900 dark:text-white font-bold text-lg truncate group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors duration-200">
+                  {t.name}
                 </div>
-                <button
-                  onClick={() => openClients(t)}
-                  className="px-3 py-1.5 rounded-md text-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow transition-colors duration-200"
-                >
-                  عرض العملاء
-                </button>
+                <div className="text-gray-500 dark:text-gray-400 text-sm truncate">{t.email}</div>
+                <div className="text-gray-400 dark:text-gray-500 text-xs mt-0.5 truncate">{t.phone || '- لا يوجد رقم هاتف -'}</div>
               </div>
+              <button
+                onClick={() => openClients(t)}
+                className="mt-5 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow transition-colors duration-200"
+              >
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="#fff" strokeWidth="2"/><circle cx="12" cy="12" r="3" stroke="#fff" strokeWidth="2"/></svg>
+                عرض العملاء
+              </button>
             </div>
           ))}
         </div>
@@ -135,22 +133,21 @@ const TrainersDirectory: React.FC<TrainersDirectoryProps> = ({ scope }) => {
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={() => setModalOpen(false)}></div>
-          <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-3xl w-full mx-4 p-6">
-            <button className="absolute top-3 left-3 text-gray-400 hover:text-gray-600" onClick={() => setModalOpen(false)}>✕</button>
-            <div className="flex items-center gap-3 mb-4">
+          <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-3xl w-full mx-4 p-8 border border-blue-100 dark:border-blue-800">
+            <button className="absolute top-3 right-3 text-gray-400 hover:text-gray-600" onClick={() => setModalOpen(false)}>✕</button>
+            <div className="flex items-center gap-4 mb-6">
               {selectedTrainer?.avatarUrl ? (
-                <img src={selectedTrainer.avatarUrl} alt={selectedTrainer.name} className="w-12 h-12 rounded-full object-cover" />
+                <img src={selectedTrainer.avatarUrl} alt={selectedTrainer.name} className="w-16 h-16 rounded-full object-cover border-4 border-gradient-to-tr from-blue-500 to-indigo-500 shadow" />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-2xl border-4 border-blue-500 shadow">
                   {selectedTrainer?.name?.charAt(0)?.toUpperCase()}
                 </div>
               )}
               <div>
-                <div className="text-gray-900 dark:text-white font-semibold">{selectedTrainer?.name}</div>
+                <div className="text-gray-900 dark:text-white font-semibold text-xl">{selectedTrainer?.name}</div>
                 <div className="text-gray-500 dark:text-gray-400 text-sm">عملاؤه</div>
               </div>
             </div>
-
             {clientsLoading ? (
               <div className="text-gray-500 dark:text-gray-400">جارٍ التحميل...</div>
             ) : clientsError ? (
@@ -158,29 +155,77 @@ const TrainersDirectory: React.FC<TrainersDirectoryProps> = ({ scope }) => {
             ) : clients.length === 0 ? (
               <div className="text-gray-600 dark:text-gray-300">لا يوجد عملاء مسندون لهذا المدرب.</div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-h-[60vh] overflow-y-auto">
                 {clients.map((c) => (
-                  <div key={c._id} className="border border-gray-200 dark:border-gray-800 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
-                    <div className="flex items-center gap-3 mb-2">
+                  <div key={c._id} className="border border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-gray-50 dark:bg-gray-800/50 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3 mb-1">
                       {c.avatarUrl ? (
-                        <img src={c.avatarUrl} alt={c.name} className="w-10 h-10 rounded-full object-cover" />
+                        <img src={c.avatarUrl} alt={c.name} className="w-12 h-12 rounded-full object-cover border-2 border-emerald-400" />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white flex items-center justify-center font-bold">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center font-bold text-lg border-2 border-emerald-400">
                           {c.name?.charAt(0)?.toUpperCase()}
                         </div>
                       )}
                       <div className="min-w-0">
-                        <div className="text-gray-900 dark:text-white font-medium truncate">{c.name}</div>
+                        <div className="text-gray-900 dark:text-white font-medium truncate text-base">{c.name}</div>
                         <div className="text-gray-500 dark:text-gray-400 text-xs truncate">{c.email}</div>
                       </div>
                     </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
-                      <div>الهاتف: {c.phone || '-'}</div>
-                      <div>المستوى: {c.membershipLevel}</div>
-                      <div>النقاط: {c.loyaltyPoints ?? 0}</div>
-                      <div>الاشتراك: {c.subscriptionStartDate ? new Date(c.subscriptionStartDate).toLocaleDateString() : '-'} → {c.subscriptionEndDate ? new Date(c.subscriptionEndDate).toLocaleDateString() : '-'}</div>
-                      <div>الطول/الوزن: {(c.heightCm ?? '-')} سم / {(c.baselineWeightKg ?? '-')} كجم</div>
-                      <div>الأهداف: {['weightLoss','muscleGain','endurance'].filter(k => (c.goals as any)?.[k]).map(k => ({weightLoss:'تنحيف',muscleGain:'عضلات',endurance:'تحمل'} as any)[k]).join('، ') || '-'}</div>
+                    <div className="grid grid-cols-1 gap-3 text-sm text-gray-800 dark:text-gray-100">
+                      <div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.08 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.61 2.63a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.45-1.13a2 2 0 0 1 2.11-.45c.85.28 1.73.49 2.63.61A2 2 0 0 1 22 16.92Z" stroke="#06b6d4" strokeWidth="2"/></svg>
+                            الهاتف
+                          </span>
+                          <span className="text-gray-900 dark:text-white font-medium">{c.phone || '-'}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="#6366f1" strokeWidth="2"/><path d="M12 7v5l4 2" stroke="#6366f1" strokeWidth="2" strokeLinecap="round"/></svg>
+                            مستوى العضوية
+                          </span>
+                          <span className="text-gray-900 dark:text-white font-medium">{c.membershipLevel}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 2l2.39 4.85L20 7.27l-3.8 3.7.9 5.25L12 14.77 6.9 16.22l.9-5.25L4 7.27l5.61-.42L12 2z" stroke="#f59e42" strokeWidth="2"/></svg>
+                            نقاط الولاء
+                          </span>
+                          <span className="text-gray-900 dark:text-white font-medium">{c.loyaltyPoints ?? 0}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#10b981" strokeWidth="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#10b981" strokeWidth="2"/></svg>
+                            مدة الاشتراك
+                          </span>
+                          <span className="text-gray-900 dark:text-white font-medium">{c.subscriptionStartDate ? new Date(c.subscriptionStartDate).toLocaleDateString() : '-'} → {c.subscriptionEndDate ? new Date(c.subscriptionEndDate).toLocaleDateString() : '-'}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M8 3h8M6 7h12M6 11h12M6 15h12M6 19h12" stroke="#334155" strokeWidth="2"/></svg>
+                            الطول / الوزن
+                          </span>
+                          <span className="text-gray-900 dark:text-white font-medium">{c.heightCm ?? '-'} سم / {c.baselineWeightKg ?? '-'} كجم</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="#ef4444" strokeWidth="2"/><path d="M12 7v10M7 12h10" stroke="#ef4444" strokeWidth="2"/></svg>
+                            الأهداف
+                          </span>
+                          <span className="text-gray-900 dark:text-white font-medium">{['weightLoss','muscleGain','endurance'].filter(k => (c.goals as any)?.[k]).map(k => ({weightLoss:'تنحيف',muscleGain:'عضلات',endurance:'تحمل'} as any)[k]).join('، ') || '-'}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}

@@ -87,6 +87,15 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div className="absolute inset-0 bg-black/50" onClick={() => props.setIsCreateOpen(false)}></div>
         <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 z-10 overflow-y-auto max-h-[90vh]">
+          <button
+            onClick={() => props.setIsCreateOpen(false)}
+            className="absolute top-3 right-3 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            aria-label="Close"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
           <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">إضافة مستخدم جديد</h4>
           {props.formError && (
             <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded px-3 py-2">
@@ -143,7 +152,8 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
                 name="dob"
                 value={props.newUser.dob || ''}
                 onChange={props.handleCreateChange}
-                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white cursor-pointer"
               />
             </div>
             <div>
@@ -152,7 +162,7 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
                 name="address"
                 value={props.newUser.address || ''}
                 onChange={props.handleCreateChange}
-                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white "
                 placeholder="العنوان"
               />
             </div>
@@ -163,7 +173,7 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
                 name="balance"
                 value={props.newUser.balance || 0}
                 onChange={props.handleCreateChange}
-                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white "
                 placeholder="0"
               />
             </div>
@@ -173,7 +183,7 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
                 name="status"
                 value={props.newUser.status || 'active'}
                 onChange={props.handleCreateChange}
-                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white "
               >
                 <option value="active">نشط</option>
                 <option value="inactive">غير نشط</option>
@@ -259,7 +269,8 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
                 name="subscriptionStartDate"
                 value={props.newUser.subscriptionStartDate || ''}
                 onChange={props.handleCreateChange}
-                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white cursor-pointer"
               />
             </div>
             <div>
@@ -269,7 +280,8 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
                 name="subscriptionEndDate"
                 value={props.newUser.subscriptionEndDate || ''}
                 onChange={props.handleCreateChange}
-                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white cursor-pointer"
               />
             </div>
             <div>
@@ -279,7 +291,8 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
                 name="lastPaymentDate"
                 value={props.newUser.lastPaymentDate || ''}
                 onChange={props.handleCreateChange}
-                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white cursor-pointer"
               />
             </div>
             <div>
@@ -289,7 +302,8 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
                 name="nextPaymentDueDate"
                 value={props.newUser.nextPaymentDueDate || ''}
                 onChange={props.handleCreateChange}
-                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                onClick={(e) => e.currentTarget.showPicker?.()}
+                className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white cursor-pointer"
               />
             </div>
             <div>
@@ -366,7 +380,16 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
     {props.isEditOpen && props.editUser && (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div className="absolute inset-0 bg-black/50" onClick={() => props.setIsEditOpen(false)}></div>
-        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6 z-10 overflow-y-auto max-h-[90vh]">
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6 z-10 overflow-y-auto max-h-[90vh]">
+        <button
+          onClick={() => props.setIsEditOpen(false)}
+          className="absolute top-3 right-3 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          aria-label="Close"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
           <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">تعديل المستخدم</h4>
           {props.editError && (
             <div className="mb-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded px-3 py-2">{props.editError}</div>
@@ -400,7 +423,7 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
             {/* تاريخ الميلاد */}
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ الميلاد</label>
-              <input type="date" name="dob" value={props.editForm.dob} onChange={props.handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+              <input type="date" name="dob" value={props.editForm.dob} onClick={(e) => e.currentTarget.showPicker?.()} onChange={props.handleEditChange} className=" cursor-pointer w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
             </div>
             {/* رابط الصورة */}
             <div>
@@ -429,11 +452,11 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
             {/* بيانات الاشتراك والعضوية */}
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ بداية الاشتراك</label>
-              <input type="date" name="subscriptionStartDate" value={props.editForm.subscriptionStartDate} onChange={props.handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+              <input type="date" name="subscriptionStartDate" onClick={(e) => e.currentTarget.showPicker?.()} value={props.editForm.subscriptionStartDate} onChange={props.handleEditChange} className="cursor-pointer w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
             </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ نهاية الاشتراك</label>
-              <input type="date" name="subscriptionEndDate" value={props.editForm.subscriptionEndDate} onChange={props.handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+              <input type="date" name="subscriptionEndDate" onClick={(e) => e.currentTarget.showPicker?.()} value={props.editForm.subscriptionEndDate} onChange={props.handleEditChange} className="cursor-pointer w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
             </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">أيام تجميد الاشتراك</label>
@@ -458,11 +481,11 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
             </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ آخر دفع</label>
-              <input type="date" name="lastPaymentDate" value={props.editForm.lastPaymentDate} onChange={props.handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+              <input type="date" name="lastPaymentDate" onClick={(e) => e.currentTarget.showPicker?.()} value={props.editForm.lastPaymentDate} onChange={props.handleEditChange} className="cursor-pointer w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
             </div>
             <div>
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">تاريخ استحقاق الدفع القادم</label>
-              <input type="date" name="nextPaymentDueDate" value={props.editForm.nextPaymentDueDate} onChange={props.handleEditChange} className="w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
+              <input type="date" name="nextPaymentDueDate" onClick={(e) => e.currentTarget.showPicker?.()} value={props.editForm.nextPaymentDueDate} onChange={props.handleEditChange} className="cursor-pointer w-full px-3 py-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white" />
             </div>
             {/* النقاط والعضوية */}
             <div>

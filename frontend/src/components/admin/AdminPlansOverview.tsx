@@ -393,8 +393,16 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
  
     {/* Create Modal */}
     {showCreateModal && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify_center z-50 ">
-        <div className="bg-white margin-auto dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6 margin-auto">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
+          <button
+            className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+            onClick={() => { setShowCreateModal(false); }}
+            aria-label="Close"
+            title="إغلاق"
+          >
+            ✕
+          </button>
           <h3 className="text-lg font-semibold text_gray-900 dark:text-white mb-4">إنشاء خطة تمرين</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -522,8 +530,16 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
 
     {/* Create Diet Plan Modal */}
     {showCreateDietModal && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify_center z-50">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6 margin-auto">
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
+          <button
+            className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+            onClick={() => setShowCreateDietModal(false)}
+            aria-label="Close"
+            title="إغلاق"
+          >
+            ✕
+          </button>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">إنشاء خطة غذائية</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
@@ -643,7 +659,15 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
     {/* Edit Modal */}
     {showEditModal && editingPlan && (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
+        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
+          <button
+            className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+            onClick={() => { setShowEditModal(false); setEditingPlan(null); }}
+            aria-label="Close"
+            title="إغلاق"
+          >
+            ✕
+          </button>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">تعديل الخطة</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -756,7 +780,15 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
     {/* Edit Diet Modal */}
     {showEditDietModal && editingDietPlan && (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
+        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
+          <button
+            className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+            onClick={() => { setShowEditDietModal(false); setEditingDietPlan(null); }}
+            aria-label="Close"
+            title="إغلاق"
+          >
+            ✕
+          </button>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">تعديل الخطة الغذائية</h3>
           <div className="mb-4">
             <label className="block text-sm mb-1">اسم الخطة</label>

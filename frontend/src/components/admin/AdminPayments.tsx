@@ -195,7 +195,7 @@ const AdminPayments = () => {
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full mx-4 p-6 relative">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold">{editing ? 'تعديل دفعة' : 'إضافة دفعة'}</h2>
-              <button className="text-white bg-gray-700 hover:bg-gray-900 text-xl absolute left-4 top-4 rounded-full w-8 h-8 flex items-center justify-center" onClick={()=>setModalOpen(false)}>×</button>
+              <button className="text-white  hover:text-red-500  text-xl absolute right-4 top-4  w-8 h-8 flex items-center justify-center" onClick={()=>setModalOpen(false)}>×</button>
             </div>
             <form onSubmit={e=>{e.preventDefault(); save();}} className="space-y-4">
               <div>

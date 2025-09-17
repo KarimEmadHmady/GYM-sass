@@ -12,6 +12,8 @@ const AdminAttendance = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState<AttendanceRecord | null>(null);
   const [editForm, setEditForm] = useState<any>({});
@@ -51,16 +53,8 @@ const AdminAttendance = () => {
 
   // حذف سجل حضور
   const handleDelete = async (id: string) => {
-    if (!window.confirm('هل أنت متأكد من حذف هذا السجل؟')) return;
-    setDeletingId(id);
-    try {
-      await new AttendanceService().deleteAttendanceRecord(id);
-      setRecords(prev => prev.filter(r => r._id !== id));
-    } catch (e: any) {
-      alert(e?.message || 'فشل الحذف');
-    } finally {
-      setDeletingId(null);
-    }
+    setPendingDeleteId(id);
+    setConfirmOpen(true);
   };
 
   // فتح مودال التعديل
@@ -232,7 +226,7 @@ const AdminAttendance = () => {
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full mx-4 p-6 relative animate-fade-in">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold">تعديل سجل الحضور</h2>
-              <button onClick={() => setEditModalOpen(false)} className="text-white bg-gray-700 hover:bg-gray-900 text-xl absolute left-4 top-4 rounded-full w-8 h-8 flex items-center justify-center transition-colors duration-150">×</button>
+              <button onClick={() => setEditModalOpen(false)} className="text-white hover:text-red-500  text-xl absolute right-4 top-4 w-8 h-8 flex items-center justify-center transition-colors duration-150">×</button>
             </div>
             <form onSubmit={e => { e.preventDefault(); handleEditSave(); }} className="space-y-4">
               <div>
@@ -309,7 +303,7 @@ const AdminAttendance = () => {
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-md w-full mx-4 p-6 relative animate-fade-in">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold">إضافة سجل حضور</h2>
-              <button onClick={() => setAddModalOpen(false)} className="text-white bg-gray-700 hover:bg-gray-900 text-xl absolute left-4 top-4 rounded-full w-8 h-8 flex items-center justify-center transition-colors duration-150">×</button>
+              <button onClick={() => setAddModalOpen(false)} className="text-white hover:text-red-500 text-xl absolute right-4 top-4 w-8 h-8 flex items-center justify-center transition-colors duration-150">×</button>
             </div>
             <form onSubmit={e => { e.preventDefault(); handleAddSave(); }} className="space-y-4">
               <div>
@@ -385,6 +379,43 @@ const AdminAttendance = () => {
             </form>
           </div>
       </div>
+      )}
+      {/* Delete Confirmation Popup */}
+      {confirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => { if (!deletingId) { setConfirmOpen(false); setPendingDeleteId(null); } }} />
+          <div className="relative z-10 bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 border border-gray-200 dark:border-gray-800">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-200 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 9v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M12 17h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M10.29 3.86l-8.48 14.7A2 2 0 0 0 3.48 21h17.04a2 2 0 0 0 1.72-3.44l-8.48-14.7a2 2 0 0 0-3.47 0Z" stroke="currentColor" strokeWidth="2"/></svg>
+              </div>
+              <div className="flex-1">
+                <div className="text-base font-semibold text-gray-900 dark:text-white">تأكيد الحذف</div>
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-300">هل أنت متأكد أنك تريد حذف هذا السجل؟ لا يمكن التراجع عن هذه العملية.</div>
+              </div>
+              <button onClick={() => { if (!deletingId) { setConfirmOpen(false); setPendingDeleteId(null); } }} className="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <button onClick={() => { if (!deletingId) { setConfirmOpen(false); setPendingDeleteId(null); } }} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-700">إلغاء</button>
+              <button onClick={async () => {
+                if (!pendingDeleteId) return;
+                setDeletingId(pendingDeleteId);
+                try {
+                  await new AttendanceService().deleteAttendanceRecord(pendingDeleteId);
+                  setRecords(prev => prev.filter(r => r._id !== pendingDeleteId));
+                } catch (e: any) {
+                  // يمكن إضافة توست لاحقًا
+                } finally {
+                  setDeletingId(null);
+                  setPendingDeleteId(null);
+                  setConfirmOpen(false);
+                }
+              }} disabled={!!deletingId} className="px-4 py-2 rounded text-white bg-red-600 hover:bg-red-700 disabled:bg-red-400">
+                {deletingId ? 'جارٍ الحذف...' : 'تأكيد الحذف'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
