@@ -10,7 +10,6 @@ import { useTranslations, useLocale } from 'next-intl';
 import TrainerStatsCards from '@/components/trainer/TrainerStatsCards';
 import TrainerQuickActions from '@/components/trainer/TrainerQuickActions';
 import TrainerRecentActivity from '@/components/trainer/TrainerRecentActivity';
-import TrainerSessionsOverview from '@/components/trainer/TrainerSessionsOverview';
 import TrainerClientsOverview from '@/components/trainer/TrainerClientsOverview';
 import TrainerPlansManager from '@/components/trainer/TrainerPlansManager';
 import TrainerProgressOverview from '@/components/trainer/TrainerProgressOverview';
@@ -68,18 +67,18 @@ const TrainerDashboard = () => {
 
   const tabs = [
     { id: 'overview', name: t('Tabs.overview'), icon: '📊' },
-    { id: 'sessions', name: t('Tabs.sessions'), icon: '🏋️' },
     { id: 'clients', name: t('Tabs.clients'), icon: '👥' },
     { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
     { id: 'progress', name: t('Tabs.progress'), icon: '📈' },
-    { id: 'profile', name: 'ملفي', icon: '👤' },
+
     { id: 'attendance', name: 'حضوري', icon: '📝' },
     { id: 'clientSessions', name: 'حصص العملاء', icon: '📅' },
     { id: 'clientDetail', name: 'تفاصيل عميل', icon: '📄' },
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
     { id: 'messages', name: 'الرسائل', icon: '✉️' },
     { id: 'loyalty', name: 'نقاط الولاء', icon: '🎁' },
-    { id: 'schedule', name: t('Tabs.schedule'), icon: '📅' }
+    { id: 'schedule', name: t('Tabs.schedule'), icon: '📅' },
+    { id: 'profile', name: 'الملف الشخصى', icon: '👤' }
   ];
 
   // زر تبديل اللغة
@@ -180,11 +179,7 @@ const TrainerDashboard = () => {
           </div>
         )}
 
-        {activeTab === 'sessions' && (
-          <div className="space-y-8">
-            <TrainerSessionsOverview />
-          </div>
-        )}
+ 
 
         {activeTab === 'clients' && (
           <div className="space-y-8">

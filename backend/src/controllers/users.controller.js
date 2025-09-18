@@ -106,7 +106,7 @@ export const deleteUserByIdHard = async (req, res) => {
 
 export const getMyClients = async (req, res) => {
   try {
-    const trainerId = req.query.trainerId || req.user._id;
+    const trainerId = req.query.trainerId || req.user.id || req.user._id;
     const clients = await getMyClientsService(trainerId);
     res.status(200).json({ clients });
   } catch (err) {

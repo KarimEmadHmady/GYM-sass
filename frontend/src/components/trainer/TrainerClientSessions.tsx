@@ -9,6 +9,7 @@ import CustomAlert from '@/components/ui/CustomAlert';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { useCustomAlert } from '@/hooks/useCustomAlert';
 import { useConfirmationDialog } from '@/hooks/useConfirmationDialog';
+import { useAuth } from '@/hooks/useAuth';
 
 const sessionScheduleService = new SessionScheduleService();
 
@@ -36,49 +37,21 @@ const TrainerClientSessions = () => {
     description: ''
   });
 
-  // Get current trainer ID from auth context or localStorage
+  // Get current trainer ID from Redux auth first, then fallback to token/localStorage
+  const { user: authUser } = useAuth();
   const getCurrentTrainerId = () => {
-    // Try multiple ways to get user data
-    const user = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    const authToken = localStorage.getItem('authToken');
-    
-    console.log('Raw user from localStorage:', user);
-    console.log('Token from localStorage:', token);
-    console.log('AuthToken from localStorage:', authToken);
-    
-    if (user) {
-      try {
-        const userData = JSON.parse(user);
-        console.log('Parsed user data:', userData);
-        return userData._id || userData.id;
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-      }
+    if (authUser) {
+      return (authUser as any)._id || (authUser as any).id;
     }
-    
-    // Try to get from token if available
-    if (token) {
-      try {
-        const tokenData = JSON.parse(atob(token.split('.')[1]));
-        console.log('Token data:', tokenData);
-        return tokenData.userId || tokenData._id || tokenData.id;
-      } catch (error) {
-        console.error('Error parsing token:', error);
-      }
-    }
-    
-    // Try to get from authToken if available
+    const authToken = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
     if (authToken) {
       try {
         const tokenData = JSON.parse(atob(authToken.split('.')[1]));
-        console.log('AuthToken data:', tokenData);
         return tokenData.userId || tokenData._id || tokenData.id;
       } catch (error) {
         console.error('Error parsing authToken:', error);
       }
     }
-    
     return null;
   };
 
@@ -102,7 +75,8 @@ const TrainerClientSessions = () => {
       console.log('Loading sessions and clients...');
       const [sessionsData, clientsData] = await Promise.all([
         sessionScheduleService.getSessionsByUser(trainerId),
-        userService.getClientsOfTrainer(trainerId)
+        // Use backend-authenticated endpoint to derive trainer from token
+        userService.getMyClients()
       ]);
 
       console.log('Sessions data:', sessionsData);
@@ -110,14 +84,25 @@ const TrainerClientSessions = () => {
 
       setSessions(sessionsData || []);
       
-      // Handle different response structures for clients
-      let clientsArr: User[] = [];
-      if (Array.isArray(clientsData)) {
-        clientsArr = clientsData;
-      } else if (Array.isArray((clientsData as any)?.data)) {
-        clientsArr = (clientsData as any).data;
-      } else if (Array.isArray((clientsData as any)?.data?.items)) {
-        clientsArr = (clientsData as any).data.items;
+      // Ensure clients is a flat array
+      let clientsArr: User[] = Array.isArray(clientsData) ? clientsData : [];
+
+      // Fallback: if empty, fetch members and filter by trainerId (as in TrainerClientsOverview)
+      if (!clientsArr.length) {
+        try {
+          const membersRes: any = await userService.getUsersByRole('member', { page: 1, limit: 1000 } as any);
+          const arr = Array.isArray(membersRes) ? membersRes : (membersRes?.data || []);
+          const normalizeId = (val: any): string => {
+            if (!val) return '';
+            if (typeof val === 'string') return val;
+            if (typeof val === 'object') return (val._id || val.id || '') as string;
+            return String(val);
+          };
+          const me = normalizeId(trainerId);
+          clientsArr = (arr || []).filter((m: any) => normalizeId(m?.trainerId) === me);
+        } catch (e) {
+          console.warn('Fallback members fetch failed:', e);
+        }
       }
       console.log('Processed clients:', clientsArr);
       setClients(clientsArr);
@@ -274,14 +259,30 @@ const TrainerClientSessions = () => {
     if (!userId || !clients || clients.length === 0) {
       return 'غير محدد';
     }
-    
-    const user = clients.find(u => {
-      const userObjId = u._id?.toString();
-      const searchId = userId?.toString();
-      return userObjId === searchId;
-    });
-    
+    const normalize = (val: any): string => {
+      if (!val) return '';
+      if (typeof val === 'string') return val;
+      if (typeof val === 'object') return (val._id || val.id || '') as string;
+      return String(val);
+    };
+    const searchId = normalize(userId);
+    const user = clients.find(u => normalize(u._id) === searchId || normalize((u as any).id) === searchId);
     return user?.name || 'غير محدد';
+  };
+
+  const getUserPhone = (userId: string) => {
+    if (!userId || !clients || clients.length === 0) {
+      return '';
+    }
+    const normalize = (val: any): string => {
+      if (!val) return '';
+      if (typeof val === 'string') return val;
+      if (typeof val === 'object') return (val._id || val.id || '') as string;
+      return String(val);
+    };
+    const searchId = normalize(userId);
+    const user = clients.find(u => normalize(u._id) === searchId || normalize((u as any).id) === searchId);
+    return (user?.phone as string) || '';
   };
 
   const getTypeIcon = (type: string) => {
@@ -364,7 +365,7 @@ const TrainerClientSessions = () => {
                 }`}
               >
                 {tab.name}
-                <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 py-1 px-2 rounded-full text-xs">
+                <span className="mx-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400  px-2 rounded-full text-xs">
                   {tab.count}
                 </span>
               </button>
@@ -389,6 +390,11 @@ const TrainerClientSessions = () => {
                       <h4 className="text-lg font-medium text-gray-900 dark:text-white">
                         {session.sessionType} - {getUserName(session.userId)}
                       </h4>
+                      {getUserPhone(session.userId) && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          <span className="font-medium">الهاتف:</span> {getUserPhone(session.userId)}
+                        </p>
+                      )}
                       <div className="mt-2 space-y-1">
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           <span className="font-medium">الوقت:</span> {session.startTime} - {session.endTime}
