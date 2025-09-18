@@ -544,12 +544,12 @@ const AdminLoyalty = () => {
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-700">
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">الاسم</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">الوصف</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">النقاط المطلوبة</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">الفئة</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">الحالة</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">العمليات</th>
+                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300">الاسم</th>
+                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 ">الوصف</th>
+                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 ">النقاط المطلوبة</th>
+                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 ">الفئة</th>
+                  <th className="">الحالة</th>
+                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 text-center">العمليات</th>
                 </tr>
               </thead>
               <tbody>
@@ -559,8 +559,8 @@ const AdminLoyalty = () => {
                   </tr>
                 ) : rewards.map((reward) => (
                   <tr key={reward._id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                    <td className="px-4 py-2 whitespace-nowrap font-semibold">{reward.name}</td>
-                    <td className="px-4 py-2 whitespace-nowrap max-w-xs truncate">{reward.description}</td>
+                    <td className="px-4 py-2 whitespace-nowrap font-semibold text-center">{reward.name}</td>
+                    <td className="px-4 py-2 whitespace-nowrap max-w-xs truncate text-center">{reward.description}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-center">{reward.pointsRequired}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-center">{reward.category}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-center">
@@ -597,7 +597,7 @@ const AdminLoyalty = () => {
                   <select
                     value={redemptionsFilter.userId}
                     onChange={(e) => setRedemptionsFilter(prev => ({ ...prev, userId: e.target.value }))}
-                    className="w-full rounded border px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full rounded border px-1 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   >
                     <option value="">كل المستخدمين</option>
                     {filteredUsers.map(u => (
@@ -610,7 +610,7 @@ const AdminLoyalty = () => {
                   <select
                     value={redemptionsFilter.rewardId}
                     onChange={(e) => setRedemptionsFilter(prev => ({ ...prev, rewardId: e.target.value }))}
-                    className="w-full rounded border px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full rounded border px-1 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   >
                     <option value="">كل الجوائز</option>
                     {rewards.map(r => (
@@ -624,7 +624,7 @@ const AdminLoyalty = () => {
                     type="date"
                     value={redemptionsFilter.startDate}
                     onChange={(e) => setRedemptionsFilter(prev => ({ ...prev, startDate: e.target.value }))}
-                    className="w-full rounded border px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full rounded border px-1.5 py-1.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   />
                 </div>
                 <div>
@@ -633,7 +633,7 @@ const AdminLoyalty = () => {
                     type="date"
                     value={redemptionsFilter.endDate}
                     onChange={(e) => setRedemptionsFilter(prev => ({ ...prev, endDate: e.target.value }))}
-                    className="w-full rounded border px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full rounded border px-1.5 py-1.5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -659,11 +659,11 @@ const AdminLoyalty = () => {
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                       <thead>
                         <tr className="bg-gray-50 dark:bg-gray-700">
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">المستخدم</th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">الجائزة</th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">النقاط المستخدمة</th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">النقاط المتبقية</th>
-                          <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">التاريخ</th>
+                          <th className="px-4 py-2  text-xs font-medium text-gray-500 dark:text-gray-300  text-center">المستخدم</th>
+                          <th className="px-4 py-2  text-xs font-medium text-gray-500 dark:text-gray-300 text-center">الجائزة</th>
+                          <th className="px-4 py-2  text-xs font-medium text-gray-500 dark:text-gray-300 text-center">النقاط المستخدمة</th>
+                          <th className="px-4 py-2  text-xs font-medium text-gray-500 dark:text-gray-300 text-center">النقاط المتبقية</th>
+                          <th className="px-4 py-2  text-xs font-medium text-gray-500 dark:text-gray-300 text-center">التاريخ</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -673,7 +673,7 @@ const AdminLoyalty = () => {
                           </tr>
                         ) : filteredRedemptions.map((redemption, idx) => (
                           <tr key={redemption._id || idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                            <td className="px-4 py-2 whitespace-nowrap">
+                            <td className="px-4 py-2 whitespace-nowrap text-center">
                               {(() => {
                                 const user = allUsers.find(u => u._id === redemption.userId);
                                 if (user) {
@@ -682,7 +682,7 @@ const AdminLoyalty = () => {
                                 return redemption.userId || '-';
                               })()}
                             </td>
-                            <td className="px-4 py-2 whitespace-nowrap">
+                            <td className="px-4 py-2 whitespace-nowrap text-center">
                               {redemption.reason || 'جائزة مستبدلة'}
                             </td>
                             <td className="px-4 py-2 whitespace-nowrap text-center text-red-600 dark:text-red-400 font-medium">
@@ -691,7 +691,7 @@ const AdminLoyalty = () => {
                             <td className="px-4 py-2 whitespace-nowrap text-center">
                               {redemption.remainingPoints}
                             </td>
-                            <td className="px-4 py-2 whitespace-nowrap text-xs">
+                            <td className="px-4 py-2 whitespace-nowrap text-xs text-center">
                               {redemption.createdAt ? new Date(redemption.createdAt).toLocaleString('ar-EG') : '-'}
                             </td>
                           </tr>
@@ -756,11 +756,11 @@ const AdminLoyalty = () => {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-gray-700">
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">المستخدم</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">النقاط</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">النوع</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">السبب</th>
-                      <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300">التاريخ</th>
+                      <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300">المستخدم</th>
+                      <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300">النقاط</th>
+                      <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300">النوع</th>
+                      <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300">السبب</th>
+                      <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300">التاريخ</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -770,7 +770,7 @@ const AdminLoyalty = () => {
                       </tr>
                     ) : filteredHistory.map((h, idx) => (
                       <tr key={h._id || idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                        <td className="px-4 py-2 whitespace-nowrap">{
+                        <td className="px-4 py-2 whitespace-nowrap text-center">{
                           (() => {
                             const user = allUsers.find(u => u._id === h.userId);
                             if (user) {
@@ -781,8 +781,8 @@ const AdminLoyalty = () => {
                         }</td>
                         <td className="px-4 py-2 whitespace-nowrap text-center">{h.points}</td>
                         <td className="px-4 py-2 whitespace-nowrap text-center">{h.type}</td>
-                        <td className="px-4 py-2 whitespace-nowrap">{h.reason}</td>
-                        <td className="px-4 py-2 whitespace-nowrap text-xs">{h.createdAt ? new Date(h.createdAt).toLocaleString('ar-EG') : '-'}</td>
+                        <td className="px-4 py-2 whitespace-nowrap text-center">{h.reason}</td>
+                        <td className="px-4 py-2 whitespace-nowrap text-xs text-center">{h.createdAt ? new Date(h.createdAt).toLocaleString('ar-EG') : '-'}</td>
                       </tr>
                     ))}
                   </tbody>

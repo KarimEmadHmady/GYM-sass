@@ -30,6 +30,20 @@ export const getUserById = async (req, res) => {
 export const updateUserRole = async (req, res) => {
   try {
     const { userId, role } = req.body;
+    const actingRole = req.user?.role;
+    if (!actingRole) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    const allowedRoles = ['member', 'trainer', 'manager', 'admin'];
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({ message: 'Invalid role' });
+    }
+    if (actingRole === 'manager') {
+      const managerAllowedTargets = ['member', 'trainer'];
+      if (!managerAllowedTargets.includes(role)) {
+        return res.status(403).json({ message: 'Managers can only set role to member or trainer' });
+      }
+    }
     const user = await updateUserRoleService(userId, role);
     res.status(200).json({ message: 'User role updated successfully.', user });
   } catch (err) {
@@ -42,6 +56,27 @@ export const updateUserById = async (req, res) => {
       const userId = req.params.id;
       const updateData = req.body;
       delete updateData.passwordHash; 
+      // Role change guardrails
+      if (Object.prototype.hasOwnProperty.call(updateData, 'role')) {
+        const actingRole = req.user?.role;
+        const newRole = updateData.role;
+        const allowedRoles = ['member', 'trainer', 'manager', 'admin'];
+        if (!actingRole) {
+          return res.status(401).json({ message: 'غير مصرح: لا يوجد دور للطلب.' });
+        }
+        if (!allowedRoles.includes(newRole)) {
+          return res.status(400).json({ message: 'دور غير صالح.' });
+        }
+        if (actingRole !== 'admin' && actingRole !== 'manager') {
+          return res.status(403).json({ message: 'غير مصرح: لا يمكنك تعديل الدور.' });
+        }
+        if (actingRole === 'manager') {
+          const managerAllowedTargets = ['member', 'trainer'];
+          if (!managerAllowedTargets.includes(newRole)) {
+            return res.status(403).json({ message: 'صلاحيات المدير تسمح فقط بتعيين الدور إلى عضو أو مدرب.' });
+          }
+        }
+      }
       const user = await updateUserByIdService(userId, updateData);
       res.status(200).json({ message: 'User updated successfully.', user });
     } catch (err) {

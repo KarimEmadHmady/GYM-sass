@@ -168,19 +168,19 @@ const AdminAttendance = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">اسم العضو</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">رقم الهاتف</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">التاريخ</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">الساعة</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">الحالة</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">ملاحظات</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase ">اسم العضو</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase ">رقم الهاتف</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase ">التاريخ</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase ">الساعة</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase ">الحالة</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase ">ملاحظات</th>
                 <th className="px-4 py-2"></th>
               </tr>
             </thead>
             <tbody>
               {records.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-4 text-gray-400">لا توجد سجلات حضور.</td>
+                  <td colSpan={7} className="text-center py-4 text-gray-400 text-center">لا توجد سجلات حضور.</td>
                 </tr>
               ) : (
                 filteredRecords.map((rec) => {
@@ -188,14 +188,14 @@ const AdminAttendance = () => {
                   const dateObj = new Date(rec.date);
                   return (
                     <tr key={rec._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="px-4 py-2 whitespace-nowrap">{user?.name || '---'}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{user?.phone || '-'}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{dateObj.toLocaleDateString()}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">
+                      <td className="px-4 py-2 whitespace-nowrap text-center">{user?.name || '---'}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-center">{user?.phone || '-'}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-center">{dateObj.toLocaleDateString()}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-center">{dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-center">
                         {rec.status === 'present' ? 'حاضر' : rec.status === 'absent' ? 'غائب' : 'بعذر'}
                       </td>
-                      <td className="px-4 py-2 whitespace-nowrap">{rec.notes || '-'}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-center">{rec.notes || '-'}</td>
                       <td className="px-4 py-2 whitespace-nowrap flex gap-2">
                         <button
                           className="px-2 py-1 rounded bg-blue-200 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900 text-xs transition-colors"

@@ -257,23 +257,23 @@ const AdminProgress = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
               <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">المدرب</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">العملاء</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">سجلات التقدم</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">آخر تحديث</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300">المدرب</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300">العملاء</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300">سجلات التقدم</th>
+                <th className="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300">آخر تحديث</th>
                 <th className="px-3 py-2" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filtered.map(row => (
                 <tr key={row.trainer._id} className="hover:bg-gray-50 dark:hover:bg-gray-900">
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2 text-center">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">{row.trainer.name}</div>
                     <div className="text-xs text-gray-500">{row.trainer.email}</div>
                   </td>
-                  <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{row.clientsCount}</td>
-                  <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{row.progressCount}</td>
-                  <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">{row.latestProgressDate ? new Date(row.latestProgressDate).toLocaleDateString() : '-'}</td>
+                  <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 text-center">{row.clientsCount}</td>
+                  <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 text-center">{row.progressCount}</td>
+                  <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 text-center">{row.latestProgressDate ? new Date(row.latestProgressDate).toLocaleDateString() : '-'}</td>
                   <td className="px-3 py-2 text-right">
                     <button
                       onClick={() => openTrainer(row.trainer)}
@@ -315,7 +315,7 @@ const AdminProgress = () => {
                           setSaving(false);
                         }
                       }}
-                      className="w-full text-left text-sm flex items-center justify-between px-2 py-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800"
+                      className="w-full text-center text-sm flex items-center justify-between px-2 py-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800"
                     >
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-gray-900 dark:text-white">{c.name}</span>

@@ -134,7 +134,7 @@ const AdminPayments = () => {
         {canEdit && (
           <div className="flex items-center gap-2">
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="ابحث بالاسم/الهاتف/الإيميل" className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm" />
-            <select value={methodFilter} onChange={e=>setMethodFilter(e.target.value)} className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm">
+            <select value={methodFilter} onChange={e=>setMethodFilter(e.target.value)} className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white  text-sm p-[4px]">
               <option value="all">كل الطرق</option>
               <option value="cash">نقدي</option>
               <option value="card">بطاقة</option>
@@ -155,11 +155,11 @@ const AdminPayments = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">المستخدم</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">المبلغ</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">التاريخ</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">الطريقة</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">ملاحظات</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase ">المستخدم</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase ">المبلغ</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase ">التاريخ</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase ">الطريقة</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase ">ملاحظات</th>
                 {canEdit && <th className="px-4 py-2"></th>}
               </tr>
             </thead>
@@ -171,11 +171,11 @@ const AdminPayments = () => {
                 const d = new Date(p.date);
                 return (
                   <tr key={p._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td className="px-4 py-2 whitespace-nowrap">{u?.name || p.userId} {u?.phone ? `(${u.phone})` : ''}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{p.amount}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{d.toLocaleDateString()} {d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{p.method === 'cash' ? 'نقدي' : p.method === 'card' ? 'بطاقة' : p.method === 'bank_transfer' ? 'تحويل بنكي' : 'أخرى'}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{p.notes || '-'}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-center">{u?.name || p.userId} {u?.phone ? `(${u.phone})` : ''}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-center">{p.amount}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-center">{d.toLocaleDateString()} {d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-center">{p.method === 'cash' ? 'نقدي' : p.method === 'card' ? 'بطاقة' : p.method === 'bank_transfer' ? 'تحويل بنكي' : 'أخرى'}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-center">{p.notes || '-'}</td>
                     {canEdit && (
                       <td className="px-4 py-2 whitespace-nowrap flex gap-2">
                         <button className="px-2 py-1 rounded bg-blue-200 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900 text-xs" onClick={()=>openEdit(p)}>تعديل</button>

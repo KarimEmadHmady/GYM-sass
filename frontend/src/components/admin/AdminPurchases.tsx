@@ -70,7 +70,7 @@ const AdminPurchases = () => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">المشتريات</h3>
         <div className="flex items-center gap-2">
           <select
-            className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm"
+            className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white p-[4px] text-sm"
             value={selectedUserId}
             onChange={e=>setSelectedUserId(e.target.value)}
           >
@@ -100,9 +100,9 @@ const AdminPurchases = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">العنصر</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">السعر</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">التاريخ</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">العنصر</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">السعر</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">التاريخ</th>
                 {canDeleteOrEdit && <th className="px-4 py-2"></th>}
               </tr>
             </thead>
@@ -113,9 +113,9 @@ const AdminPurchases = () => {
                 const d = p.date ? new Date(p.date) : (p.createdAt ? new Date(p.createdAt) : null);
                 return (
                   <tr key={p._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td className="px-4 py-2 whitespace-nowrap">{p.itemName}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{p.price}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{d ? `${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}` : '-'}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-center">{p.itemName}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-center">{p.price}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-center">{d ? `${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}` : '-'}</td>
                     {canDeleteOrEdit && (
                       <td className="px-4 py-2 whitespace-nowrap flex gap-2">
                         <button className="px-2 py-1 rounded bg-blue-200 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900 text-xs" onClick={()=>{ setEditing(p); const d = p.date ? new Date(p.date) : (p.createdAt ? new Date(p.createdAt) : new Date()); setForm({ itemName: p.itemName, price: String(p.price), date: d.toISOString().slice(0,10) }); setModalOpen(true); }}>تعديل</button>

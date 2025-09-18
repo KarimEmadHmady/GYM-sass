@@ -23,6 +23,7 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState<null | string>(null);
+  const [viewWorkoutPlan, setViewWorkoutPlan] = useState<WorkoutPlan | null>(null);
   const [creatingUserId, setCreatingUserId] = useState('');
   const [formPlanName, setFormPlanName] = useState('');
   const [formDescription, setFormDescription] = useState('');
@@ -45,6 +46,7 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
   const [dietMealsLoading, setDietMealsLoading] = useState(false);
   const [dietMealsError, setDietMealsError] = useState<string | null>(null);
   const [showDeleteDietModal, setShowDeleteDietModal] = useState<null | string>(null);
+  const [viewDietPlan, setViewDietPlan] = useState<DietPlan | null>(null);
   const [dietPlanNameInput, setDietPlanNameInput] = useState('');
   const [dietPlanDescInput, setDietPlanDescInput] = useState('');
   const [dietPlanStartInput, setDietPlanStartInput] = useState('');
@@ -347,6 +349,16 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
                 </div>
 
                 <div className="mt-6 flex space-x-2">
+                  <button
+                    className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                    onClick={() => setViewWorkoutPlan(plan)}
+                    title="عرض"
+                  >
+                    <span className="inline-flex items-center gap-2 justify-center w-full">
+                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="#2563eb" strokeWidth="2"/><circle cx="12" cy="12" r="3" stroke="#2563eb" strokeWidth="2"/></svg>
+                      عرض
+                    </span>
+                  </button>
                   <button className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" onClick={() => openEdit(plan)}>{t('AdminPlansOverview.edit')}</button>
                   <button className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md text-sm hover:bg-red-700 transition-colors" onClick={() => setShowDeleteModal(plan._id)}>حذف</button>
                 </div>
@@ -362,6 +374,10 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
                   <div className="flex items-start justify-between mb-4">
                     <h4 className="text-lg font-medium text-gray-900 dark:text-white">{plan.planName}</h4>
                     <div className="flex gap-2">
+                      <button className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded text-xs inline-flex items-center gap-1" onClick={() => setViewDietPlan(plan)} title="عرض">
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="#2563eb" strokeWidth="2"/><circle cx="12" cy="12" r="3" stroke="#2563eb" strokeWidth="2"/></svg>
+                        عرض
+                      </button>
                       <button className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded text-xs" onClick={() => openEditDiet(plan)}>تعديل</button>
                       <button className="bg-red-600 text-white px-3 py-1 rounded text-xs" onClick={() => setShowDeleteDietModal(plan._id)}>حذف</button>
                     </div>
@@ -943,6 +959,124 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
       </div>
     )}
 
+  {/* View Workout Plan Modal */}
+  {viewWorkoutPlan && (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-3xl p-6 max-h-[85vh] overflow-y-auto">
+        <button
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+          onClick={() => setViewWorkoutPlan(null)}
+          aria-label="Close"
+          title="إغلاق"
+        >
+          ✕
+        </button>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">تفاصيل خطة التمرين</h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600 dark:text-gray-400">اسم الخطة:</span>
+            <span className="text-gray-900 dark:text-white font-medium">{viewWorkoutPlan.planName}</span>
+          </div>
+          {viewWorkoutPlan.description && (
+            <div className="text-sm text-gray-700 dark:text-gray-300">
+              <span className="text-gray-600 dark:text-gray-400">الوصف:</span> {viewWorkoutPlan.description}
+            </div>
+          )}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600 dark:text-gray-400">المستخدم:</span>
+            <span className="text-gray-900 dark:text-white font-medium">{userNameMap[(viewWorkoutPlan as any).userId] || (viewWorkoutPlan as any).userId}</span>
+          </div>
+          {(viewWorkoutPlan as any).trainerId && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600 dark:text-gray-400">المدرب:</span>
+              <span className="text-gray-900 dark:text-white font-medium">{userNameMap[(viewWorkoutPlan as any).trainerId] || (viewWorkoutPlan as any).trainerId}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600 dark:text-gray-400">الفترة:</span>
+            <span className="text-gray-900 dark:text-white font-medium">{new Date(viewWorkoutPlan.startDate).toLocaleDateString()} - {new Date(viewWorkoutPlan.endDate).toLocaleDateString()}</span>
+          </div>
+          <div>
+            <h4 className="font-medium text-gray-900 dark:text-white mt-4 mb-2">التمارين ({viewWorkoutPlan.exercises?.length || 0})</h4>
+            <div className="border rounded-lg divide-y dark:border-gray-700">
+              {(viewWorkoutPlan.exercises || []).map((ex, i) => (
+                <div key={i} className="p-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-900 dark:text-white">{ex.name}</span>
+                    <span className="text-gray-600 dark:text-gray-300">{ex.sets} مجموعات × {ex.reps} تكرارات</span>
+                  </div>
+                  {ex.notes && <div className="text-gray-500 dark:text-gray-400 mt-1">ملاحظات: {ex.notes}</div>}
+                </div>
+              ))}
+              {(!viewWorkoutPlan.exercises || viewWorkoutPlan.exercises.length === 0) && (
+                <div className="p-3 text-sm text-gray-500">لا يوجد تمارين</div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* View Diet Plan Modal */}
+  {viewDietPlan && (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-3xl p-6 max-h-[85vh] overflow-y-auto">
+        <button
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+          onClick={() => setViewDietPlan(null)}
+          aria-label="Close"
+          title="إغلاق"
+        >
+          ✕
+        </button>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">تفاصيل الخطة الغذائية</h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600 dark:text-gray-400">اسم الخطة:</span>
+            <span className="text-gray-900 dark:text-white font-medium">{viewDietPlan.planName}</span>
+          </div>
+          {viewDietPlan.description && (
+            <div className="text-sm text-gray-700 dark:text-gray-300">
+              <span className="text-gray-600 dark:text-gray-400">الوصف:</span> 
+              <span className="text-gray-900 dark:text-white font-medium">{viewDietPlan.description}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600 dark:text-gray-400">المستخدم:</span>
+            <span className="text-gray-900 dark:text-white font-medium">{userNameMap[(viewDietPlan as any).userId] || (viewDietPlan as any).userId}</span>
+          </div>
+          {(viewDietPlan as any).trainerId && (
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600 dark:text-gray-400">المدرب:</span>
+              <span className="text-gray-900 dark:text-white font-medium">{userNameMap[(viewDietPlan as any).trainerId] || (viewDietPlan as any).trainerId}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600 dark:text-gray-400">الفترة:</span>
+            <span className="text-gray-900 dark:text-white font-medium">{new Date(viewDietPlan.startDate).toLocaleDateString()} {viewDietPlan.endDate ? `- ${new Date(viewDietPlan.endDate).toLocaleDateString()}` : ''}</span>
+          </div>
+          <div>
+            <h4 className="font-medium text-gray-900 dark:text-white mt-4 mb-2">الوجبات ({viewDietPlan.meals?.length || 0})</h4>
+            <div className="border rounded-lg divide-y dark:border-gray-700">
+              {(viewDietPlan.meals || []).map((m, i) => (
+                <div key={m.mealId || i} className="p-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-900 dark:text-white">{m.mealName}</span>
+                    <span className="text-gray-600 dark:text-gray-300">{m.calories} س.ح • {m.quantity}</span>
+                  </div>
+                  {m.notes && <div className="text-gray-500 dark:text-gray-400 mt-1">ملاحظات: {m.notes}</div>}
+                </div>
+              ))}
+              {(!viewDietPlan.meals || viewDietPlan.meals.length === 0) && (
+                <div className="p-3 text-sm text-gray-500">لا يوجد وجبات</div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
     {/* Delete Diet Confirm */}
     {showDeleteDietModal && (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">

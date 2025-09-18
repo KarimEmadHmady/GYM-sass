@@ -38,13 +38,13 @@ const AdminUsersTableList: React.FC<AdminUsersTableListProps> = ({
     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
       <thead className="bg-gray-50 dark:bg-gray-700">
         <tr>
-          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider text-start">المستخدم</th>
-          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider text-start">الدور</th>
-          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider text-start">الحالة</th>
-          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider text-start">الاشتراك</th>
-          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider text-start">الرصيد</th>
-          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider text-start">آخر دخول</th>
-          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider text-start">الإجراءات</th>
+          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider ">المستخدم</th>
+          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider ">الدور</th>
+          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider ">الحالة</th>
+          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider ">الاشتراك</th>
+          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider ">الرصيد</th>
+          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider ">آخر دخول</th>
+          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider ">الإجراءات</th>
         </tr>
       </thead>
       <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -54,7 +54,7 @@ const AdminUsersTableList: React.FC<AdminUsersTableListProps> = ({
           <tr><td colSpan={8} className="text-center py-8">لا يوجد مستخدمين</td></tr>
         ) : users.map((user) => (
           <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onClick={() => openViewUser(user._id)}>
-            <td className="px-6 py-4 whitespace-nowrap">
+            <td className="px-6 py-4 whitespace-nowrap text-center">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
                   {user.name.charAt(0)}
@@ -65,18 +65,18 @@ const AdminUsersTableList: React.FC<AdminUsersTableListProps> = ({
                 </div>
               </div>
             </td>
-            <td className="px-6 py-4 whitespace-nowrap">
+            <td className="px-6 py-4 whitespace-nowrap text-center">
               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>{getRoleText(user.role)}</span>
             </td>
-            <td className="px-6 py-4 whitespace-nowrap">
+            <td className="px-6 py-4 whitespace-nowrap text-center">
               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(user.status)}`}>{user.status === 'active' ? 'نشط' : user.status === 'inactive' ? 'غير نشط' : 'محظور'}</span>
             </td>
-            <td className="px-6 py-4 whitespace-nowrap">
+            <td className="px-6 py-4 whitespace-nowrap text-center">
               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getSubscriptionColor(user.subscriptionStatus)}`}>{user.subscriptionStatus === 'active' ? 'نشط' : user.subscriptionStatus === 'expired' ? 'منتهي' : user.subscriptionStatus === 'cancelled' ? 'ملغي' : 'مجمد'}</span>
             </td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">ج.م{user.balance}</td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{user.updatedAt ? new Date(user.updatedAt).toLocaleDateString('ar-EG') : '-'}</td>
-            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium relative z-30">
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-center">ج.م{user.balance}</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400" text-center>{user.updatedAt ? new Date(user.updatedAt).toLocaleDateString('ar-EG') : '-'}</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium relative z-30 text-center">
               <div className="flex space-x-2 relative z-30">
                 {canEdit && (
                   <button onClick={e => { e.stopPropagation(); handleEdit(user._id); }} className="relative z-30 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 group p-3 cursor-pointer  rounded-md">

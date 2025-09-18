@@ -11,19 +11,18 @@ import ManagerStatsCards from '@/components/manager/ManagerStatsCards';
 import ManagerQuickActions from '@/components/manager/ManagerQuickActions';
 import ManagerRecentActivity from '@/components/manager/ManagerRecentActivity';
 import ManagerUsersTable from '@/components/manager/ManagerUsersTable';
-import ManagerSessionsOverview from '@/components/manager/ManagerSessionsOverview';
 import AdminPlansOverview from '@/components/admin/AdminPlansOverview';
 import AdminAttendance from '@/components/admin/AdminAttendance';
 import AdminPayments from '@/components/admin/AdminPayments';
 import AdminPurchases from '@/components/admin/AdminPurchases';
 import AdminMessages from '@/components/admin/AdminMessages';
 import AdminProgress from '@/components/admin/AdminProgress';
-import AdminRewards from '@/components/admin/AdminRewards';
 import AdminLoyalty from '@/components/admin/AdminLoyalty';
 import AdminSearch from '@/components/admin/AdminSearch';
 import ManagerSettings from '@/components/manager/ManagerSettings';
 import TrainersDirectory from '@/components/shared/TrainersDirectory';
 import ManagerFeedback from '@/components/manager/ManagerFeedback';
+import AdminSessionsOverview from '@/components/admin/AdminSessionsOverview';
 
 const ManagerDashboard = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -82,7 +81,6 @@ const ManagerDashboard = () => {
     { id: 'messages', name: 'رسائل', icon: '✉️' },
     { id: 'progress', name: 'تقدم العملاء', icon: '📈' },
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
-    { id: 'rewards', name: 'الجوائز', icon: '🏆' },
     { id: 'loyalty', name: 'نقاط الولاء', icon: '🎯' },
     { id: 'search', name: 'بحث', icon: '🔎' },
     { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' }
@@ -200,7 +198,7 @@ const ManagerDashboard = () => {
 
         {activeTab === 'sessions' && (
           <div className="space-y-8">
-            <ManagerSessionsOverview />
+            <AdminSessionsOverview />
           </div>
         )}
 
@@ -256,12 +254,6 @@ const ManagerDashboard = () => {
         {activeTab === 'feedback' && (
           <div className="space-y-8">
             <ManagerFeedback />
-          </div>
-        )}
-
-        {activeTab === 'rewards' && (
-          <div className="space-y-8">
-            <AdminRewards />
           </div>
         )}
 

@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticate, authorizeAdmin } from '../middlewares/auth.middleware.js';
+import { authenticate } from '../middlewares/auth.middleware.js';
 import { authorizeRole } from '../middlewares/role.middleware.js';
 import {
   getUserPoints,
@@ -64,7 +64,7 @@ router.get('/stats', authenticate, authorizeRole(['admin', 'trainer' , 'manager'
 router.get('/top-users', authenticate, getTopUsers);
 
 // إضافة نقاط من الدفع (للمدير فقط)
-router.post('/payment-points', authenticate, authorizeAdmin, validateRequest(paymentPointsSchema), addPointsFromPaymentController);
+router.post('/payment-points', authenticate, authorizeRole(['admin',  'manager']), validateRequest(paymentPointsSchema), addPointsFromPaymentController);
 
 // إضافة نقاط للحضور (للمدير والمدرب)
 router.post('/attendance-points', authenticate, authorizeRole(['admin', 'trainer','manager']), validateRequest(attendancePointsSchema), addAttendancePointsController);
@@ -81,16 +81,16 @@ router.post('/redeem-reward', authenticate, validateRequest(redeemRewardSchema),
 router.get('/admin/rewards', authenticate, authorizeRole(['admin', 'trainer','manager']), getAllRedeemableRewardsController);
 
 // إنشاء جائزة جديدة (للمدير فقط)
-router.post('/admin/rewards', authenticate, authorizeAdmin, validateRequest(createRewardSchema), createRedeemableRewardController);
+router.post('/admin/rewards', authenticate, authorizeRole(['admin',  'manager']), validateRequest(createRewardSchema), createRedeemableRewardController);
 
 // تحديث جائزة (للمدير فقط)
-router.put('/admin/rewards/:rewardId', authenticate, authorizeAdmin, validateRequest(updateRewardSchema), updateRedeemableRewardController);
+router.put('/admin/rewards/:rewardId', authenticate, authorizeRole(['admin',  'manager']), validateRequest(updateRewardSchema), updateRedeemableRewardController);
 
 // حذف جائزة (للمدير فقط)
-router.delete('/admin/rewards/:rewardId', authenticate, authorizeAdmin, deleteRedeemableRewardController);
+router.delete('/admin/rewards/:rewardId', authenticate, authorizeRole(['admin',  'manager']), deleteRedeemableRewardController);
 
 // جلب إحصائيات الجوائز (للمدير فقط)
-router.get('/admin/rewards/stats', authenticate, authorizeAdmin, getRewardsStatsController);
+router.get('/admin/rewards/stats', authenticate, authorizeRole(['admin',  'manager']), getRewardsStatsController);
 
 // جلب سجل نقاط الولاء للمستخدم الحالي
 router.get('/history', authenticate, getLoyaltyPointsHistoryController);
@@ -99,6 +99,6 @@ router.get('/history', authenticate, getLoyaltyPointsHistoryController);
 router.get('/user/:userId/history', authenticate, authorizeRole(['admin', 'trainer','manager']), getLoyaltyPointsHistoryController);
 
 // جلب كل سجل النقاط لجميع المستخدمين (للمدير فقط)
-router.get('/admin/history', authenticate, authorizeAdmin, getAllLoyaltyPointsHistoryController);
+router.get('/admin/history', authenticate, authorizeRole(['admin',  'manager']), getAllLoyaltyPointsHistoryController);
 
 export default router;

@@ -512,12 +512,12 @@ const AdminInvoices: React.FC = () => {
         <table className="min-w-full text-left">
           <thead className="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th className="px-4 py-2">رقم الفاتورة</th>
-              <th className="px-4 py-2">المستخدم</th>
-              <th className="px-4 py-2">المبلغ</th>
-              <th className="px-4 py-2">تاريخ الإصدار</th>
-              <th className="px-4 py-2">تاريخ الاستحقاق</th>
-              <th className="px-4 py-2">الحالة</th>
+              <th className="px-4 py-2 text-center">رقم الفاتورة</th>
+              <th className="px-4 py-2 text-center">المستخدم</th>
+              <th className="px-4 py-2 text-center">المبلغ</th>
+              <th className="px-4 py-2 text-center">تاريخ الإصدار</th>
+              <th className="px-4 py-2 text-center">تاريخ الاستحقاق</th>
+              <th className="px-4 py-2 text-center">الحالة</th>
               <th className="px-4 py-2 text-right">إجراءات</th>
             </tr>
           </thead>
@@ -526,8 +526,8 @@ const AdminInvoices: React.FC = () => {
               const user = userMap[inv.userId];
               return (
                 <tr key={inv._id} className="border-t border-gray-200 dark:border-gray-700">
-                  <td className="px-4 py-2 font-medium">{inv.invoiceNumber}</td>
-                  <td className="px-4 py-2 text-sm">
+                  <td className="px-4 py-2 font-medium text-center">{inv.invoiceNumber}</td>
+                  <td className="px-4 py-2 text-sm text-center">
                     {user ? (
                       <div>
                         <div className="font-medium text-gray-900 dark:text-white">{user.name}</div>
@@ -542,10 +542,10 @@ const AdminInvoices: React.FC = () => {
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-2">ج.م{fmt(inv.amount)}</td>
-                  <td className="px-4 py-2 text-sm">{String(inv.issueDate).slice(0, 10)}</td>
-                  <td className="px-4 py-2 text-sm">{inv.dueDate ? String(inv.dueDate).slice(0, 10) : '-'}</td>
-                <td className="px-4 py-2">
+                  <td className="px-4 py-2 text-center">ج.م{fmt(inv.amount)}</td>
+                  <td className="px-4 py-2 text-sm text-center">{String(inv.issueDate).slice(0, 10)}</td>
+                  <td className="px-4 py-2 text-sm text-center">{inv.dueDate ? String(inv.dueDate).slice(0, 10) : '-'}</td>
+                <td className="px-4 py-2 text-center">
                   <span
                     className={
                       inv.status === "paid"
