@@ -333,22 +333,28 @@ export const API_ENDPOINTS = {
   // Financial
   financial: {
     expenses: {
-      list: '/expenses',
-      create: '/expenses',
-      update: (id: string) => `/expenses/${id}`,
-      delete: (id: string) => `/expenses/${id}`
+      list: '/finance/expenses',
+      create: '/finance/expenses',
+      update: (id: string) => `/finance/expenses/${id}`,
+      delete: (id: string) => `/finance/expenses/${id}`,
+      get: (id: string) => `/finance/expenses/${id}`,
+      summary: '/finance/expenses/summary'
     },
     revenue: {
-      list: '/revenue',
-      create: '/revenue',
-      update: (id: string) => `/revenue/${id}`,
-      delete: (id: string) => `/revenue/${id}`
+      list: '/finance/revenues',
+      create: '/finance/revenues',
+      update: (id: string) => `/finance/revenues/${id}`,
+      delete: (id: string) => `/finance/revenues/${id}`,
+      get: (id: string) => `/finance/revenues/${id}`,
+      summary: '/finance/revenues/summary' 
     },
     payroll: {
-      list: '/payroll',
-      create: '/payroll',
-      update: (id: string) => `/payroll/${id}`,
-      delete: (id: string) => `/payroll/${id}`
+      list: '/finance/payrolls',
+      create: '/finance/payrolls',
+      update: (id: string) => `/finance/payrolls/${id}`,
+      delete: (id: string) => `/finance/payrolls/${id}`,
+      get: (id: string) => `/finance/payrolls/${id}`,
+      summary: '/finance/payrolls/summary'
     },
     invoices: {
       list: '/finance/invoices',

@@ -325,9 +325,9 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
                     {plan.planName}
                   </h4>
                 </div>
-                <p className="text-xs text-gray-500 mb-1">اسم المستخدم: {userNameMap[plan.userId] || '...'}</p>
+                <p className="text-xs text-gray-500 mb-1">👤 اسم المستخدم: {userNameMap[plan.userId] || '...'}</p>
                 { (plan as any).trainerId && (
-                  <p className="text-xs text-gray-500 mb-2">اسم المدرب: {userNameMap[(plan as any).trainerId as any] || '...'}</p>
+                  <p className="text-xs text-gray-500 mb-2">🧑‍🏫 اسم المدرب: {userNameMap[(plan as any).trainerId as any] || '...'}</p>
                 )}
                 {plan.description && (
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{plan.description}</p>
@@ -335,13 +335,13 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('AdminPlansOverview.labels.exercises')}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">🏋️ {t('AdminPlansOverview.labels.exercises')}</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {plan.exercises?.length || 0} {t('AdminPlansOverview.exerciseUnit')}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('AdminPlansOverview.labels.duration')}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">⏳ {t('AdminPlansOverview.labels.duration')}</span>
                     <span className="text-sm font-medium text-white dark:text_white">
                       {new Date(plan.startDate).toLocaleDateString()} - {new Date(plan.endDate).toLocaleDateString()}
                     </span>
@@ -382,20 +382,20 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
                       <button className="bg-red-600 text-white px-3 py-1 rounded text-xs" onClick={() => setShowDeleteDietModal(plan._id)}>حذف</button>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 mb-1">اسم المستخدم: {userNameMap[(plan as any).userId] || '...'}</p>
+                  <p className="text-xs text-gray-500 mb-1">👤 اسم المستخدم: {userNameMap[(plan as any).userId] || '...'}</p>
                   {(plan as any).trainerId && (
-                    <p className="text-xs text-gray-500 mb-2">اسم المدرب: {userNameMap[(plan as any).trainerId] || '...'}</p>
+                    <p className="text-xs text-gray-500 mb-2">🧑‍🏫 اسم المدرب: {userNameMap[(plan as any).trainerId] || '...'}</p>
                   )}
                   {plan.description && (
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{plan.description}</p>
                   )}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">الفترة:</span>
+                      <span className="text-gray-600 dark:text-gray-400">📅 الفترة:</span>
                       <span className="text-gray-900 dark:text-white">{new Date(plan.startDate).toLocaleDateString()} {plan.endDate ? `- ${new Date(plan.endDate).toLocaleDateString()}` : ''}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">عدد الوجبات:</span>
+                      <span className="text-gray-600 dark:text-gray-400">🍽️ عدد الوجبات:</span>
                       <span className="text-gray-900 dark:text-white">{plan.meals?.length || 0} وجبة</span>
                     </div>
                   </div>

@@ -6,6 +6,13 @@ import { validateCreatePayroll, validateListPayroll } from "../validators/payrol
 
 const router = express.Router();
 
+// منع الكاش لكل مسارات الرواتب
+router.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('ETag', Date.now().toString());
+  next();
+});
+
 router.post('/', authenticate, authorizeAdmin, validateCreatePayroll, createPayroll);
 router.get('/', authenticate, authorizeAdmin, validateListPayroll, getPayrolls);
 router.get('/summary', authenticate, authorizeAdmin, async (req, res) => {

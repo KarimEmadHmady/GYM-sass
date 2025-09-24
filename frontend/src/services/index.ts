@@ -11,6 +11,9 @@ export { PurchaseService } from './purchaseService';
 export { MessageService } from './messageService';
 export { SessionScheduleService } from './sessionScheduleService';
 export { InvoiceService } from './invoiceService';
+export { ExpenseService } from './expenseService';
+export { RevenueService } from './revenueService';
+export { PayrollService } from './payrollService';
 
 // Import classes for instantiation
 import { UserService } from './userService';
@@ -22,6 +25,9 @@ import { PurchaseService } from './purchaseService';
 import { MessageService } from './messageService';
 import { SessionScheduleService } from './sessionScheduleService';
 import { InvoiceService } from './invoiceService';
+import { ExpenseService } from './expenseService';
+import { RevenueService } from './revenueService';
+import { PayrollService } from './payrollService';
 
 // Service instances for easy access
 export const userService = new UserService();
@@ -33,3 +39,6 @@ export const purchaseService = new PurchaseService();
 export const messageService = new MessageService();
 export const sessionScheduleService = new SessionScheduleService();
 export const invoiceService = new InvoiceService();
+export const expenseService = new ExpenseService();
+export const revenueService = new RevenueService();
+export const payrollService = new PayrollService();

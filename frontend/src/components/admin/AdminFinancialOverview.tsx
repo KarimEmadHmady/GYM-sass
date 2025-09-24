@@ -1,9 +1,11 @@
 
-'use client';
+ 'use client';
 
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
+import { RevenueService } from '@/services/revenueService';
+import { ExpenseService } from '@/services/expenseService';
 
 const AdminFinancialOverview = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -14,6 +16,65 @@ const AdminFinancialOverview = () => {
     expenses: { monthly: 12345, weekly: 3086, daily: 441, growth: 5.2 },
     profit: { monthly: 33333, weekly: 8333, daily: 1190, growth: 12.3 },
   };
+  const [metrics, setMetrics] = useState({
+    revenue: { monthly: 0, growth: 0 },
+    expenses: { monthly: 0, growth: 0 },
+    profit: { monthly: 0, growth: 0 },
+  });
+
+  React.useEffect(() => {
+    const revenueService = new RevenueService();
+    const expenseService = new ExpenseService();
+
+    const startOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1);
+    const endOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+    const toISODate = (d: Date) => d.toISOString().split('T')[0];
+
+    const now = new Date();
+    const currentStart = startOfMonth(now);
+    const currentEnd = endOfMonth(now);
+    const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevStart = startOfMonth(prev);
+    const prevEnd = endOfMonth(prev);
+
+    const from = toISODate(prevStart);
+    const to = toISODate(currentEnd);
+
+    Promise.all([
+      revenueService.summary({ from, to, sort: 'asc' }),
+      expenseService.summary({ from, to, sort: 'asc' }),
+    ])
+      .then(([revSummary, expSummary]) => {
+        const findMonth = (arr: any[], y: number, m: number, key: 'revenue' | 'expense') => {
+          const item = arr.find((i) => i.year === y && i.month === m);
+          return item ? item[key] : 0;
+        };
+
+        const yCur = now.getFullYear();
+        const mCur = now.getMonth() + 1;
+        const yPrev = prev.getFullYear();
+        const mPrev = prev.getMonth() + 1;
+
+        const revenueCurrent = findMonth(revSummary.monthly || [], yCur, mCur, 'revenue');
+        const revenuePrev = findMonth(revSummary.monthly || [], yPrev, mPrev, 'revenue');
+        const expenseCurrent = findMonth(expSummary.monthly || [], yCur, mCur, 'expense');
+        const expensePrev = findMonth(expSummary.monthly || [], yPrev, mPrev, 'expense');
+
+        const profitCurrent = revenueCurrent - expenseCurrent;
+        const profitPrev = revenuePrev - expensePrev;
+
+        const growth = (curr: number, prevVal: number) => (prevVal > 0 ? ((curr - prevVal) / prevVal) * 100 : 0);
+
+        setMetrics({
+          revenue: { monthly: revenueCurrent, growth: growth(revenueCurrent, revenuePrev) },
+          expenses: { monthly: expenseCurrent, growth: growth(expenseCurrent, expensePrev) },
+          profit: { monthly: profitCurrent, growth: growth(profitCurrent, profitPrev) },
+        });
+      })
+      .catch(() => {
+        // leave zeros on error
+      });
+  }, []);
   const recentTransactions = [
     {
       id: 1,
@@ -57,6 +118,27 @@ const AdminFinancialOverview = () => {
     },
   ];
   
+  const summaryData = {
+    invoices: {
+      totalCount: 125,
+      dueCount: 12,
+      totalAmount: 27890,
+    },
+    payroll: {
+      employeesCount: 24,
+      monthAmount: 56000,
+      lastRun: '2024-01-25',
+    },
+    revenue: {
+      thisMonth: financialData.revenue.monthly,
+      growth: financialData.revenue.growth,
+    },
+    expenses: {
+      thisMonth: financialData.expenses.monthly,
+      growth: financialData.expenses.growth,
+    },
+  };
+
 
   const getTransactionIcon = (type: string) => {
     return type === 'revenue' ? '💰' : '💸';
@@ -77,16 +159,9 @@ const AdminFinancialOverview = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                {t('AdminFinancialOverview.monthlyRevenue')}
-              </p>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                ج.م{financialData.revenue.monthly.toLocaleString()}
-              </p>
-              <p className="text-sm text-green-600 dark:text-green-400">
-                +{financialData.revenue.growth}%{' '}
-                {t('AdminFinancialOverview.fromLastMonth')}
-              </p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">الإيرادات الشهرية</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">ج.م{metrics.revenue.monthly.toLocaleString()}</p>
+              <p className="text-sm text-green-600 dark:text-green-400">{metrics.revenue.growth >= 0 ? '+' : ''}{metrics.revenue.growth.toFixed(1)}% من الشهر الماضي</p>
             </div>
             <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center text-white text-xl">
               💰
@@ -97,16 +172,9 @@ const AdminFinancialOverview = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                {t('AdminFinancialOverview.monthlyExpenses')}
-              </p>
-              <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                ج.م{financialData.expenses.monthly.toLocaleString()}
-              </p>
-              <p className="text-sm text-red-600 dark:text-red-400">
-                +{financialData.expenses.growth}%{' '}
-                {t('AdminFinancialOverview.fromLastMonth')}
-              </p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المصروفات الشهرية</p>
+              <p className="text-2xl font-bold text-red-600 dark:text-red-400">ج.م{metrics.expenses.monthly.toLocaleString()}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">{metrics.expenses.growth >= 0 ? '+' : ''}{metrics.expenses.growth.toFixed(1)}% من الشهر الماضي</p>
             </div>
             <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center text-white text-xl">
               💸
@@ -117,16 +185,9 @@ const AdminFinancialOverview = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                {t('AdminFinancialOverview.netProfit')}
-              </p>
-              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                ج.م{financialData.profit.monthly.toLocaleString()}
-              </p>
-              <p className="text-sm text-blue-600 dark:text-blue-400">
-                +{financialData.profit.growth}%{' '}
-                {t('AdminFinancialOverview.fromLastMonth')}
-              </p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">صافي الربح الشهري</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">ج.م{metrics.profit.monthly.toLocaleString()}</p>
+              <p className="text-sm text-blue-600 dark:text-blue-400">{metrics.profit.growth >= 0 ? '+' : ''}{metrics.profit.growth.toFixed(1)}% من الشهر الماضي</p>
             </div>
             <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-xl">
               📈
@@ -142,23 +203,38 @@ const AdminFinancialOverview = () => {
             {[
               {
                 id: 'overview',
-                name: t('AdminFinancialOverview.tabs.overview'),
+                name: 'نظرة عامة',
                 icon: '📊',
               },
               {
                 id: 'transactions',
-                name: t('AdminFinancialOverview.tabs.transactions'),
+                name: 'المعاملات',
                 icon: '💳',
               },
               {
                 id: 'reports',
-                name: t('AdminFinancialOverview.tabs.reports'),
+                name: 'التقارير',
                 icon: '📈',
               },
               {
                 id: 'invoices',
-                name: 'Invoices',
+                name: 'الفواتير',
                 icon: '🧾',
+              },
+              {
+                id: 'payroll',
+                name: 'الرواتب',
+                icon: '🧑\u200d💼',
+              },
+              {
+                id: 'revenue',
+                name: 'الإيرادات',
+                icon: '💹',
+              },
+              {
+                id: 'expenses',
+                name: 'المصروفات',
+                icon: '💸',
               },
             ].map((tab) => (
               <button
@@ -183,6 +259,76 @@ const AdminFinancialOverview = () => {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {t('AdminFinancialOverview.overviewTitle')}
               </h3>
+
+              {/* Quick Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">🧾 الفواتير</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        ج.م{summaryData.invoices.totalAmount.toLocaleString()}
+                      </p>
+                      <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        <p>إجمالي: {summaryData.invoices.totalCount}</p>
+                        <p>المستحقة: {summaryData.invoices.dueCount}</p>
+                      </div>
+                    </div>
+                    <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center text-white text-xl">
+                      🧾
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">🧑‍💼 الرواتب</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        ج.م{summaryData.payroll.monthAmount.toLocaleString()}
+                      </p>
+                      <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        <p>عدد الموظفين: {summaryData.payroll.employeesCount}</p>
+                        <p>آخر تشغيل: {summaryData.payroll.lastRun}</p>
+                      </div>
+                    </div>
+                    <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg flex items-center justify-center text-white text-xl">
+                      🧑‍💼
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">💹 الإيرادات</p>
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                        ج.م{summaryData.revenue.thisMonth.toLocaleString()}
+                      </p>
+                      <p className="mt-2 text-sm text-green-600 dark:text-green-400">+{summaryData.revenue.growth}% هذا الشهر</p>
+                    </div>
+                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center text-white text-xl">
+                      💹
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">💸 المصروفات</p>
+                      <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+                        ج.م{summaryData.expenses.thisMonth.toLocaleString()}
+                      </p>
+                      <p className="mt-2 text-sm text-red-600 dark:text-red-400">+{summaryData.expenses.growth}% هذا الشهر</p>
+                    </div>
+                    <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center text-white text-xl">
+                      💸
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <h4 className="font-medium text-gray-900 dark:text-white">
@@ -340,6 +486,33 @@ const AdminFinancialOverview = () => {
               {(() => {
                 const AdminInvoices = dynamic(() => import('./AdminInvoices'), { ssr: false });
                 return <AdminInvoices />;
+              })()}
+            </div>
+          )}
+
+          {activeTab === 'payroll' && (
+            <div className="space-y-4">
+              {(() => {
+                const AdminPayroll = dynamic(() => import('./AdminPayroll'), { ssr: false });
+                return <AdminPayroll />;
+              })()}
+            </div>
+          )}
+
+          {activeTab === 'revenue' && (
+            <div className="space-y-4">
+              {(() => {
+                const AdminRevenue = dynamic(() => import('./AdminRevenue'), { ssr: false });
+                return <AdminRevenue />;
+              })()}
+            </div>
+          )}
+
+          {activeTab === 'expenses' && (
+            <div className="space-y-4">
+              {(() => {
+                const AdminExpenses = dynamic(() => import('./AdminExpenses'), { ssr: false });
+                return <AdminExpenses />;
               })()}
             </div>
           )}

@@ -673,27 +673,27 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
               />
             )}
           </div>
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">بيانات المستخدم</h4>
+          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">👤 بيانات المستخدم</h4>
           {props.viewLoading ? (
             <div className="text-center py-8">جاري التحميل...</div>
           ) : props.viewUser && !props.viewUser.error ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               {/* User IDs */}
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">معرّف المستخدم (ID)</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🆔 معرّف المستخدم (ID)</span>
                 <span className="text-gray-900 dark:text-white break-all">{props.viewUser._id}</span>
               </div>
 
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">الاسم</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">👤 الاسم</span>
                 <span className="text-gray-900 dark:text-white break-all">{props.viewUser.name}</span>
               </div>
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">البريد الإلكتروني</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">✉️ البريد الإلكتروني</span>
                 <span className="text-gray-900 dark:text-white break-all">{props.viewUser.email}</span>
               </div>
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">الدور</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🏷️ الدور</span>
                 <span className="text-gray-900 dark:text-white">{
                   props.viewUser.role === 'admin' ? 'إدارة' :
                   props.viewUser.role === 'manager' ? 'مدير' :
@@ -702,15 +702,15 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
                 }</span>
               </div>
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">رقم الهاتف</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">📞 رقم الهاتف</span>
                 <span className="text-gray-900 dark:text-white">{props.viewUser.phone || '-'}</span>
               </div>
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">الرصيد</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">💰 الرصيد</span>
                 <span className="text-gray-900 dark:text-white">{props.viewUser.balance ?? 0}</span>
               </div>
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">الحالة</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🔖 الحالة</span>
                 <span className="text-gray-900 dark:text-white">{
                   props.viewUser.status === 'active' ? 'نشط' :
                   props.viewUser.status === 'inactive' ? 'غير نشط' :
@@ -720,37 +720,37 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
               {/* بيانات إضافية مطلوبة */}
               {props.viewUser.passwordHash && (
                 <div className="flex flex-col border-b pb-2">
-                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">Password Hash</span>
+                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🔒 Password Hash</span>
                   <span className="text-gray-900 dark:text-white break-all">{props.viewUser.passwordHash}</span>
                 </div>
               )}
               {props.viewUser.emailVerificationToken && (
                 <div className="flex flex-col border-b pb-2">
-                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">توكن تأكيد البريد</span>
+                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">✅ توكن تأكيد البريد</span>
                   <span className="text-gray-900 dark:text-white break-all">{props.viewUser.emailVerificationToken}</span>
                 </div>
               )}
               {typeof props.viewUser.failedLoginAttempts === 'number' && (
                 <div className="flex flex-col border-b pb-2">
-                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">محاولات الدخول الفاشلة</span>
+                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🚫 محاولات الدخول الفاشلة</span>
                   <span className="text-gray-900 dark:text-white">{props.viewUser.failedLoginAttempts}</span>
                 </div>
               )}
               {props.viewUser.lockUntil && (
                 <div className="flex flex-col border-b pb-2">
-                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">تاريخ القفل</span>
+                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🔒 تاريخ القفل</span>
                   <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.lockUntil)}</span>
                 </div>
               )}
               {typeof props.viewUser.isDeleted === 'boolean' && (
                 <div className="flex flex-col border-b pb-2">
-                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">محذوف؟</span>
+                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🗑️ محذوف؟</span>
                   <span className="text-gray-900 dark:text-white">{props.viewUser.isDeleted ? '✔️' : '❌'}</span>
                 </div>
               )}
               {/* العضوية */}
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">مستوى العضوية</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🏆 مستوى العضوية</span>
                 <span className="text-gray-900 dark:text-white">{
                   props.viewUser.membershipLevel === 'basic' ? 'عادي' :
                   props.viewUser.membershipLevel === 'silver' ? 'فضي' :
@@ -759,12 +759,12 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
                 }</span>
               </div>
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">نقاط الولاء</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">⭐ نقاط الولاء</span>
                 <span className="text-gray-900 dark:text-white">{props.viewUser.loyaltyPoints ?? 0}</span>
               </div>
               {/* الأهداف */}
               <div className="flex flex-col border-b pb-2 col-span-1 md:col-span-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">الأهداف</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🎯 الأهداف</span>
                 <div className="flex gap-6 flex-wrap">
                   <span className="flex items-center gap-1">
                     {props.viewUser.goals?.weightLoss ? '✔️' : '❌'} فقدان الوزن
@@ -779,29 +779,29 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
               </div>
               {/* بيانات الاشتراك */}
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">تاريخ بداية الاشتراك</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">📅 تاريخ بداية الاشتراك</span>
                 <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.subscriptionStartDate)}</span>
               </div>
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">تاريخ نهاية الاشتراك</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">📅 تاريخ نهاية الاشتراك</span>
                 <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.subscriptionEndDate)}</span>
               </div>
               {props.viewUser.subscriptionRenewalReminderSent && (
                 <div className="flex flex-col border-b pb-2">
-                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">تذكير التجديد</span>
+                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🔔 تذكير التجديد</span>
                   <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.subscriptionRenewalReminderSent)}</span>
                 </div>
               )}
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">تاريخ آخر دفع</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">💳 تاريخ آخر دفع</span>
                 <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.lastPaymentDate)}</span>
               </div>
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">تاريخ استحقاق الدفع القادم</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">📆 تاريخ استحقاق الدفع القادم</span>
                 <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.nextPaymentDueDate)}</span>
               </div>
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">معرّف المدرب (Trainer ID)</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🧑‍🏫 معرّف المدرب (Trainer ID)</span>
                 <span className="text-gray-900 dark:text-white break-all">{
                   typeof props.viewUser.trainerId === 'object' && props.viewUser.trainerId !== null ? (props.viewUser.trainerId._id || '-') : (props.viewUser.trainerId || '-')
                 }</span>
@@ -809,32 +809,32 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
               {/* بيانات المستخدم - تظهر فقط إن وجدت */}
               {(props.viewUser.heightCm !== undefined || props.viewUser.baselineWeightKg !== undefined || props.viewUser.targetWeightKg !== undefined || props.viewUser.activityLevel || props.viewUser.healthNotes || props.viewUser.metadata?.heightCm !== undefined) && (
                 <div className="flex flex-col border-b pb-2 col-span-1 md:col-span-2">
-                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-2">بيانات المستخدم</span>
+                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-2">🗂️ بيانات المستخدم</span>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                     {(() => {
                       const height = props.viewUser.heightCm ?? props.viewUser.metadata?.heightCm;
                       return (height !== undefined && height !== null && height !== '') ? (
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-600 dark:text-gray-400">الطول (سم)</span>
+                          <span className="text-gray-600 dark:text-gray-400">📏 الطول (سم)</span>
                           <span className="text-gray-900 dark:text-white">{height}</span>
                         </div>
                       ) : null;
                     })()}
                     {(props.viewUser.baselineWeightKg !== undefined && props.viewUser.baselineWeightKg !== null && props.viewUser.baselineWeightKg !== '') && (
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">الوزن الابتدائي (كجم)</span>
+                        <span className="text-gray-600 dark:text-gray-400">⚖️ الوزن الابتدائي (كجم)</span>
                         <span className="text-gray-900 dark:text-white">{props.viewUser.baselineWeightKg}</span>
                       </div>
                     )}
                     {(props.viewUser.targetWeightKg !== undefined && props.viewUser.targetWeightKg !== null && props.viewUser.targetWeightKg !== '') && (
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">الوزن المستهدف (كجم)</span>
+                        <span className="text-gray-600 dark:text-gray-400">🎯 الوزن المستهدف (كجم)</span>
                         <span className="text-gray-900 dark:text-white">{props.viewUser.targetWeightKg}</span>
                       </div>
                     )}
                     {props.viewUser.activityLevel && (
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">مستوى النشاط</span>
+                        <span className="text-gray-600 dark:text-gray-400">⚡ مستوى النشاط</span>
                         <span className="text-gray-900 dark:text-white">
                           {props.viewUser.activityLevel === 'sedentary' ? 'قليل الحركة' :
                            props.viewUser.activityLevel === 'light' ? 'نشاط خفيف' :
@@ -846,7 +846,7 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
                     )}
                     {props.viewUser.healthNotes && (
                       <div className="md:col-span-2 flex items-start justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">ملاحظات صحية</span>
+                        <span className="text-gray-600 dark:text-gray-400">📝 ملاحظات صحية</span>
                         <span className="text-gray-900 dark:text-white ml-2">{props.viewUser.healthNotes}</span>
                       </div>
                     )}
@@ -856,29 +856,29 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
               {/* metadata */}
               {(props.viewUser.metadata && (props.viewUser.metadata.emergencyContact || props.viewUser.metadata.notes || props.viewUser.metadata.lastLogin || props.viewUser.metadata.ipAddress)) && (
                 <div className="flex flex-col border-b pb-2 col-span-1 md:col-span-2">
-                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-2">بيانات إضافية</span>
+                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-2">📎 بيانات إضافية</span>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                     {props.viewUser.metadata.emergencyContact && (
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">رقم طوارئ</span>
+                        <span className="text-gray-600 dark:text-gray-400">🚑 رقم طوارئ</span>
                         <span className="text-gray-900 dark:text-white">{props.viewUser.metadata.emergencyContact}</span>
                       </div>
                     )}
                     {props.viewUser.metadata.notes && (
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">ملاحظات</span>
+                        <span className="text-gray-600 dark:text-gray-400">📝 ملاحظات</span>
                         <span className="text-gray-900 dark:text-white">{props.viewUser.metadata.notes}</span>
                       </div>
                     )}
                     {props.viewUser.metadata.lastLogin && (
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">آخر دخول</span>
+                        <span className="text-gray-600 dark:text-gray-400">🕓 آخر دخول</span>
                         <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.metadata.lastLogin)}</span>
                       </div>
                     )}
                     {props.viewUser.metadata.ipAddress && (
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-600 dark:text-gray-400">IP Address</span>
+                        <span className="text-gray-600 dark:text-gray-400">🌐 IP Address</span>
                         <span className="text-gray-900 dark:text-white">{props.viewUser.metadata.ipAddress}</span>
                       </div>
                     )}
@@ -887,11 +887,11 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
               )}
               {/* createdAt, updatedAt */}
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">تاريخ الإنشاء</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🗓️ تاريخ الإنشاء</span>
                 <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.createdAt)}</span>
               </div>
               <div className="flex flex-col border-b pb-2">
-                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">تاريخ التعديل</span>
+                <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🗓️ تاريخ التعديل</span>
                 <span className="text-gray-900 dark:text-white">{formatDateTime(props.viewUser.updatedAt)}</span>
               </div>
             </div>

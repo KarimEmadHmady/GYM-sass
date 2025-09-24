@@ -23,6 +23,9 @@ import ManagerSettings from '@/components/manager/ManagerSettings';
 import TrainersDirectory from '@/components/shared/TrainersDirectory';
 import ManagerFeedback from '@/components/manager/ManagerFeedback';
 import AdminSessionsOverview from '@/components/admin/AdminSessionsOverview';
+import dynamic from 'next/dynamic';
+const ManagerAddExpense = dynamic(() => import('@/components/manager/ManagerAddExpense'), { ssr: false });
+const ManagerAddRevenue = dynamic(() => import('@/components/manager/ManagerAddRevenue'), { ssr: false });
 
 const ManagerDashboard = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -83,7 +86,9 @@ const ManagerDashboard = () => {
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
     { id: 'loyalty', name: 'نقاط الولاء', icon: '🎯' },
     { id: 'search', name: 'بحث', icon: '🔎' },
-    { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' }
+    { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' },
+    { id: 'add-expense', name: 'إضافة مصروف', icon: '💸' },
+    { id: 'add-revenue', name: 'إضافة دخل', icon: '💰' }
   ];
 
   // زر تبديل اللغة
@@ -272,6 +277,18 @@ const ManagerDashboard = () => {
         {activeTab === 'settings' && (
           <div className="space-y-8">
             <ManagerSettings />
+          </div>
+        )}
+
+        {activeTab === 'add-expense' && (
+          <div className="space-y-8">
+            <ManagerAddExpense />
+          </div>
+        )}
+
+        {activeTab === 'add-revenue' && (
+          <div className="space-y-8">
+            <ManagerAddRevenue />
           </div>
         )}
       </div>
