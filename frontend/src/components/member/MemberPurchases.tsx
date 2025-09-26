@@ -44,7 +44,7 @@ const MemberPurchases = () => {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">مشترياتي</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">عرض مشترياتك فقط</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">عرض مشتريات الخاصة بى </p>
           </div>
           <div className="flex items-center gap-2">
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="ابحث بالعنصر/السعر" className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm" />

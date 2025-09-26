@@ -21,7 +21,6 @@ import MemberPurchases from '@/components/member/MemberPurchases';
 import MemberTrainer from '@/components/member/MemberTrainer';
 import MemberMessages from '@/components/member/MemberMessages';
 import MemberSettings from '@/components/member/MemberSettings';
-import ManagerFeedback from '@/components/manager/ManagerFeedback';
 import MemberFeedback from '@/components/member/MemberFeedback';
 
 const MemberProfile = () => {
@@ -81,7 +80,6 @@ const MemberProfile = () => {
     { id: 'progress', name: t('Tabs.progress'), icon: '📈' },
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
     { id: 'loyalty', name: t('Tabs.loyalty'), icon: '⭐' },
-    { id: 'rewards', name: 'الجوائز', icon: '🏆' },
     { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' }
   ];
 
@@ -249,14 +247,6 @@ const MemberProfile = () => {
           </div>
         )}
 
-        {activeTab === 'rewards' && (
-          <div className="space-y-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">الجوائز</h3>
-              <p className="text-gray-500 dark:text-gray-400">جوائزك ومكافآتك ستظهر هنا.</p>
-            </div>
-          </div>
-        )}
 
         {activeTab === 'settings' && (
           <div className="space-y-8">

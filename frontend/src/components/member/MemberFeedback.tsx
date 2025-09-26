@@ -189,9 +189,9 @@ const MemberFeedback = () => {
       )}
       {/* Modal */}
       {showModal && trainer && selectedFeedback && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-40">
           <div className="bg-gradient-to-br from-yellow-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-2xl shadow-2xl p-8 w-full max-w-lg relative border border-yellow-200 dark:border-gray-700">
-            <button onClick={() => setShowModal(false)} className="absolute left-4 top-4 bg-white dark:bg-gray-800 rounded-full shadow p-1 hover:bg-red-100 dark:hover:bg-red-900 transition-colors"><X size={22} className="text-gray-400 hover:text-red-500" /></button>
+            <button onClick={() => setShowModal(false)} className="absolute right-4 top-4 bg-white dark:bg-gray-800 rounded-full shadow p-1 hover:bg-red-100 dark:hover:bg-red-900 transition-colors"><X size={22} className="text-gray-400 hover:text-red-500" /></button>
             <div className="flex items-center gap-2 mb-6">
               <Star size={28} className="text-yellow-400 fill-yellow-400 drop-shadow" />
               <h4 className="text-2xl font-bold text-gray-900 dark:text-white">تفاصيل التقييم</h4>
@@ -229,9 +229,9 @@ const MemberFeedback = () => {
       )}
       {/* Modal for add feedback remains as is */}
       {showModal && !selectedFeedback && trainer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-40">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md relative">
-            <button onClick={() => setShowModal(false)} className="absolute left-3 top-3 text-gray-400 hover:text-red-500"><X size={22} /></button>
+            <button onClick={() => setShowModal(false)} className="absolute right-3 top-3 text-gray-400 hover:text-red-500"><X size={22} /></button>
             <h4 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">إرسال تقييم للمدرب: {trainer?.name}</h4>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>

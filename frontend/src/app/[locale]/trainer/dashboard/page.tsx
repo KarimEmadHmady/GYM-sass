@@ -16,10 +16,10 @@ import TrainerProgressOverview from '@/components/trainer/TrainerProgressOvervie
 import TrainerProfile from '@/components/trainer/TrainerProfile';
 import TrainerAttendance from '@/components/trainer/TrainerAttendance';
 import TrainerClientSessions from '@/components/trainer/TrainerClientSessions';
-import TrainerClientDetail from '@/components/trainer/TrainerClientDetail';
 import TrainerFeedback from '@/components/trainer/TrainerFeedback';
 import TrainerMessages from '@/components/trainer/TrainerMessages';
 import TrainerLoyaltyPoints from '@/components/trainer/TrainerLoyaltyPoints';
+import TrainerScheduledList from '@/components/trainer/TrainerScheduledList';
 
 const TrainerDashboard = () => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
@@ -70,10 +70,8 @@ const TrainerDashboard = () => {
     { id: 'clients', name: t('Tabs.clients'), icon: '👥' },
     { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
     { id: 'progress', name: t('Tabs.progress'), icon: '📈' },
-
     { id: 'attendance', name: 'حضوري', icon: '📝' },
     { id: 'clientSessions', name: 'حصص العملاء', icon: '📅' },
-    { id: 'clientDetail', name: 'تفاصيل عميل', icon: '📄' },
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
     { id: 'messages', name: 'الرسائل', icon: '✉️' },
     { id: 'loyalty', name: 'نقاط الولاء', icon: '🎁' },
@@ -217,11 +215,7 @@ const TrainerDashboard = () => {
           </div>
         )}
 
-        {activeTab === 'clientDetail' && (
-          <div className="space-y-8">
-            <TrainerClientDetail />
-          </div>
-        )}
+
 
         {activeTab === 'feedback' && (
           <div className="space-y-8">
@@ -243,14 +237,7 @@ const TrainerDashboard = () => {
 
         {activeTab === 'schedule' && (
           <div className="space-y-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                جدولي الزمني
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                صفحة الجدول الزمني قيد التطوير...
-              </p>
-            </div>
+            <TrainerScheduledList />
           </div>
         )}
       </div>

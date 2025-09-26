@@ -73,19 +73,19 @@ const TrainerProgressOverview = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-300">الاسم</th>
-                <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-300">البريد الإلكتروني</th>
-                <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-300">رقم الهاتف</th>
-                <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-300">سجلات التقدم</th>
+                <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-300 text-center">الاسم</th>
+                <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-300 text-center">البريد الإلكتروني</th>
+                <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-300 text-center">رقم الهاتف</th>
+                <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-300 text-center">سجلات التقدم</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {clients.map((client) => (
                 <tr key={client._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-3 py-2 text-sm">{client.name}</td>
-                  <td className="px-3 py-2 text-sm">{client.email}</td>
-                  <td className="px-3 py-2 text-sm">{client.phone || '-'}</td>
-                  <td className="px-3 py-2 text-sm">
+                  <td className="px-3 py-2 text-sm text-center">{client.name}</td>
+                  <td className="px-3 py-2 text-sm text-center">{client.email}</td>
+                  <td className="px-3 py-2 text-sm text-center">{client.phone || '-'}</td>
+                  <td className="px-3 py-2 text-sm text-center">
                     <button
                       className="text-blue-600 hover:underline"
                       onClick={async () => {

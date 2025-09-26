@@ -27,7 +27,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   useEffect(() => {
     if (isLoading) return; // Still loading, wait
 
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.push('/login');
       return;
     }
@@ -57,7 +57,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Show nothing while redirecting
-  if (!isAuthenticated) {
+  if (!isLoading && !isAuthenticated) {
     return null;
   }
 

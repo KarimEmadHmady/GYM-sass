@@ -69,25 +69,25 @@ const TrainerFeedback = () => {
           <table className="min-w-full text-sm text-right">
             <thead>
               <tr className="bg-gray-100 dark:bg-gray-700">
-                <th className="py-2 px-3">المرسل</th>
-                <th className="py-2 px-3">التقييم</th>
-                <th className="py-2 px-3">التعليق</th>
-                <th className="py-2 px-3">التاريخ</th>
+                <th className="py-2 px-3 text-center">المرسل</th>
+                <th className="py-2 px-3 text-center">التقييم</th>
+                <th className="py-2 px-3 text-center">التعليق</th>
+                <th className="py-2 px-3 text-center">التاريخ</th>
               </tr>
             </thead>
             <tbody>
               {feedbacks.map(fb => (
                 <tr key={fb._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onClick={() => { setSelectedFeedback(fb); setShowModal(true); }}>
-                  <td className="py-2 px-3">{getUserName(fb.fromUserId)}</td>
-                  <td className="py-2 px-3">
+                  <td className="py-2 px-3 text-center">{getUserName(fb.fromUserId)}</td>
+                  <td className="py-2 px-3 text-center">
                     {[1,2,3,4,5].map(i => (
                       <Star key={i} size={18} className={
                         'inline-block mx-0.5 ' + (i <= fb.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300')
                       } fill={i <= fb.rating ? '#facc15' : 'none'} />
                     ))}
                   </td>
-                  <td className="py-2 px-3">{fb.comment || '-'}</td>
-                  <td className="py-2 px-3">{new Date(fb.date).toLocaleDateString()}</td>
+                  <td className="py-2 px-3 text-center">{fb.comment || '-'}</td>
+                  <td className="py-2 px-3 text-center">{new Date(fb.date).toLocaleDateString()}</td>
                 </tr>
               ))}
             </tbody>

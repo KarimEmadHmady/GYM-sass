@@ -109,10 +109,10 @@ const TrainerAttendance = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">التاريخ</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">الساعة</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">الحالة</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">ملاحظات</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">التاريخ</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">الساعة</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">الحالة</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">ملاحظات</th>
               </tr>
             </thead>
             <tbody>
@@ -122,10 +122,10 @@ const TrainerAttendance = () => {
                 const d = new Date(rec.date);
                 return (
                   <tr key={rec._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td className="px-4 py-2 whitespace-nowrap">{d.toLocaleDateString()}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.status === 'present' ? 'حاضر' : rec.status === 'absent' ? 'غائب' : 'بعذر'}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{rec.notes || '-'}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-center">{d.toLocaleDateString()}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-center">{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-center">{rec.status === 'present' ? 'حاضر' : rec.status === 'absent' ? 'غائب' : 'بعذر'}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-center">{rec.notes || '-'}</td>
                   </tr>
                 );
               })}
@@ -157,11 +157,11 @@ const TrainerAttendance = () => {
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead>
                 <tr>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">العميل</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">التاريخ</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">الساعة</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">الحالة</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">ملاحظات</th>
+                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">العميل</th>
+                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">التاريخ</th>
+                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">الساعة</th>
+                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">الحالة</th>
+                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">ملاحظات</th>
                 </tr>
               </thead>
               <tbody>
@@ -172,11 +172,11 @@ const TrainerAttendance = () => {
                   const cl = clients.find(c => c._id === rec.userId);
                   return (
                     <tr key={rec._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="px-4 py-2 whitespace-nowrap">{cl?.name || '-'}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{d.toLocaleDateString()}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{rec.status === 'present' ? 'حاضر' : rec.status === 'absent' ? 'غائب' : 'بعذر'}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{rec.notes || '-'}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-center">{cl?.name || '-'}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-center">{d.toLocaleDateString()}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-center">{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-center">{rec.status === 'present' ? 'حاضر' : rec.status === 'absent' ? 'غائب' : 'بعذر'}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-center">{rec.notes || '-'}</td>
                     </tr>
                   );
                 })}

@@ -23,7 +23,16 @@ const AdminPurchases = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<PurchaseDTO | null>(null);
-  const [form, setForm] = useState<{ itemName: string; price: string; date: string }>({ itemName: '', price: '', date: new Date().toISOString().slice(0,10) });
+  const formatForDateTimeLocal = (d: Date) => {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const year = d.getFullYear();
+    const month = pad(d.getMonth() + 1);
+    const day = pad(d.getDate());
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+  const [form, setForm] = useState<{ itemName: string; price: string; date: string }>({ itemName: '', price: '', date: formatForDateTimeLocal(new Date()) });
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -86,7 +95,7 @@ const AdminPurchases = () => {
             className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm"
           />
           {selectedUserId && (
-            <button onClick={()=>{ setEditing(null); setForm({ itemName: '', price: '', date: new Date().toISOString().slice(0,10) }); setModalOpen(true); }} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">إضافة مشتري</button>
+            <button onClick={()=>{ setEditing(null); setForm({ itemName: '', price: '', date: formatForDateTimeLocal(new Date()) }); setModalOpen(true); }} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">إضافة مشتري</button>
           )}
         </div>
       </div>
@@ -118,7 +127,7 @@ const AdminPurchases = () => {
                     <td className="px-4 py-2 whitespace-nowrap text-center">{d ? `${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}` : '-'}</td>
                     {canDeleteOrEdit && (
                       <td className="px-4 py-2 whitespace-nowrap flex gap-2">
-                        <button className="px-2 py-1 rounded bg-blue-200 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900 text-xs" onClick={()=>{ setEditing(p); const d = p.date ? new Date(p.date) : (p.createdAt ? new Date(p.createdAt) : new Date()); setForm({ itemName: p.itemName, price: String(p.price), date: d.toISOString().slice(0,10) }); setModalOpen(true); }}>تعديل</button>
+                        <button className="px-2 py-1 rounded bg-blue-200 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900 text-xs" onClick={()=>{ setEditing(p); const d = p.date ? new Date(p.date) : (p.createdAt ? new Date(p.createdAt) : new Date()); setForm({ itemName: p.itemName, price: String(p.price), date: formatForDateTimeLocal(d) }); setModalOpen(true); }}>تعديل</button>
                         <button className="px-2 py-1 rounded bg-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-900 text-xs disabled:opacity-50" onClick={()=>{ setConfirmId(p._id); setConfirmOpen(true); }} disabled={deletingId===p._id}>{deletingId===p._id?'جارٍ الحذف...':'حذف'}</button>
                       </td>
                     )}
@@ -147,8 +156,8 @@ const AdminPurchases = () => {
                 <input type="number" min={0} step="0.01" className="w-full border rounded p-2 bg-gray-800 text-white" value={form.price} onChange={e=>setForm(prev=>({ ...prev, price: e.target.value }))} required />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">التاريخ</label>
-                <input type="date" className="w-full border rounded p-2 bg-gray-800 text-white" value={form.date} onChange={e=>setForm(prev=>({ ...prev, date: e.target.value }))} />
+                <label className="block text-sm font-medium mb-1">التاريخ والوقت</label>
+                <input type="datetime-local" className="w-full border rounded p-2 bg-gray-800 text-white" value={form.date} onChange={e=>setForm(prev=>({ ...prev, date: e.target.value }))} />
               </div>
               <div className="flex justify-end gap-2">
                 <button type="button" className="px-4 py-2 rounded bg-gray-700 text-white hover:bg-gray-900" onClick={()=>setModalOpen(false)} disabled={saving}>إلغاء</button>

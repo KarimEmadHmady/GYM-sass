@@ -7,9 +7,12 @@ import type { TrainerClientApiResponse } from '@/types/users';
 import { apiRequest } from '@/lib/api';
 import { UserService } from '@/services/userService';
 import { ProgressService } from '@/services/progressService';
+import { useRouter, usePathname } from '@/i18n/navigation';
 
 const TrainerClientsOverview = () => {
   const { user } = useAuth();
+  const router = useRouter();
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '/trainer/dashboard';
   const currentTrainerId = useMemo(() => ((user as any)?._id ?? user?.id ?? ''), [user]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -271,7 +274,10 @@ const TrainerClientsOverview = () => {
               <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md text-sm hover:bg-blue-700 transition-colors" onClick={() => openViewClient(client._id)}>
                 عرض التفاصيل
               </button>
-              <button className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+              <button
+                className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                onClick={() => router.push('/trainer/dashboard?tab=messages')}
+              >
                 إرسال رسالة
               </button>
             </div>

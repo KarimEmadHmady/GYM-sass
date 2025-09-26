@@ -33,9 +33,8 @@ const MemberLoyaltyPoints = () => {
       const [pointsData, rewardsData, historyData] = await Promise.all([
         loyaltyService.getMyPoints(),
         loyaltyService.getRedeemableRewards(),
-        loyaltyService.getPointsHistory({ limit: 10 })
+        loyaltyService.getPointsHistory({ limit: 50 })
       ]);
-      
       
       setLoyaltyData(pointsData);
       setRewards(rewardsData.rewards || []);
@@ -108,7 +107,10 @@ const MemberLoyaltyPoints = () => {
   }
 
   const currentPoints = loyaltyData.user.loyaltyPoints;
-  const membershipInfo = getMembershipLevel(currentPoints);
+  const apiLevel = (loyaltyData.user as any).membershipLevel || undefined;
+  const membershipInfo = apiLevel
+    ? { level: apiLevel, nextLevel: apiLevel === 'Platinum' ? 'Diamond' : apiLevel === 'Gold' ? 'Platinum' : apiLevel === 'Silver' ? 'Gold' : 'Silver', pointsToNext: Math.max(0, (apiLevel === 'Platinum' ? 0 : getLevelThreshold((apiLevel === 'Gold' ? 'Platinum' : apiLevel === 'Silver' ? 'Gold' : 'Silver')) - currentPoints)) }
+    : getMembershipLevel(currentPoints);
 
   const getLevelColor = (level: string) => {
     const colors = {
@@ -130,7 +132,7 @@ const MemberLoyaltyPoints = () => {
       {/* Points Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
             <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg flex items-center justify-center text-white text-xl">
               ⭐
             </div>
@@ -142,19 +144,19 @@ const MemberLoyaltyPoints = () => {
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
             <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center text-white text-xl">
-              💰
+              💳
             </div>
             <div className="mr-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">النقاط المتاحة</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{currentPoints}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">عدد المعاملات</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{history.length}</p>
             </div>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-xl">
               🏆
             </div>
@@ -166,13 +168,13 @@ const MemberLoyaltyPoints = () => {
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
             <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xl">
-              🎯
+              🎁
             </div>
             <div className="mr-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">للوصول للمستوى التالي</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{membershipInfo.pointsToNext}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">المكافآت المتاحة</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{rewards.length}</p>
             </div>
           </div>
         </div>
@@ -214,9 +216,9 @@ const MemberLoyaltyPoints = () => {
         <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex space-x-8 px-6">
             {[
-              { id: 'overview', name: 'نظرة عامة', icon: '📊' },
-              { id: 'transactions', name: 'المعاملات', icon: '💳' },
-              { id: 'rewards', name: 'المكافآت', icon: '🎁' }
+              { id: 'overview', name: `نظرة عامة`, icon: '📊' },
+              { id: 'transactions', name: `المعاملات (${history.length})`, icon: '💳' },
+              { id: 'rewards', name: `المكافآت (${rewards.length})`, icon: '🎁' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -239,49 +241,106 @@ const MemberLoyaltyPoints = () => {
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">نظرة عامة على نقاط الولاء</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h4 className="font-medium text-gray-900 dark:text-white">كيفية كسب النقاط</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">حضور حصة تدريبية</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">+{LOYALTY_CONSTANTS.POINTS_RULES.ATTENDANCE} نقطة</span>
+              {/* إحصائيات شخصية حقيقية */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-lg border border-blue-200 dark:border-blue-700">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-blue-600 dark:text-blue-400">إجمالي النقاط المكتسبة</p>
+                      <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{currentPoints}</p>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">حضور حصة شخصية</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">+{LOYALTY_CONSTANTS.POINTS_RULES.PERSONAL_SESSION} نقطة</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">إكمال خطة تمرين</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">+{LOYALTY_CONSTANTS.POINTS_RULES.WORKOUT_PLAN_COMPLETION} نقطة</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">تقييم 5 نجوم</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">+{LOYALTY_CONSTANTS.POINTS_RULES.FIVE_STAR_RATING} نقطة</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">إحالة صديق</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">+{LOYALTY_CONSTANTS.POINTS_RULES.REFERRAL} نقطة</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">مكافأة الدفع</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">+{LOYALTY_CONSTANTS.POINTS_RULES.PAYMENT_BONUS} نقطة لكل دولار</span>
+                    <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xl">⭐</span>
                     </div>
                   </div>
                 </div>
-                
-                <div className="space-y-4">
-                  <h4 className="font-medium text-gray-900 dark:text-white">مستويات الولاء</h4>
-                  <div className="space-y-2">
-                    {Object.values(LOYALTY_CONSTANTS.MEMBERSHIP_LEVELS).map((level) => (
-                      <div key={level.name} className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">{level.name}</span>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {level.minPoints}-{level.maxPoints === Infinity ? '∞' : level.maxPoints} نقطة
-                        </span>
-                      </div>
-                    ))}
+
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 p-6 rounded-lg border border-green-200 dark:border-green-700">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-green-600 dark:text-green-400">المعاملات هذا الشهر</p>
+                      <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                        {history.filter(h => {
+                          const transactionDate = new Date(h.createdAt);
+                          const now = new Date();
+                          return transactionDate.getMonth() === now.getMonth() && 
+                                 transactionDate.getFullYear() === now.getFullYear();
+                        }).length}
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xl">📊</span>
+                    </div>
                   </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-lg border border-purple-200 dark:border-purple-700">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-purple-600 dark:text-purple-400">الجوائز المستبدلة</p>
+                      <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                        {history.filter(h => h.type === 'redeemed' || h.rewardId).length}
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xl">🎁</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* تفاصيل المستوى الحالي */}
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-6 rounded-lg border border-yellow-200 dark:border-yellow-700">
+                <h4 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-4">مستوى العضوية الحالي</h4>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-center">
+                    <p className="text-sm text-yellow-600 dark:text-yellow-400">المستوى الحالي</p>
+                    <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">{membershipInfo.level}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm text-yellow-600 dark:text-yellow-400">النقاط المطلوبة للمستوى التالي</p>
+                    <p className="text-2xl font-bold text-yellow-900 dark:text-yellow-100">{membershipInfo.pointsToNext}</p>
+                  </div>
+                </div>
+                <div className="w-full bg-yellow-200 dark:bg-yellow-800 rounded-full h-3">
+                  <div
+                    className={`bg-gradient-to-r ${getLevelColor(membershipInfo.level)} h-3 rounded-full`}
+                    style={{ 
+                      width: membershipInfo.pointsToNext === 0 ? '100%' : 
+                        `${Math.min(100, ((currentPoints - getLevelThreshold(membershipInfo.level)) / (getLevelThreshold(membershipInfo.nextLevel) - getLevelThreshold(membershipInfo.level))) * 100)}%` 
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* آخر المعاملات */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">آخر المعاملات</h4>
+                <div className="space-y-3">
+                  {history.slice(0, 3).map((transaction) => (
+                    <div key={transaction._id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className="text-xl">{getTransactionIcon(transaction.type)}</div>
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-white">{transaction.reason}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {new Date(transaction.createdAt).toLocaleDateString('ar-EG')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`font-medium ${getTransactionColor(transaction.type)}`}>
+                          {getTransactionIcon(transaction.type)}{Math.abs(transaction.points)} نقطة
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          المتبقي: {transaction.remainingPoints}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  {history.length === 0 && (
+                    <p className="text-center text-gray-500 dark:text-gray-400 py-4">لا توجد معاملات حتى الآن</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -307,7 +366,7 @@ const MemberLoyaltyPoints = () => {
                       <div>
                           <h4 className="font-medium text-gray-900 dark:text-white">{transaction.reason}</h4>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {new Date(transaction.createdAt).toLocaleDateString('ar-SA')}
+                            {new Date(transaction.createdAt).toLocaleDateString('ar-EG')}
                           </p>
                       </div>
                     </div>

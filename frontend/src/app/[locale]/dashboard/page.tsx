@@ -13,7 +13,7 @@ const DashboardPage: React.FC = () => {
   useEffect(() => {
     if (isLoading) return;
 
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.push('/login');
       return;
     }

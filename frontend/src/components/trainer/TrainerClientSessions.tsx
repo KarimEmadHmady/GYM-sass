@@ -17,7 +17,7 @@ const TrainerClientSessions = () => {
   const { alertState, showSuccess, showError, showWarning, hideAlert } = useCustomAlert();
   const { confirmationState, showConfirmation, hideConfirmation, handleConfirm, handleCancel } = useConfirmationDialog();
   
-  const [activeTab, setActiveTab] = useState('today');
+  const [activeTab, setActiveTab] = useState('all');
   const [sessions, setSessions] = useState<SessionSchedule[]>([]);
   const [clients, setClients] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -348,12 +348,12 @@ const TrainerClientSessions = () => {
       {/* Tabs */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="border-b border-gray-200 dark:border-gray-700">
-          <nav className="flex space-x-8 px-6">
+          <nav className="flex space-x-8 px-6 text-center align-center justify-center">
             {[
+              { id: 'all', name: 'الكل', count: sessions?.length || 0 },
               { id: 'today', name: 'اليوم', count: sessions?.filter(s => new Date(s.date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0]).length || 0 },
               { id: 'upcoming', name: 'المجدولة', count: sessions?.filter(s => s.status === 'مجدولة').length || 0 },
               { id: 'completed', name: 'المكتملة', count: sessions?.filter(s => s.status === 'مكتملة').length || 0 },
-              { id: 'all', name: 'الكل', count: sessions?.length || 0 }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -414,7 +414,7 @@ const TrainerClientSessions = () => {
                     </div>
                   </div>
                   <div className="flex flex-col items-end space-y-2">
-                    <div className="text-right">
+                    <div className="text-right flex  justify-center items-center gap-2">
                       <p className="text-lg font-bold text-green-600 dark:text-green-400">
                         ج.م {session.price || 0}
                       </p>
