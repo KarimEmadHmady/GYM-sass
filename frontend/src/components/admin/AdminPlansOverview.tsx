@@ -978,8 +978,10 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
             <span className="text-gray-900 dark:text-white font-medium">{viewWorkoutPlan.planName}</span>
           </div>
           {viewWorkoutPlan.description && (
-            <div className="text-sm text-gray-700 dark:text-gray-300">
-              <span className="text-gray-600 dark:text-gray-400">الوصف:</span> {viewWorkoutPlan.description}
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600 dark:text-gray-400">الوصف:</span> 
+              <span className="text-gray-900 dark:text-white font-medium">{viewWorkoutPlan.description}</span>
+
             </div>
           )}
           <div className="flex items-center justify-between text-sm">
@@ -1037,7 +1039,7 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
             <span className="text-gray-900 dark:text-white font-medium">{viewDietPlan.planName}</span>
           </div>
           {viewDietPlan.description && (
-            <div className="text-sm text-gray-700 dark:text-gray-300">
+            <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600 dark:text-gray-400">الوصف:</span> 
               <span className="text-gray-900 dark:text-white font-medium">{viewDietPlan.description}</span>
             </div>

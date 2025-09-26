@@ -47,6 +47,7 @@ const SessionSchedulesManagement = ({
   const [trainersLoading, setTrainersLoading] = useState(false);
   const [trainerClients, setTrainerClients] = useState<User[]>([]);
   const [clientsLoading, setClientsLoading] = useState(false);
+  const [filterDate, setFilterDate] = useState('');
 
   useEffect(() => {
     loadData();
@@ -273,6 +274,11 @@ const SessionSchedulesManagement = ({
   };
 
   const filteredSessions = sessions?.filter(session => {
+    // فلترة حسب التاريخ المحدد (إن وجد)
+    if (filterDate) {
+      const sessionDate = new Date(session.date).toISOString().split('T')[0];
+      if (sessionDate !== filterDate) return false;
+    }
     if (activeTab === 'today') {
       const today = new Date().toISOString().split('T')[0];
       return new Date(session.date).toISOString().split('T')[0] === today;
@@ -346,7 +352,30 @@ const SessionSchedulesManagement = ({
               <p className="text-sm text-gray-600 dark:text-gray-400">إجمالي الإيرادات</p>
               <p className="text-xl font-bold text-green-600 dark:text-green-400">ج.م {totalRevenue}</p>
             </div>
-            <div className="flex space-x-2">
+          <div className="flex space-x-2">
+            {/* فلتر التاريخ */}
+            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-col justify-center gap-2"> 
+            <label htmlFor="filterDate" className="text-sm text-gray-700 dark:text-gray-300">بحث بالتاريخ</label>
+              <input
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker?.()}
+                placeholder="ابحث بالتاريخ"
+                id="filterDate"
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white cursor-pointer"
+              />
+            </div>
+              {filterDate && (
+                <button
+                  onClick={() => setFilterDate('')}
+                  className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                >
+                  مسح التاريخ
+                </button>
+              )}
+            </div>
               {viewMode === 'management' && (
                 <button 
                   onClick={() => setShowCreateModal(true)}

@@ -8,7 +8,7 @@ import { authorizeRole, authorizeInvoiceAccess } from '../middlewares/role.middl
 
 const router = express.Router();
 
-router.post('/', authenticate, authorizeAdmin, validateCreateInvoice, createInvoice);
+router.post('/', authenticate, authorizeRole(['admin','manager']), validateCreateInvoice, createInvoice);
 router.get('/', authenticate, authorizeInvoiceAccess, validateListInvoice, getInvoices);
 router.get('/summary', authenticate, authorizeAdmin, async (req, res) => {
   try {

@@ -82,7 +82,14 @@ const ManagerSettings: React.FC = () => {
   return (
     <div className="space-y-8">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">إعدادات المدير</h3>
+        <div className="flex items-center gap-3 mb-4">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+              <path fillRule="evenodd" d="M11.983 1.943a1 1 0 0 1 1.034 0l2.143 1.236a1 1 0 0 0 .9 0l2.143-1.236a1 1 0 0 1 1.5.866v2.472a1 1 0 0 0 .5.866l2.143 1.236a1 1 0 0 1 0 1.732l-2.143 1.236a1 1 0 0 0-.5.866v2.472a1 1 0 0 1-1.5.866l-2.143-1.236a1 1 0 0 0-.9 0l-2.143 1.236a1 1 0 0 1-1.5-.866V11.12a1 1 0 0 0-.5-.866L9.34 9.018a1 1 0 0 1 0-1.732l2.143-1.236a1 1 0 0 0 .5-.866V2.809a1 1 0 0 1 0-.866Z" clipRule="evenodd" />
+            </svg>
+          </span>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">إعدادات المدير</h3>
+        </div>
         {loading ? (
           <div className="text-gray-500 dark:text-gray-400">جاري التحميل...</div>
         ) : error ? (
@@ -97,18 +104,48 @@ const ManagerSettings: React.FC = () => {
                   {user.name?.charAt(0) || '?'}
                 </div>
               )}
-              <div>
-                <div className="text-gray-900 dark:text-white font-medium">{user.name}</div>
-                <div className="text-gray-500 dark:text-gray-400 text-sm">{user.email}</div>
+              <div className="min-w-0">
+                <div className="text-gray-900 dark:text-white font-medium truncate">{user.name}</div>
+                <div className="mt-1 inline-flex items-center gap-2 rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
+                    <path d="M1.5 8.67v6.63c0 .62.5 1.12 1.12 1.12h18.76c.62 0 1.12-.5 1.12-1.12V8.67L12 14.25 1.5 8.67z"/>
+                    <path d="M21.38 6.5H2.62c-.33 0-.63.14-.84.36L12 12.75l10.22-5.89c-.21-.22-.51-.36-.84-.36z"/>
+                  </svg>
+                  <span className="truncate max-w-[180px]">{user.email}</span>
+                </div>
               </div>
             </div>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center justify-between"><span className="text-gray-600 dark:text-gray-400">رقم الهاتف</span><span className="text-gray-900 dark:text-white">{user.phone || '-'}</span></div>
-              <div className="flex items-center justify-between"><span className="text-gray-600 dark:text-gray-400">تاريخ الميلاد</span><span className="text-gray-900 dark:text-white">{user.dob ? new Date(user.dob).toLocaleDateString('ar-EG') : '-'}</span></div>
-              <div className="flex items-center justify-between"><span className="text-gray-600 dark:text-gray-400">العنوان</span><span className="text-gray-900 dark:text-white">{user.address || '-'}</span></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+              <div className="flex items-center justify-between rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">📞</span>
+                  <span>رقم الهاتف</span>
+                </div>
+                <span className="text-gray-900 dark:text-white">{user.phone || '-'}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">🎂</span>
+                  <span>تاريخ الميلاد</span>
+                </div>
+                <span className="text-gray-900 dark:text-white">{user.dob ? new Date(user.dob).toLocaleDateString('ar-EG') : '-'}</span>
+              </div>
+              <div className="flex items-center justify-between rounded-md border border-gray-200 dark:border-gray-700 px-3 py-2 sm:col-span-2 lg:col-span-1">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">📍</span>
+                  <span>العنوان</span>
+                </div>
+                <span className="text-gray-900 dark:text-white truncate max-w-[180px] sm:max-w-[240px] lg:max-w-[180px] text-right">{user.address || '-'}</span>
+              </div>
             </div>
             <div className="pt-2">
-              <button onClick={() => setIsEditOpen(true)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">تعديل</button>
+              <button onClick={() => setIsEditOpen(true)} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+                  <path d="M5 19h14v2H5z"/>
+                  <path d="M17.7 3.3a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L10 16.7 7 17l.3-3 10.4-10.4z"/>
+                </svg>
+                تعديل
+              </button>
             </div>
           </div>
         ) : (

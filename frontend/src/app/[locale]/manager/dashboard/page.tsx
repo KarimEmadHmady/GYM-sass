@@ -22,6 +22,7 @@ import AdminSearch from '@/components/admin/AdminSearch';
 import ManagerSettings from '@/components/manager/ManagerSettings';
 import TrainersDirectory from '@/components/shared/TrainersDirectory';
 import ManagerFeedback from '@/components/manager/ManagerFeedback';
+import ManagerInvoices from '@/components/manager/ManagerInvoices';
 import AdminSessionsOverview from '@/components/admin/AdminSessionsOverview';
 import dynamic from 'next/dynamic';
 const ManagerAddExpense = dynamic(() => import('@/components/manager/ManagerAddExpense'), { ssr: false });
@@ -80,6 +81,9 @@ const ManagerDashboard = () => {
     { id: 'reports', name: t('Tabs.reports'), icon: '📈' },
     { id: 'attendance', name: 'الحضور', icon: '📝' },
     { id: 'payments', name: 'مدفوعات', icon: '💵' },
+    { id: 'invoices', name: 'الفواتير', icon: '🧾' },
+    { id: 'add-expense', name: 'إضافة مصروف', icon: '💸' },
+    { id: 'add-revenue', name: 'إضافة دخل', icon: '💰' },
     { id: 'purchases', name: 'مشتريات', icon: '🛒' },
     { id: 'messages', name: 'رسائل', icon: '✉️' },
     { id: 'progress', name: 'تقدم العملاء', icon: '📈' },
@@ -87,8 +91,7 @@ const ManagerDashboard = () => {
     { id: 'loyalty', name: 'نقاط الولاء', icon: '🎯' },
     { id: 'search', name: 'بحث', icon: '🔎' },
     { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' },
-    { id: 'add-expense', name: 'إضافة مصروف', icon: '💸' },
-    { id: 'add-revenue', name: 'إضافة دخل', icon: '💰' }
+
   ];
 
   // زر تبديل اللغة
@@ -238,6 +241,24 @@ const ManagerDashboard = () => {
           </div>
         )}
 
+        {activeTab === 'invoices' && (
+          <div className="space-y-8">
+            <ManagerInvoices />
+          </div>
+        )}
+
+      {activeTab === 'add-expense' && (
+          <div className="space-y-8">
+            <ManagerAddExpense />
+          </div>
+        )}
+
+        {activeTab === 'add-revenue' && (
+          <div className="space-y-8">
+            <ManagerAddRevenue />
+          </div>
+        )}
+
         {activeTab === 'purchases' && (
           <div className="space-y-8">
             <AdminPurchases />
@@ -280,17 +301,7 @@ const ManagerDashboard = () => {
           </div>
         )}
 
-        {activeTab === 'add-expense' && (
-          <div className="space-y-8">
-            <ManagerAddExpense />
-          </div>
-        )}
 
-        {activeTab === 'add-revenue' && (
-          <div className="space-y-8">
-            <ManagerAddRevenue />
-          </div>
-        )}
       </div>
     </div>
   );
