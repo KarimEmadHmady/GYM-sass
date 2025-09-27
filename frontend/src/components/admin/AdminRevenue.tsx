@@ -60,6 +60,11 @@ const AdminRevenue: React.FC = () => {
     return map;
   }, [users]);
 
+  // قائمة الأعضاء فقط للاختيار
+  const members = useMemo(() => {
+    return users.filter(u => (u as any).role === 'member');
+  }, [users]);
+
   // View modal state
   const [viewOpen, setViewOpen] = useState(false);
   const [viewRevenue, setViewRevenue] = useState<Revenue | null>(null);
@@ -306,7 +311,12 @@ const AdminRevenue: React.FC = () => {
             <option value="bank_transfer">حوالة بنكية</option>
             <option value="other">أخرى</option>
           </select>
-          <input className="px-3 py-2 rounded border dark:bg-gray-800 dark:border-gray-600" placeholder="ID العميل (اختياري)" value={form.userId || ''} onChange={(e) => setForm((f) => ({ ...f, userId: e.target.value }))} />
+          <select className="px-3 py-2 rounded border dark:bg-gray-800 dark:border-gray-600" value={form.userId || ''} onChange={(e) => setForm((f) => ({ ...f, userId: e.target.value }))}>
+            <option value="">اختر عميلاً (اختياري)</option>
+            {members.map(u => (
+              <option key={u._id} value={u._id}>{u.name}{u.phone ? ` - ${u.phone}` : ''}</option>
+            ))}
+          </select>
           <input className="px-3 py-2 rounded border dark:bg-gray-800 dark:border-gray-600" placeholder="ملاحظات" value={form.notes || ''} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} />
         </div>
         <div className="mt-3 flex gap-2">

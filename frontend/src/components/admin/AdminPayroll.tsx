@@ -48,6 +48,11 @@ const AdminPayroll: React.FC = () => {
     return users.filter(u => (u as any).role === roleFilter);
   }, [users, roleFilter]);
 
+  // قائمة الموظفين للإنشاء/التعديل (المدربين والمديرين فقط)
+  const payrollUsers = useMemo(() => {
+    return users.filter(u => (u as any).role === 'trainer' || (u as any).role === 'manager');
+  }, [users]);
+
   // Create/Update form
   type PayrollForm = {
     employeeId?: string;
@@ -238,7 +243,7 @@ const AdminPayroll: React.FC = () => {
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">الموظف</label>
             <select className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs h-8" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>
               <option value="">الكل</option>
-              {filteredUsers.map(u => (
+              {payrollUsers.map(u => (
                 <option key={u._id} value={u._id}>{u.name}{u.phone ? ` - ${u.phone}` : ''}</option>
               ))}
             </select>
@@ -247,7 +252,6 @@ const AdminPayroll: React.FC = () => {
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">الدور</label>
             <select className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs h-8" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
               <option value="">الكل</option>
-              <option value="member">عضو</option>
               <option value="trainer">مدرب</option>
               <option value="manager">مدير</option>
             </select>
@@ -282,7 +286,7 @@ const AdminPayroll: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <select className="px-3 py-2 rounded border dark:bg-gray-800 dark:border-gray-600" value={form.employeeId || ''} onChange={(e) => setForm(f => ({ ...f, employeeId: e.target.value }))}>
             <option value="">اختر موظفاً</option>
-            {filteredUsers.map(u => (<option key={u._id} value={u._id}>{u.name}{u.phone ? ` - ${u.phone}` : ''}</option>))}
+            {payrollUsers.map(u => (<option key={u._id} value={u._id}>{u.name}{u.phone ? ` - ${u.phone}` : ''}</option>))}
           </select>
           <input className="px-3 py-2 rounded border dark:bg-gray-800 dark:border-gray-600" type="number" placeholder="قيمة الراتب" value={form.salaryAmount as any || ''} onChange={(e) => setForm(f => ({ ...f, salaryAmount: e.target.value === '' ? undefined : Number(e.target.value) }))} />
           <input className="px-3 py-2 rounded border dark:bg-gray-800 dark:border-gray-600" type="date" value={form.paymentDate || ''} onChange={(e) => setForm(f => ({ ...f, paymentDate: e.target.value }))} />
