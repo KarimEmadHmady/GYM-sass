@@ -25,6 +25,8 @@ const AdminFeedback = () => {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [search, setSearch] = useState('');
   const [selectedTrainer, setSelectedTrainer] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
   const [deleteModal, setDeleteModal] = useState<{ show: boolean; feedback: Feedback | null }>({ show: false, feedback: null });
 
   useEffect(() => {
@@ -152,6 +154,16 @@ const AdminFeedback = () => {
     );
   });
 
+  // Reset to first page when search or trainer filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedTrainer]);
+
+  const pageCount = Math.max(1, Math.ceil(filteredFeedbacks.length / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, filteredFeedbacks.length);
+  const paginatedFeedbacks = filteredFeedbacks.slice(startIndex, endIndex);
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-4">
@@ -201,7 +213,7 @@ const AdminFeedback = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredFeedbacks.map(fb => (
+              {paginatedFeedbacks.map(fb => (
                 <tr key={fb._id} className="border-b dark:border-gray-700">
                   <td className="py-2 px-3 text-center">{getUserName(fb.fromUserId)}</td>
                   <td className="py-2 px-3 text-center">{getUserName(fb.toUserId)}</td>
@@ -224,6 +236,33 @@ const AdminFeedback = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {filteredFeedbacks.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 text-sm text-gray-700 dark:text-gray-300">
+          <div>
+            عرض {startIndex + 1} إلى {endIndex} من {filteredFeedbacks.length} نتيجة
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              السابق
+            </button>
+            <span>
+              صفحة {currentPage} من {pageCount}
+            </span>
+            <button
+              className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
+              onClick={() => setCurrentPage(p => Math.min(pageCount, p + 1))}
+              disabled={currentPage === pageCount}
+            >
+              التالي
+            </button>
+          </div>
         </div>
       )}
 

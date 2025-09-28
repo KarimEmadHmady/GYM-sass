@@ -19,6 +19,8 @@ const AdminPayments = () => {
 
   const [search, setSearch] = useState('');
   const [methodFilter, setMethodFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Payment | null>(null);
@@ -67,6 +69,16 @@ const AdminPayments = () => {
       return bySearch && byMethod;
     });
   }, [payments, userMap, search, methodFilter]);
+
+  // Reset to first page when filters/search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, methodFilter]);
+
+  const pageCount = useMemo(() => Math.max(1, Math.ceil(filtered.length / pageSize)), [filtered.length, pageSize]);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, filtered.length);
+  const paginated = useMemo(() => filtered.slice(startIndex, endIndex), [filtered, startIndex, endIndex]);
 
   const openAdd = () => {
     setEditing(null);
@@ -166,7 +178,7 @@ const AdminPayments = () => {
             <tbody>
               {filtered.length === 0 ? (
                 <tr><td colSpan={canEdit ? 6 : 5} className="text-center py-4 text-gray-400">لا توجد مدفوعات.</td></tr>
-              ) : filtered.map(p => {
+              ) : paginated.map(p => {
                 const u = userMap[p.userId];
                 const d = new Date(p.date);
                 return (
@@ -187,6 +199,32 @@ const AdminPayments = () => {
               })}
             </tbody>
           </table>
+          {filtered.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 text-sm text-gray-700 dark:text-gray-300">
+              <div>
+                عرض {startIndex + 1} إلى {endIndex} من {filtered.length} نتيجة
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  السابق
+                </button>
+                <span>
+                  صفحة {currentPage} من {pageCount}
+                </span>
+                <button
+                  className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
+                  onClick={() => setCurrentPage(p => Math.min(pageCount, p + 1))}
+                  disabled={currentPage === pageCount}
+                >
+                  التالي
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

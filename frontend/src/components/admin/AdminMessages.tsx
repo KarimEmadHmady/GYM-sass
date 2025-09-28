@@ -27,6 +27,8 @@ const AdminMessages = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'read' | 'unread'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
@@ -96,6 +98,16 @@ const AdminMessages = () => {
     
     return matchesSearch && matchesFilter;
   });
+
+  // Reset to first page when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus]);
+
+  const pageCount = Math.max(1, Math.ceil(filteredMessages.length / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, filteredMessages.length);
+  const paginatedMessages = filteredMessages.slice(startIndex, endIndex);
 
   const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString('ar-EG', {
@@ -271,7 +283,7 @@ const AdminMessages = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredMessages.map((message) => (
+            {paginatedMessages.map((message) => (
               <tr key={message._id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td className="py-2 px-2 whitespace-nowrap max-w-[120px] truncate text-center">
                   <div className="flex items-center space-x-2">
@@ -356,6 +368,33 @@ const AdminMessages = () => {
           </tbody>
         </table>
       </div>
+
+      {filteredMessages.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 text-sm text-gray-700 dark:text-gray-300">
+          <div>
+            عرض {startIndex + 1} إلى {endIndex} من {filteredMessages.length} نتيجة
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+            >
+              السابق
+            </button>
+            <span>
+              صفحة {currentPage} من {pageCount}
+            </span>
+            <button
+              className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
+              onClick={() => setCurrentPage(p => Math.min(pageCount, p + 1))}
+              disabled={currentPage === pageCount}
+            >
+              التالي
+            </button>
+          </div>
+        </div>
+      )}
 
       {filteredMessages.length === 0 && (
         <div className="text-center py-12">

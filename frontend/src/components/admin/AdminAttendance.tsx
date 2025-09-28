@@ -23,6 +23,8 @@ const AdminAttendance = () => {
   const [adding, setAdding] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [addUserQuery, setAddUserQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -132,6 +134,16 @@ const AdminAttendance = () => {
     });
   }, [records, userMap, searchQuery]);
 
+  // إعادة الصفحة للأولى عند تغير البحث
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  const pageCount = React.useMemo(() => Math.max(1, Math.ceil(filteredRecords.length / pageSize)), [filteredRecords.length, pageSize]);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, filteredRecords.length);
+  const paginatedRecords = React.useMemo(() => filteredRecords.slice(startIndex, endIndex), [filteredRecords, startIndex, endIndex]);
+
   // فلترة قائمة المستخدمين في مودال الإضافة
   const filteredAddUsers = React.useMemo(() => {
     const q = addUserQuery.trim().toLowerCase();
@@ -178,12 +190,12 @@ const AdminAttendance = () => {
               </tr>
             </thead>
             <tbody>
-              {records.length === 0 ? (
+              {filteredRecords.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-4 text-gray-400 text-center">لا توجد سجلات حضور.</td>
                 </tr>
               ) : (
-                filteredRecords.map((rec) => {
+                paginatedRecords.map((rec) => {
                   const user = userMap[rec.userId];
                   const dateObj = new Date(rec.date);
                   return (
@@ -217,6 +229,32 @@ const AdminAttendance = () => {
               )}
             </tbody>
           </table>
+          {filteredRecords.length > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 text-sm text-gray-700 dark:text-gray-300">
+              <div>
+                عرض {startIndex + 1} إلى {endIndex} من {filteredRecords.length} نتيجة
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  السابق
+                </button>
+                <span>
+                  صفحة {currentPage} من {pageCount}
+                </span>
+                <button
+                  className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
+                  onClick={() => setCurrentPage(p => Math.min(pageCount, p + 1))}
+                  disabled={currentPage === pageCount}
+                >
+                  التالي
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

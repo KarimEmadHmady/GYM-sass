@@ -417,13 +417,24 @@ const AdminExpenses: React.FC = () => {
             </tbody>
           </table>
         </div>
-        <div className="px-4 py-3 flex items-center justify-between">
-          <div className="text-sm text-gray-500">الإجمالي: {new Intl.NumberFormat().format(count)}</div>
-          <div className="space-x-2">
-            <button className="px-3 py-1 rounded border" disabled={skip === 0 || loading} onClick={() => { setSkip(Math.max(0, skip - limit)); loadList(); }}>السابق</button>
-            <button className="px-3 py-1 rounded border" disabled={skip + limit >= count || loading} onClick={() => { setSkip(skip + limit); loadList(); }}>التالي</button>
-          </div>
-        </div>
+        {(() => {
+          const pageSize = limit || 10;
+          const currentPage = Math.floor((skip || 0) / pageSize) + 1;
+          const totalPages = Math.max(1, Math.ceil((count || 0) / pageSize));
+          const start = count > 0 ? (skip || 0) + 1 : 0;
+          const end = Math.min((skip || 0) + pageSize, count || 0);
+          return (
+            <div className="px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <div>
+                عرض {start} إلى {end} من {new Intl.NumberFormat().format(count)} نتيجة • صفحة {currentPage} من {totalPages}
+              </div>
+              <div className="flex items-center gap-2">
+                <button className="px-3 py-1 rounded border dark:border-gray-700 disabled:opacity-50" disabled={(skip === 0) || loading} onClick={() => { setSkip(Math.max(0, skip - pageSize)); loadList(); }}>السابق</button>
+                <button className="px-3 py-1 rounded border dark:border-gray-700 disabled:opacity-50" disabled={((skip + pageSize) >= count) || loading} onClick={() => { setSkip(skip + pageSize); loadList(); }}>التالي</button>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Summary */}

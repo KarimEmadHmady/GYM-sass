@@ -72,6 +72,14 @@ const AdminInvoices: React.FC = () => {
     };
   }, [filters.skip, filters.limit, count]);
 
+  // حسابات الصفحة والنطاق للعرض
+  const pageSize = filters.limit || 20;
+  const currentSkip = filters.skip || 0;
+  const currentPage = Math.floor(currentSkip / pageSize) + 1;
+  const totalPages = Math.max(1, Math.ceil((count || 0) / pageSize));
+  const rangeStart = count > 0 ? currentSkip + 1 : 0;
+  const rangeEnd = Math.min(currentSkip + pageSize, count || 0);
+
   // خريطة userId => بيانات العضو
   const userMap = useMemo(() => {
     const map: Record<string, User> = {};
@@ -607,11 +615,13 @@ const AdminInvoices: React.FC = () => {
       </div>
 
       {/* التصفح */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-500">الإجمالي: {fmt(count)}</div>
-        <div className="space-x-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-gray-700 dark:text-gray-300">
+        <div>
+          عرض {rangeStart} إلى {rangeEnd} من {fmt(count)} نتيجة • صفحة {currentPage} من {totalPages}
+        </div>
+        <div className="flex items-center gap-2">
           <button
-            className="px-3 py-1 rounded border"
+            className="px-3 py-1 rounded border dark:border-gray-700 disabled:opacity-50"
             disabled={!canPaginate.prev}
             onClick={() =>
               setFilters((p) => ({
@@ -623,7 +633,7 @@ const AdminInvoices: React.FC = () => {
             السابق
           </button>
           <button
-            className="px-3 py-1 rounded border"
+            className="px-3 py-1 rounded border dark:border-gray-700 disabled:opacity-50"
             disabled={!canPaginate.next}
             onClick={() =>
               setFilters((p) => ({

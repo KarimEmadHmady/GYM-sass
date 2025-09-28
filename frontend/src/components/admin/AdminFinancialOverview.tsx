@@ -20,6 +20,8 @@ const AdminFinancialOverview = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const [transactionsCurrentPage, setTransactionsCurrentPage] = useState(1);
+  const [transactionsPageSize] = useState(10);
   
   // State للتقارير المالية
   const [reportsLoading, setReportsLoading] = useState(false);
@@ -51,6 +53,17 @@ const AdminFinancialOverview = () => {
     expenses: { monthly: 0, growth: 0 },
     profit: { monthly: 0, growth: 0 },
   });
+
+  // Pagination calculations for transactions
+  const transactionsPageCount = Math.max(1, Math.ceil(recentTransactions.length / transactionsPageSize));
+  const transactionsStartIndex = (transactionsCurrentPage - 1) * transactionsPageSize;
+  const transactionsEndIndex = Math.min(transactionsStartIndex + transactionsPageSize, recentTransactions.length);
+  const paginatedTransactions = recentTransactions.slice(transactionsStartIndex, transactionsEndIndex);
+
+  // Reset to first page when transactions are loaded
+  React.useEffect(() => {
+    setTransactionsCurrentPage(1);
+  }, [recentTransactions.length]);
 
   React.useEffect(() => {
     const revenueService = new RevenueService();
@@ -623,7 +636,7 @@ const AdminFinancialOverview = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {recentTransactions.map((transaction) => (
+                  {paginatedTransactions.map((transaction) => (
                   <div
                     key={transaction.id}
                     className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -656,6 +669,33 @@ const AdminFinancialOverview = () => {
                     </div>
                   </div>
                 ))}
+                </div>
+              )}
+              
+              {recentTransactions.length > 0 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 text-sm text-gray-700 dark:text-gray-300">
+                  <div>
+                    عرض {transactionsStartIndex + 1} إلى {transactionsEndIndex} من {recentTransactions.length} نتيجة
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
+                      onClick={() => setTransactionsCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={transactionsCurrentPage === 1}
+                    >
+                      السابق
+                    </button>
+                    <span>
+                      صفحة {transactionsCurrentPage} من {transactionsPageCount}
+                    </span>
+                    <button
+                      className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
+                      onClick={() => setTransactionsCurrentPage(p => Math.min(transactionsPageCount, p + 1))}
+                      disabled={transactionsCurrentPage === transactionsPageCount}
+                    >
+                      التالي
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

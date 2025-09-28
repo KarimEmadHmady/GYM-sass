@@ -65,6 +65,8 @@ const AdminLoyalty = () => {
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [historyFilterUserId, setHistoryFilterUserId] = useState('');
   const [historyFilterType, setHistoryFilterType] = useState('');
+  const [historyCurrentPage, setHistoryCurrentPage] = useState(1);
+  const [historyPageSize] = useState(10);
 
   // أفضل المستخدمين
   const [topUsers, setTopUsers] = useState<any[]>([]);
@@ -80,6 +82,8 @@ const AdminLoyalty = () => {
     startDate: '',
     endDate: ''
   });
+  const [redemptionsCurrentPage, setRedemptionsCurrentPage] = useState(1);
+  const [redemptionsPageSize] = useState(10);
 
   // جلب المستخدمين
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -344,6 +348,16 @@ const AdminLoyalty = () => {
     ? pointsHistory.filter(h => h.userId === historyFilterUserId)
     : pointsHistory;
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setHistoryCurrentPage(1);
+  }, [historyFilterUserId, historyFilterType]);
+
+  const historyPageCount = Math.max(1, Math.ceil(filteredHistory.length / historyPageSize));
+  const historyStartIndex = (historyCurrentPage - 1) * historyPageSize;
+  const historyEndIndex = Math.min(historyStartIndex + historyPageSize, filteredHistory.length);
+  const paginatedHistory = filteredHistory.slice(historyStartIndex, historyEndIndex);
+
   // فلترة الاستبدالات في الواجهة فقط (تشمل الفلترة حسب الجائزة)
   const filteredRedemptions = redemptions.filter(r => {
     // دعم حالتي rewardId: string أو كائن
@@ -361,6 +375,16 @@ const AdminLoyalty = () => {
       rewardMatch
     );
   });
+
+  // Reset to first page when redemptions filters change
+  useEffect(() => {
+    setRedemptionsCurrentPage(1);
+  }, [redemptionsFilter.userId, redemptionsFilter.rewardId, redemptionsFilter.startDate, redemptionsFilter.endDate]);
+
+  const redemptionsPageCount = Math.max(1, Math.ceil(filteredRedemptions.length / redemptionsPageSize));
+  const redemptionsStartIndex = (redemptionsCurrentPage - 1) * redemptionsPageSize;
+  const redemptionsEndIndex = Math.min(redemptionsStartIndex + redemptionsPageSize, filteredRedemptions.length);
+  const paginatedRedemptions = filteredRedemptions.slice(redemptionsStartIndex, redemptionsEndIndex);
 
   // Debug: اطبع أول عنصر من redemptions عند تغيير الفلتر
   React.useEffect(() => {
@@ -671,7 +695,7 @@ const AdminLoyalty = () => {
                           <tr>
                             <td colSpan={5} className="text-center py-8 text-gray-400">لا توجد استبدالات</td>
                           </tr>
-                        ) : filteredRedemptions.map((redemption, idx) => (
+                        ) : paginatedRedemptions.map((redemption, idx) => (
                           <tr key={redemption._id || idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                             <td className="px-4 py-2 whitespace-nowrap text-center">
                               {(() => {
@@ -700,6 +724,33 @@ const AdminLoyalty = () => {
                     </table>
                   );
                 })()}
+              </div>
+            )}
+            
+            {filteredRedemptions.length > 0 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 text-sm text-gray-700 dark:text-gray-300">
+                <div>
+                  عرض {redemptionsStartIndex + 1} إلى {redemptionsEndIndex} من {filteredRedemptions.length} نتيجة
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
+                    onClick={() => setRedemptionsCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={redemptionsCurrentPage === 1}
+                  >
+                    السابق
+                  </button>
+                  <span>
+                    صفحة {redemptionsCurrentPage} من {redemptionsPageCount}
+                  </span>
+                  <button
+                    className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
+                    onClick={() => setRedemptionsCurrentPage(p => Math.min(redemptionsPageCount, p + 1))}
+                    disabled={redemptionsCurrentPage === redemptionsPageCount}
+                  >
+                    التالي
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -768,7 +819,7 @@ const AdminLoyalty = () => {
                       <tr>
                         <td colSpan={5} className="text-center py-8 text-gray-400">لا يوجد بيانات</td>
                       </tr>
-                    ) : filteredHistory.map((h, idx) => (
+                    ) : paginatedHistory.map((h, idx) => (
                       <tr key={h._id || idx} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                         <td className="px-4 py-2 whitespace-nowrap text-center">{
                           (() => {
@@ -787,6 +838,33 @@ const AdminLoyalty = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+            
+            {filteredHistory.length > 0 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 text-sm text-gray-700 dark:text-gray-300">
+                <div>
+                  عرض {historyStartIndex + 1} إلى {historyEndIndex} من {filteredHistory.length} نتيجة
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
+                    onClick={() => setHistoryCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={historyCurrentPage === 1}
+                  >
+                    السابق
+                  </button>
+                  <span>
+                    صفحة {historyCurrentPage} من {historyPageCount}
+                  </span>
+                  <button
+                    className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
+                    onClick={() => setHistoryCurrentPage(p => Math.min(historyPageCount, p + 1))}
+                    disabled={historyCurrentPage === historyPageCount}
+                  >
+                    التالي
+                  </button>
+                </div>
               </div>
             )}
           </div>
