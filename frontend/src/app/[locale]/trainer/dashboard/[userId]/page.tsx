@@ -2,39 +2,35 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useTranslations, useLocale } from 'next-intl';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { useSearchParams } from 'next/navigation';
+import { useTranslations, useLocale } from 'next-intl';
 
 // Components
-import AdminStatsCards from '@/components/admin/AdminStatsCards';
-import AdminQuickActions from '@/components/admin/AdminQuickActions';
-import AdminRecentActivity from '@/components/admin/AdminRecentActivity';
-import AdminUsersTable from '@/components/admin/AdminUsersTable';
-import AdminSessionsOverview from '@/components/admin/AdminSessionsOverview';
-import AdminPlansOverview from '@/components/admin/AdminPlansOverview';
-import AdminFinancialOverview from '@/components/admin/AdminFinancialOverview';
-import AdminReports from '@/components/admin/AdminReports';
-import AdminSettings from '@/components/admin/AdminSettings';
-import AdminAttendance from '@/components/admin/AdminAttendance';
-import AdminPayments from '@/components/admin/AdminPayments';
-import AdminPurchases from '@/components/admin/AdminPurchases';
-import AdminMessages from '@/components/admin/AdminMessages';
-import AdminProgress from '@/components/admin/AdminProgress';
-import AdminFeedback from '@/components/admin/AdminFeedback';
-import AdminLoyalty from '@/components/admin/AdminLoyalty';
-import AdminSearch from '@/components/admin/AdminSearch';
-import TrainersDirectory from '@/components/shared/TrainersDirectory';
+import TrainerStatsCards from '@/components/trainer/TrainerStatsCards';
+import TrainerQuickActions from '@/components/trainer/TrainerQuickActions';
+import TrainerRecentActivity from '@/components/trainer/TrainerRecentActivity';
+import TrainerClientsOverview from '@/components/trainer/TrainerClientsOverview';
+import TrainerPlansManager from '@/components/trainer/TrainerPlansManager';
+import TrainerProgressOverview from '@/components/trainer/TrainerProgressOverview';
+import TrainerProfile from '@/components/trainer/TrainerProfile';
+import TrainerAttendance from '@/components/trainer/TrainerAttendance';
+import TrainerClientSessions from '@/components/trainer/TrainerClientSessions';
+import TrainerFeedback from '@/components/trainer/TrainerFeedback';
+import TrainerMessages from '@/components/trainer/TrainerMessages';
+import TrainerLoyaltyPoints from '@/components/trainer/TrainerLoyaltyPoints';
+import TrainerScheduledList from '@/components/trainer/TrainerScheduledList';
 
-
-const AdminDashboard = () => {
+const TrainerDashboard = ({ params }: { params: { userId: string } }) => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const locale = useLocale();
-  const t = useTranslations('AdminDashboard');
+  const t = useTranslations('TrainerDashboard');
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'overview');
+
+  // يمكنك استخدام userId هنا لجلب بيانات أو التحقق
 
   useEffect(() => {
     if (isLoading) return;
@@ -44,13 +40,13 @@ const AdminDashboard = () => {
       return;
     }
 
-    if (user?.role !== 'admin') {
+    if (user?.role !== 'trainer') {
       router.push('/unauthorized');
       return;
     }
   }, [isAuthenticated, user, isLoading, router]);
 
-  // Keep state in sync if URL query changes externally
+  // Sync activeTab with URL changes
   useEffect(() => {
     const tabFromQuery = searchParams.get('tab');
     if (tabFromQuery && tabFromQuery !== activeTab) {
@@ -60,34 +56,29 @@ const AdminDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-900 via-blue-900 to-indigo-900">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
         <span className="ml-4 text-white text-lg">{t('Loading.message')}</span>
       </div>
     );
   }
 
-  if (!isAuthenticated || user?.role !== 'admin') {
+  if (!isAuthenticated || user?.role !== 'trainer') {
     return null;
   }
 
   const tabs = [
     { id: 'overview', name: t('Tabs.overview'), icon: '📊' },
-    { id: 'users', name: t('Tabs.users'), icon: '👥' },
-    { id: 'trainers', name: 'المدربون', icon: '🧑‍🏫' },
-    { id: 'sessions', name: t('Tabs.sessions'), icon: '🏋️' },
+    { id: 'clients', name: t('Tabs.clients'), icon: '👥' },
     { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
-    { id: 'financial', name: t('Tabs.financial'), icon: '💰' },
-    { id: 'reports', name: t('Tabs.reports'), icon: '📈' },
-    { id: 'attendance', name: 'الحضور', icon: '📝' },
-    { id: 'payments', name: 'مدفوعات', icon: '💵' },
-    { id: 'purchases', name: 'مشتريات', icon: '🛒' },
-    { id: 'messages', name: 'رسائل', icon: '✉️' },
-    { id: 'progress', name: 'تقدم العملاء', icon: '📈' },
+    { id: 'progress', name: t('Tabs.progress'), icon: '📈' },
+    { id: 'attendance', name: 'حضوري', icon: '📝' },
+    { id: 'clientSessions', name: 'حصص العملاء', icon: '📅' },
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
-    { id: 'loyalty', name: 'نقاط الولاء', icon: '🎯' },
-    { id: 'search', name: 'بحث', icon: '🔎' },
-    { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' }
+    { id: 'messages', name: 'الرسائل', icon: '✉️' },
+    { id: 'loyalty', name: 'نقاط الولاء', icon: '🎁' },
+    { id: 'schedule', name: t('Tabs.schedule'), icon: '📅' },
+    { id: 'profile', name: 'الملف الشخصى', icon: '👤' }
   ];
 
   // زر تبديل اللغة
@@ -106,7 +97,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -128,7 +119,7 @@ const AdminDashboard = () => {
                   {t('Header.role')}
                 </p>
               </div>
-              <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold">
+              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
               <button
@@ -161,7 +152,7 @@ const AdminDashboard = () => {
                 onClick={() => handleTabChange(tab.id)}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'border-red-500 text-red-600 dark:text-red-400'
+                    ? 'border-green-500 text-green-600 dark:text-green-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
                 }`}
               >
@@ -178,104 +169,77 @@ const AdminDashboard = () => {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             {/* Stats Cards */}
-            <AdminStatsCards />
+            <TrainerStatsCards />
             
             {/* Quick Actions */}
-            <AdminQuickActions />
+            <TrainerQuickActions />
             
             {/* Recent Activity */}
-            <AdminRecentActivity />
+            <TrainerRecentActivity />
           </div>
         )}
 
-        {activeTab === 'users' && (
-          <div className="space-y-8">
-            <AdminUsersTable />
-          </div>
-        )}
+ 
 
-        {activeTab === 'trainers' && (
+        {activeTab === 'clients' && (
           <div className="space-y-8">
-            <TrainersDirectory scope="admin" />
-          </div>
-        )}
-
-        {activeTab === 'sessions' && (
-          <div className="space-y-8">
-            <AdminSessionsOverview />
+            <TrainerClientsOverview />
           </div>
         )}
 
         {activeTab === 'plans' && (
           <div className="space-y-8">
-            <AdminPlansOverview />
-          </div>
-        )}
-
-        {activeTab === 'financial' && (
-          <div className="space-y-8">
-            <AdminFinancialOverview />
-          </div>
-        )}
-
-        {activeTab === 'reports' && (
-          <div className="space-y-8">
-            <AdminReports />
-          </div>
-        )}
-
-        {activeTab === 'attendance' && (
-          <div className="space-y-8">
-            <AdminAttendance />
-          </div>
-        )}
-
-        {activeTab === 'payments' && (
-          <div className="space-y-8">
-            <AdminPayments />
-          </div>
-        )}
-
-        {activeTab === 'purchases' && (
-          <div className="space-y-8">
-            <AdminPurchases />
-          </div>
-        )}
-
-        {activeTab === 'messages' && (
-          <div className="space-y-8">
-            <AdminMessages />
+            <TrainerPlansManager />
           </div>
         )}
 
         {activeTab === 'progress' && (
           <div className="space-y-8">
-            <AdminProgress />
+            <TrainerProgressOverview />
           </div>
         )}
+
+        {activeTab === 'profile' && (
+          <div className="space-y-8">
+            <TrainerProfile />
+          </div>
+        )}
+
+        {activeTab === 'attendance' && (
+          <div className="space-y-8">
+            <TrainerAttendance />
+          </div>
+        )}
+
+        {activeTab === 'clientSessions' && (
+          <div className="space-y-8">
+            <TrainerClientSessions />
+          </div>
+        )}
+
+
 
         {activeTab === 'feedback' && (
           <div className="space-y-8">
-            <AdminFeedback />
+            <TrainerFeedback />
           </div>
         )}
 
+        {activeTab === 'messages' && (
+          <div className="space-y-8">
+            <TrainerMessages />
+          </div>
+        )}
 
         {activeTab === 'loyalty' && (
           <div className="space-y-8">
-            <AdminLoyalty />
+            <TrainerLoyaltyPoints />
           </div>
         )}
 
-        {activeTab === 'search' && (
+        {activeTab === 'schedule' && (
           <div className="space-y-8">
-            <AdminSearch />
-          </div>
-        )}
-
-        {activeTab === 'settings' && (
-          <div className="space-y-8">
-            <AdminSettings />
+            <TrainerScheduledList />
           </div>
         )}
       </div>
@@ -283,4 +247,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default TrainerDashboard;

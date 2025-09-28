@@ -7,30 +7,37 @@ import { useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 
 // Components
-import MemberProfileHeader from '@/components/member/MemberProfileHeader';
-import MemberStatsCards from '@/components/member/MemberStatsCards';
-import MemberQuickActions from '@/components/member/MemberQuickActions';
-import MemberSessionsHistory from '@/components/member/MemberSessionsHistory';
-import MemberPlansOverview from '@/components/member/MemberPlansOverview';
-import MemberProgressTracking from '@/components/member/MemberProgressTracking';
-import MemberLoyaltyPoints from '@/components/member/MemberLoyaltyPoints';
-import MemberAttendance from '@/components/member/MemberAttendance';
-import MemberPayments from '@/components/member/MemberPayments';
-import MemberSubscription from '@/components/member/MemberSubscription';
-import MemberPurchases from '@/components/member/MemberPurchases';
-import MemberTrainer from '@/components/member/MemberTrainer';
-import MemberMessages from '@/components/member/MemberMessages';
-import MemberSettings from '@/components/member/MemberSettings';
-import MemberFeedback from '@/components/member/MemberFeedback';
+import ManagerStatsCards from '@/components/manager/ManagerStatsCards';
+import ManagerQuickActions from '@/components/manager/ManagerQuickActions';
+import ManagerRecentActivity from '@/components/manager/ManagerRecentActivity';
+import ManagerUsersTable from '@/components/manager/ManagerUsersTable';
+import AdminPlansOverview from '@/components/admin/AdminPlansOverview';
+import AdminAttendance from '@/components/admin/AdminAttendance';
+import AdminPayments from '@/components/admin/AdminPayments';
+import AdminPurchases from '@/components/admin/AdminPurchases';
+import AdminMessages from '@/components/admin/AdminMessages';
+import AdminProgress from '@/components/admin/AdminProgress';
+import AdminLoyalty from '@/components/admin/AdminLoyalty';
+import AdminSearch from '@/components/admin/AdminSearch';
+import ManagerSettings from '@/components/manager/ManagerSettings';
+import TrainersDirectory from '@/components/shared/TrainersDirectory';
+import ManagerFeedback from '@/components/manager/ManagerFeedback';
+import ManagerInvoices from '@/components/manager/ManagerInvoices';
+import AdminSessionsOverview from '@/components/admin/AdminSessionsOverview';
+import dynamic from 'next/dynamic';
+const ManagerAddExpense = dynamic(() => import('@/components/manager/ManagerAddExpense'), { ssr: false });
+const ManagerAddRevenue = dynamic(() => import('@/components/manager/ManagerAddRevenue'), { ssr: false });
 
-const MemberProfile = () => {
+const ManagerDashboard = ({ params }: { params: { userId: string } }) => {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const locale = useLocale();
-  const t = useTranslations('MemberProfile');
+  const t = useTranslations('ManagerDashboard');
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'overview');
+
+  // يمكنك استخدام userId هنا لجلب بيانات أو التحقق
 
   useEffect(() => {
     if (isLoading) return;
@@ -40,7 +47,7 @@ const MemberProfile = () => {
       return;
     }
 
-    if (user?.role !== 'member') {
+    if (user?.role !== 'manager') {
       router.push('/unauthorized');
       return;
     }
@@ -56,31 +63,37 @@ const MemberProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div>
         <span className="ml-4 text-white text-lg">{t('Loading.message')}</span>
       </div>
     );
   }
 
-  if (!isAuthenticated || user?.role !== 'member') {
+  if (!isAuthenticated || user?.role !== 'manager') {
     return null;
   }
 
   const tabs = [
     { id: 'overview', name: t('Tabs.overview'), icon: '📊' },
-    { id: 'attendance', name: 'الحضور', icon: '📝' },
-    { id: 'payments', name: 'مدفوعات', icon: '💵' },
-    { id: 'subscription', name: 'الاشتراك', icon: '📅' },
-    { id: 'purchases', name: 'مشتريات', icon: '🛒' },
+    { id: 'users', name: t('Tabs.users'), icon: '👥' },
+    { id: 'trainers', name: 'المدربون', icon: '🧑‍🏫' },
     { id: 'sessions', name: t('Tabs.sessions'), icon: '🏋️' },
     { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
-    { id: 'trainer', name: 'مدربي', icon: '👨‍🏫' },
-    { id: 'messages', name: 'الرسائل', icon: '💬' },
-    { id: 'progress', name: t('Tabs.progress'), icon: '📈' },
+    { id: 'reports', name: t('Tabs.reports'), icon: '📈' },
+    { id: 'attendance', name: 'الحضور', icon: '📝' },
+    { id: 'payments', name: 'مدفوعات', icon: '💵' },
+    { id: 'invoices', name: 'الفواتير', icon: '🧾' },
+    { id: 'add-expense', name: 'إضافة مصروف', icon: '💸' },
+    { id: 'add-revenue', name: 'إضافة دخل', icon: '💰' },
+    { id: 'purchases', name: 'مشتريات', icon: '🛒' },
+    { id: 'messages', name: 'رسائل', icon: '✉️' },
+    { id: 'progress', name: 'تقدم العملاء', icon: '📈' },
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
-    { id: 'loyalty', name: t('Tabs.loyalty'), icon: '⭐' },
-    { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' }
+    { id: 'loyalty', name: 'نقاط الولاء', icon: '🎯' },
+    { id: 'search', name: 'بحث', icon: '🔎' },
+    { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' },
+
   ];
 
   // زر تبديل اللغة
@@ -99,7 +112,7 @@ const MemberProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -121,7 +134,7 @@ const MemberProfile = () => {
                   {t('Header.role')}
                 </p>
               </div>
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
               <button
@@ -154,7 +167,7 @@ const MemberProfile = () => {
                 onClick={() => handleTabChange(tab.id)}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'border-purple-500 text-purple-600 dark:text-purple-400'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
                 }`}
               >
@@ -170,92 +183,130 @@ const MemberProfile = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'overview' && (
           <div className="space-y-8">
-            {/* Profile Header */}
-            <MemberProfileHeader />
-            
             {/* Stats Cards */}
-            <MemberStatsCards />
+            <ManagerStatsCards />
             
             {/* Quick Actions */}
-            <MemberQuickActions />
+            <ManagerQuickActions />
+            
+            {/* Recent Activity */}
+            <ManagerRecentActivity />
           </div>
         )}
 
-        {activeTab === 'attendance' && (
+        {activeTab === 'users' && (
           <div className="space-y-8">
-            <MemberAttendance />
+            <ManagerUsersTable />
           </div>
         )}
 
-        {activeTab === 'payments' && (
+        {activeTab === 'trainers' && (
           <div className="space-y-8">
-            <MemberPayments />
-          </div>
-        )}
-
-        {activeTab === 'subscription' && (
-          <div className="space-y-8">
-            <MemberSubscription />
-          </div>
-        )}
-
-        {activeTab === 'purchases' && (
-          <div className="space-y-8">
-            <MemberPurchases />
+            <TrainersDirectory scope="manager" />
           </div>
         )}
 
         {activeTab === 'sessions' && (
           <div className="space-y-8">
-            <MemberSessionsHistory />
+            <AdminSessionsOverview />
           </div>
         )}
 
         {activeTab === 'plans' && (
           <div className="space-y-8">
-            <MemberPlansOverview />
+            <AdminPlansOverview />
           </div>
         )}
 
-        {activeTab === 'trainer' && (
+        {activeTab === 'reports' && (
           <div className="space-y-8">
-            <MemberTrainer />
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                التقارير والإحصائيات
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                صفحة التقارير قيد التطوير...
+              </p>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'attendance' && (
+          <div className="space-y-8">
+            <AdminAttendance />
+          </div>
+        )}
+
+        {activeTab === 'payments' && (
+          <div className="space-y-8">
+            <AdminPayments />
+          </div>
+        )}
+
+        {activeTab === 'invoices' && (
+          <div className="space-y-8">
+            <ManagerInvoices />
+          </div>
+        )}
+
+      {activeTab === 'add-expense' && (
+          <div className="space-y-8">
+            <ManagerAddExpense />
+          </div>
+        )}
+
+        {activeTab === 'add-revenue' && (
+          <div className="space-y-8">
+            <ManagerAddRevenue />
+          </div>
+        )}
+
+        {activeTab === 'purchases' && (
+          <div className="space-y-8">
+            <AdminPurchases />
           </div>
         )}
 
         {activeTab === 'messages' && (
           <div className="space-y-8">
-            <MemberMessages />
-          </div>
-        )}
-
-        {activeTab === 'feedback' && (
-          <div className="space-y-8">
-            <MemberFeedback />
+            <AdminMessages />
           </div>
         )}
 
         {activeTab === 'progress' && (
           <div className="space-y-8">
-            <MemberProgressTracking />
+            <AdminProgress />
+          </div>
+        )}
+
+        {activeTab === 'feedback' && (
+          <div className="space-y-8">
+            <ManagerFeedback />
           </div>
         )}
 
         {activeTab === 'loyalty' && (
           <div className="space-y-8">
-            <MemberLoyaltyPoints />
+            <AdminLoyalty />
           </div>
         )}
 
+        {activeTab === 'search' && (
+          <div className="space-y-8">
+            <AdminSearch />
+          </div>
+        )}
 
         {activeTab === 'settings' && (
           <div className="space-y-8">
-            <MemberSettings />
+            <ManagerSettings />
           </div>
         )}
+
+
       </div>
     </div>
   );
 };
 
-export default MemberProfile;
+export default ManagerDashboard;

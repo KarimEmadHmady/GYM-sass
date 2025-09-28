@@ -31,7 +31,8 @@ export const useAuth = () => {
         const result = await dispatch(loginUser(credentials));
         if (loginUser.fulfilled.match(result)) {
           // Redirect to role-specific dashboard after successful login
-          const redirectPath = getRoleBasedRedirect(result.payload.user?.role as UserRole);
+          const user = result.payload.user;
+          const redirectPath = getRoleBasedRedirect(user?.role as UserRole, user?.id);
           router.push(redirectPath);
           return { success: true };
         } else {

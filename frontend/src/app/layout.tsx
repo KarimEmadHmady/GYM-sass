@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ar">
       {/* ✅ Cairo + Roboto */}
       <body className={`${cairo.variable} ${roboto.variable} antialiased`}>
         {children}

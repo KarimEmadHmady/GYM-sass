@@ -97,13 +97,13 @@ export function hasPermission(userRole: UserRole, permission: string): boolean {
 }
 
 // Get redirect URL based on role
-export function getRoleBasedRedirect(role: UserRole): string {
+export function getRoleBasedRedirect(role: UserRole, userId?: string): string {
   const roleRedirects = {
     admin: '/admin/dashboard',
     trainer: '/trainer/dashboard', 
     member: '/member/profile',
     manager: '/manager/dashboard'
   };
-  
-  return roleRedirects[role] || '/dashboard';
+  const base = roleRedirects[role] || '/dashboard';
+  return userId ? `${base}/${userId}` : base;
 }
