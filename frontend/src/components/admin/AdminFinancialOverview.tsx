@@ -11,10 +11,14 @@ import { payrollService } from '@/services';
 import { revenueService } from '@/services';
 import { expenseService } from '@/services';
 import { userService } from '@/services';
+import * as XLSX from 'xlsx';
+import CustomAlert from '@/components/ui/CustomAlert';
+import { useCustomAlert } from '@/hooks/useCustomAlert';
 
 const AdminFinancialOverview = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const t = useTranslations();
+  const { alertState, showSuccess, showError, showWarning, hideAlert } = useCustomAlert();
   
   // State للبيانات الحقيقية
   const [loading, setLoading] = useState(false);
@@ -203,6 +207,301 @@ const AdminFinancialOverview = () => {
       setError(e?.message || 'فشل في تحميل البيانات');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // دالة تصدير المعاملات المالية إلى Excel
+  const exportTransactionsToExcel = async () => {
+    try {
+      setLoading(true);
+      
+      // جلب آخر 30 معاملة مالية
+      const [invoices, payrolls, revenues, expenses] = await Promise.all([
+        invoiceService.getInvoices({ limit: 30, sort: 'desc' }),
+        payrollService.list({ limit: 30, sort: 'desc' }),
+        revenueService.list({ limit: 30, sort: 'desc' }),
+        expenseService.list({ limit: 30, sort: 'desc' })
+      ]);
+
+      const transactions: any[] = [];
+
+      // إضافة الفواتير
+      const invoiceResults = Array.isArray(invoices) ? invoices : (invoices as any).results;
+      if (invoiceResults) {
+        invoiceResults.forEach((invoice: any) => {
+          transactions.push({
+            'نوع المعاملة': 'إيراد',
+            'التفاصيل': `فاتورة #${invoice.invoiceNumber || invoice._id}`,
+            'المبلغ (ج.م)': invoice.totalAmount || 0,
+            'التاريخ': invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString('ar-EG') : '',
+            'الفئة': 'فاتورة',
+            'المصدر': 'نظام الفواتير',
+            'الحالة': invoice.status || 'مكتملة',
+            'العميل': invoice.clientName || 'غير محدد',
+            'تاريخ الاستحقاق': invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString('ar-EG') : '',
+            'تاريخ الدفع': invoice.paymentDate ? new Date(invoice.paymentDate).toLocaleDateString('ar-EG') : '',
+          });
+        });
+      }
+
+      // إضافة الرواتب
+      if (payrolls.results) {
+        payrolls.results.forEach((payroll: any) => {
+          transactions.push({
+            'نوع المعاملة': 'مصروف',
+            'التفاصيل': `راتب - ${payroll.employeeId || 'موظف'}`,
+            'المبلغ (ج.م)': -(payroll.salaryAmount || 0),
+            'التاريخ': payroll.paymentDate ? new Date(payroll.paymentDate).toLocaleDateString('ar-EG') : '',
+            'الفئة': 'راتب',
+            'المصدر': 'نظام الرواتب',
+            'الحالة': payroll.status || 'مكتملة',
+            'الموظف': payroll.employeeName || 'غير محدد',
+            'تاريخ الاستحقاق': '',
+            'تاريخ الدفع': payroll.paymentDate ? new Date(payroll.paymentDate).toLocaleDateString('ar-EG') : '',
+          });
+        });
+      }
+
+      // إضافة الإيرادات
+      if (revenues.results) {
+        revenues.results.forEach((revenue: any) => {
+          transactions.push({
+            'نوع المعاملة': 'إيراد',
+            'التفاصيل': revenue.notes || 'إيراد',
+            'المبلغ (ج.م)': revenue.amount || 0,
+            'التاريخ': revenue.date ? new Date(revenue.date).toLocaleDateString('ar-EG') : '',
+            'الفئة': revenue.sourceType || 'أخرى',
+            'المصدر': 'نظام الإيرادات',
+            'الحالة': revenue.status || 'مكتملة',
+            'العميل': revenue.clientName || 'غير محدد',
+            'تاريخ الاستحقاق': '',
+            'تاريخ الدفع': revenue.paymentDate ? new Date(revenue.paymentDate).toLocaleDateString('ar-EG') : '',
+          });
+        });
+      }
+
+      // إضافة المصروفات
+      if (expenses.results) {
+        expenses.results.forEach((expense: any) => {
+          transactions.push({
+            'نوع المعاملة': 'مصروف',
+            'التفاصيل': expense.description || 'مصروف',
+            'المبلغ (ج.م)': -(expense.amount || 0),
+            'التاريخ': expense.date ? new Date(expense.date).toLocaleDateString('ar-EG') : '',
+            'الفئة': expense.category || 'أخرى',
+            'المصدر': 'نظام المصروفات',
+            'الحالة': expense.status || 'مكتملة',
+            'المورد': expense.vendorName || 'غير محدد',
+            'تاريخ الاستحقاق': '',
+            'تاريخ الدفع': expense.paymentDate ? new Date(expense.paymentDate).toLocaleDateString('ar-EG') : '',
+          });
+        });
+      }
+
+      // ترتيب حسب التاريخ (الأحدث أولاً)
+      transactions.sort((a, b) => new Date(b['التاريخ']).getTime() - new Date(a['التاريخ']).getTime());
+
+      // إنشاء ورقة عمل
+      const worksheet = XLSX.utils.json_to_sheet(transactions);
+      
+      // إنشاء كتاب عمل
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'المعاملات المالية');
+
+      // تحديد عرض الأعمدة
+      const columnWidths = [
+        { wch: 12 }, // نوع المعاملة
+        { wch: 25 }, // التفاصيل
+        { wch: 15 }, // المبلغ
+        { wch: 15 }, // التاريخ
+        { wch: 15 }, // الفئة
+        { wch: 20 }, // المصدر
+        { wch: 12 }, // الحالة
+        { wch: 20 }, // العميل/الموظف/المورد
+        { wch: 15 }, // تاريخ الاستحقاق
+        { wch: 15 }, // تاريخ الدفع
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // تصدير الملف
+      const fileName = `المعاملات_المالية_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      showSuccess('تم التصدير بنجاح', `تم تصدير ${transactions.length} معاملة مالية بنجاح`);
+    } catch (error) {
+      console.error('خطأ في تصدير المعاملات المالية:', error);
+      showError('خطأ في التصدير', 'حدث خطأ أثناء تصدير المعاملات المالية');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // دالة تصدير التقارير المالية حسب التاب النشط
+  const exportReportsToExcel = async () => {
+    if (!selectedReport || !reportsData) {
+      showError('خطأ في التصدير', 'يرجى تحديد تقرير أولاً');
+      return;
+    }
+
+    try {
+      setReportsLoading(true);
+      let exportData: any[] = [];
+      let fileName = '';
+      let sheetName = '';
+
+      switch (selectedReport) {
+        case 'invoices':
+          exportData = reportsData.invoices.data.map((invoice: any) => ({
+            'رقم الفاتورة': invoice.invoiceNumber || invoice._id,
+            'العميل': userMap[invoice.userId]?.name || invoice.userId || 'غير محدد',
+            'المبلغ (ج.م)': invoice.totalAmount || invoice.amount || 0,
+            'تاريخ الإنشاء': invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString('ar-EG') : '',
+            'تاريخ الاستحقاق': invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString('ar-EG') : '',
+            'تاريخ الدفع': invoice.paymentDate ? new Date(invoice.paymentDate).toLocaleDateString('ar-EG') : '',
+            'الحالة': invoice.status === 'paid' ? 'مدفوعة' : invoice.status === 'pending' ? 'معلقة' : 'متأخرة',
+            'الوصف': invoice.description || '',
+            'طريقة الدفع': invoice.paymentMethod || '',
+            'الملاحظات': invoice.notes || '',
+          }));
+          fileName = `تقرير_الفواتير_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+          sheetName = 'الفواتير';
+          break;
+
+        case 'payrolls':
+          exportData = reportsData.payrolls.data.map((payroll: any) => ({
+            'الموظف': userMap[payroll.employeeId]?.name || payroll.employeeId || 'غير محدد',
+            'الراتب الأساسي (ج.م)': payroll.salaryAmount || 0,
+            'المكافآت (ج.م)': payroll.bonuses || 0,
+            'الخصومات (ج.م)': payroll.deductions || 0,
+            'صافي الراتب (ج.م)': (payroll.salaryAmount || 0) + (payroll.bonuses || 0) - (payroll.deductions || 0),
+            'تاريخ الدفع': payroll.paymentDate ? new Date(payroll.paymentDate).toLocaleDateString('ar-EG') : '',
+            'الشهر': payroll.month || '',
+            'السنة': payroll.year || '',
+            'الحالة': payroll.status || 'مكتملة',
+            'الملاحظات': payroll.notes || '',
+          }));
+          fileName = `تقرير_الرواتب_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+          sheetName = 'الرواتب';
+          break;
+
+        case 'revenues':
+          exportData = reportsData.revenues.data.map((revenue: any) => ({
+            'الوصف': revenue.notes || 'إيراد',
+            'المبلغ (ج.م)': revenue.amount || 0,
+            'التاريخ': revenue.date ? new Date(revenue.date).toLocaleDateString('ar-EG') : '',
+            'نوع المصدر': revenue.sourceType || 'أخرى',
+            'طريقة الدفع': revenue.paymentMethod || '',
+            'العميل': revenue.clientName || 'غير محدد',
+            'الحالة': revenue.status || 'مكتملة',
+            'الملاحظات': revenue.description || '',
+            'تاريخ الإنشاء': revenue.createdAt ? new Date(revenue.createdAt).toLocaleDateString('ar-EG') : '',
+          }));
+          fileName = `تقرير_الإيرادات_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+          sheetName = 'الإيرادات';
+          break;
+
+        case 'expenses':
+          exportData = reportsData.expenses.data.map((expense: any) => ({
+            'الوصف': expense.description || 'مصروف',
+            'المبلغ (ج.م)': expense.amount || 0,
+            'التاريخ': expense.date ? new Date(expense.date).toLocaleDateString('ar-EG') : '',
+            'الفئة': expense.category || 'أخرى',
+            'المورد': expense.vendorName || 'غير محدد',
+            'طريقة الدفع': expense.paymentMethod || '',
+            'الحالة': expense.status || 'مكتملة',
+            'الملاحظات': expense.notes || '',
+            'تاريخ الإنشاء': expense.createdAt ? new Date(expense.createdAt).toLocaleDateString('ar-EG') : '',
+          }));
+          fileName = `تقرير_المصروفات_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+          sheetName = 'المصروفات';
+          break;
+
+        case 'summary':
+          // إنشاء تقرير شامل يحتوي على ملخص لجميع البيانات
+          const summaryData = [
+            {
+              'المؤشر': 'إجمالي الإيرادات',
+              'القيمة (ج.م)': reportsData.summary.totalRevenue,
+              'النسبة': '100%',
+              'التفاصيل': 'مجموع جميع الإيرادات'
+            },
+            {
+              'المؤشر': 'إجمالي المصروفات',
+              'القيمة (ج.م)': reportsData.summary.totalExpenses,
+              'النسبة': reportsData.summary.totalRevenue > 0 
+                ? `${((reportsData.summary.totalExpenses / reportsData.summary.totalRevenue) * 100).toFixed(1)}%`
+                : '0%',
+              'التفاصيل': 'مجموع جميع المصروفات'
+            },
+            {
+              'المؤشر': 'صافي الربح',
+              'القيمة (ج.م)': reportsData.summary.netProfit,
+              'النسبة': reportsData.summary.profitMargin.toFixed(1) + '%',
+              'التفاصيل': reportsData.summary.netProfit >= 0 ? 'ربح إيجابي' : 'خسارة'
+            },
+            {
+              'المؤشر': 'إجمالي الفواتير',
+              'القيمة (ج.م)': reportsData.summary.totalInvoices,
+              'النسبة': '100%',
+              'التفاصيل': 'مجموع جميع الفواتير'
+            },
+            {
+              'المؤشر': 'الفواتير المدفوعة',
+              'القيمة (ج.م)': reportsData.summary.paidInvoices,
+              'النسبة': reportsData.summary.totalInvoices > 0 
+                ? `${((reportsData.summary.paidInvoices / reportsData.summary.totalInvoices) * 100).toFixed(1)}%`
+                : '0%',
+              'التفاصيل': 'الفواتير التي تم دفعها'
+            },
+            {
+              'المؤشر': 'الفواتير المعلقة',
+              'القيمة (ج.م)': reportsData.summary.pendingInvoices,
+              'النسبة': reportsData.summary.totalInvoices > 0 
+                ? `${((reportsData.summary.pendingInvoices / reportsData.summary.totalInvoices) * 100).toFixed(1)}%`
+                : '0%',
+              'التفاصيل': 'الفواتير في انتظار الدفع'
+            },
+            {
+              'المؤشر': 'الفواتير المتأخرة',
+              'القيمة (ج.م)': reportsData.summary.overdueInvoices,
+              'النسبة': reportsData.summary.totalInvoices > 0 
+                ? `${((reportsData.summary.overdueInvoices / reportsData.summary.totalInvoices) * 100).toFixed(1)}%`
+                : '0%',
+              'التفاصيل': 'الفواتير المتأخرة عن موعد الاستحقاق'
+            }
+          ];
+          exportData = summaryData;
+          fileName = `التقرير_المالي_الشامل_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+          sheetName = 'التقرير الشامل';
+          break;
+
+        default:
+          showError('خطأ في التصدير', 'نوع التقرير غير صحيح');
+          return;
+      }
+
+      // إنشاء ورقة عمل
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      // إنشاء كتاب عمل
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+
+      // تحديد عرض الأعمدة
+      const columnWidths = exportData.length > 0 ? 
+        Object.keys(exportData[0]).map(() => ({ wch: 20 })) : 
+        [{ wch: 20 }];
+      worksheet['!cols'] = columnWidths;
+
+      // تصدير الملف
+      XLSX.writeFile(workbook, fileName);
+
+      showSuccess('تم التصدير بنجاح', `تم تصدير تقرير ${sheetName} بنجاح (${exportData.length} سجل)`);
+    } catch (error) {
+      console.error('خطأ في تصدير التقارير:', error);
+      showError('خطأ في التصدير', 'حدث خطأ أثناء تصدير التقارير المالية');
+    } finally {
+      setReportsLoading(false);
     }
   };
 
@@ -611,13 +910,22 @@ const AdminFinancialOverview = () => {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 المعاملات الأخيرة
                 </h3>
-                <button 
-                  onClick={loadRecentTransactions}
-                  disabled={loading}
-                  className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {loading ? 'جارِ التحميل...' : 'تحديث'}
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button 
+                    onClick={exportTransactionsToExcel}
+                    disabled={loading}
+                    className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {loading ? 'جارِ التصدير...' : 'تصدير البيانات'}
+                  </button>
+                  <button 
+                    onClick={loadRecentTransactions}
+                    disabled={loading}
+                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {loading ? 'جارِ التحميل...' : 'تحديث'}
+                  </button>
+                </div>
               </div>
               
               {error && (
@@ -707,13 +1015,22 @@ const AdminFinancialOverview = () => {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   التقارير المالية الشاملة
                 </h3>
-                <button 
-                  onClick={loadReportsData}
-                  disabled={reportsLoading}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {reportsLoading ? 'جارِ التحميل...' : 'تحديث التقارير'}
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button 
+                    onClick={exportReportsToExcel}
+                    disabled={reportsLoading || !selectedReport}
+                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {reportsLoading ? 'جارِ التصدير...' : 'تصدير البيانات'}
+                  </button>
+                  <button 
+                    onClick={loadReportsData}
+                    disabled={reportsLoading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {reportsLoading ? 'جارِ التحميل...' : 'تحديث التقارير'}
+                  </button>
+                </div>
               </div>
 
               {reportsError && (
@@ -1296,6 +1613,15 @@ const AdminFinancialOverview = () => {
           )}
         </div>
       </div>
+      
+      {/* Custom Alert */}
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        type={alertState.type}
+        title={alertState.title}
+        message={alertState.message}
+        onClose={hideAlert}
+      />
     </div>
   );
 };

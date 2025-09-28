@@ -9,6 +9,7 @@ import CustomAlert from '@/components/ui/CustomAlert';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { useCustomAlert } from '@/hooks/useCustomAlert';
 import { useConfirmationDialog } from '@/hooks/useConfirmationDialog';
+import * as XLSX from 'xlsx';
 
 const sessionScheduleService = new SessionScheduleService();
 
@@ -275,6 +276,63 @@ const SessionSchedulesManagement = ({
     return user?.name || 'غير محدد';
   };
 
+  // دالة تصدير بيانات الجلسات إلى Excel
+  const exportSessionsToExcel = () => {
+    try {
+      // تحضير البيانات للتصدير بناءً على الجلسات المفلترة
+      const exportData = filteredSessions.map(session => ({
+        'نوع الحصة': session.sessionType || '',
+        'المتدرب': getUserName(session.userId),
+        'المدرب': getUserName(session.trainerId),
+        'التاريخ': new Date(session.date).toLocaleDateString('ar-EG'),
+        'وقت البداية': session.startTime || '',
+        'وقت النهاية': session.endTime || '',
+        'المدة (دقيقة)': session.duration || 0,
+        'السعر (ج.م)': session.price || 0,
+        'الموقع': session.location || '',
+        'الحالة': session.status || '',
+        'الوصف': session.description || '',
+        'تاريخ الإنشاء': session.createdAt ? new Date(session.createdAt).toLocaleDateString('ar-EG') : '',
+        'آخر تعديل': session.updatedAt ? new Date(session.updatedAt).toLocaleDateString('ar-EG') : '',
+      }));
+
+      // إنشاء ورقة عمل
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      // إنشاء كتاب عمل
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'جداول الجلسات');
+
+      // تحديد عرض الأعمدة
+      const columnWidths = [
+        { wch: 15 }, // نوع الحصة
+        { wch: 20 }, // المتدرب
+        { wch: 20 }, // المدرب
+        { wch: 15 }, // التاريخ
+        { wch: 15 }, // وقت البداية
+        { wch: 15 }, // وقت النهاية
+        { wch: 15 }, // المدة
+        { wch: 12 }, // السعر
+        { wch: 15 }, // الموقع
+        { wch: 12 }, // الحالة
+        { wch: 30 }, // الوصف
+        { wch: 15 }, // تاريخ الإنشاء
+        { wch: 15 }, // آخر تعديل
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // تصدير الملف
+      const fileName = `جداول_الجلسات_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      // إظهار رسالة نجاح
+      showSuccess('تم التصدير بنجاح', `تم تصدير ${exportData.length} جلسة بنجاح`);
+    } catch (error) {
+      console.error('خطأ في تصدير البيانات:', error);
+      showError('خطأ في التصدير', 'حدث خطأ أثناء تصدير البيانات');
+    }
+  };
+
   const filteredSessions = sessions?.filter(session => {
     // فلترة حسب التاريخ المحدد (إن وجد)
     if (filterDate) {
@@ -400,7 +458,10 @@ const SessionSchedulesManagement = ({
               </div>
               )}
               <div className="flex items-end justify-center">
-              <button className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-3 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+              <button 
+                onClick={exportSessionsToExcel}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-3 rounded-md text-sm transition-colors"
+              >
                 تصدير البيانات
               </button>
               </div>

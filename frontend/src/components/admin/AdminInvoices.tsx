@@ -5,6 +5,9 @@ import { invoiceService, userService } from "@/services";
 import type { Invoice, GetInvoicesFilters, InvoiceSummary } from "@/services/invoiceService";
 import type { User } from "@/types/models";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
+import * as XLSX from 'xlsx';
+import CustomAlert from '@/components/ui/CustomAlert';
+import { useCustomAlert } from '@/hooks/useCustomAlert';
 
 type CreateInvoiceItem = { description: string; quantity: number; price: number };
 type CreateInvoiceForm = {
@@ -25,6 +28,7 @@ const defaultFilters: GetInvoicesFilters = {
 };
 
 const AdminInvoices: React.FC = () => {
+  const { alertState, showSuccess, showError, showWarning, hideAlert } = useCustomAlert();
   const [filters, setFilters] = useState<GetInvoicesFilters>(defaultFilters);
   const [loading, setLoading] = useState(false);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -381,6 +385,70 @@ const AdminInvoices: React.FC = () => {
     setFilters((prev) => ({ ...prev, [k]: v, skip: 0 }));
   };
 
+  // دالة تصدير الفواتير إلى Excel
+  const exportInvoicesToExcel = () => {
+    try {
+      const exportData = invoices.map(invoice => {
+        const user = userMap[invoice.userId];
+        return {
+          'رقم الفاتورة': invoice.invoiceNumber || '',
+          'العميل': user?.name || invoice.userId || 'غير محدد',
+          'هاتف العميل': user?.phone || 'غير محدد',
+          'بريد العميل': user?.email || 'غير محدد',
+          'المبلغ الإجمالي (ج.م)': invoice.amount || 0,
+          'المبلغ المدفوع (ج.م)': invoice.paidAmount || 0,
+          'المبلغ المتبقي (ج.م)': (invoice.amount || 0) - (invoice.paidAmount || 0),
+          'تاريخ الإصدار': invoice.issueDate ? new Date(invoice.issueDate).toLocaleDateString('ar-EG') : '',
+          'تاريخ الاستحقاق': invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString('ar-EG') : '',
+          'الحالة': invoice.status === 'paid' ? 'مدفوعة' : invoice.status === 'overdue' ? 'متأخرة' : 'قيد الانتظار',
+          'عدد العناصر': invoice.items?.length || 0,
+          'تفاصيل العناصر': invoice.items?.map(item => 
+            `${item.description} (${item.quantity} × ${item.price} = ${item.quantity * item.price})`
+          ).join(' | ') || '',
+          'الملاحظات': invoice.notes || '',
+          'تاريخ الإنشاء': invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString('ar-EG') : '',
+          'آخر تعديل': invoice.updatedAt ? new Date(invoice.updatedAt).toLocaleDateString('ar-EG') : '',
+        };
+      });
+
+      // إنشاء ورقة عمل
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      // إنشاء كتاب عمل
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'الفواتير');
+
+      // تحديد عرض الأعمدة
+      const columnWidths = [
+        { wch: 15 }, // رقم الفاتورة
+        { wch: 20 }, // العميل
+        { wch: 15 }, // هاتف العميل
+        { wch: 25 }, // بريد العميل
+        { wch: 15 }, // المبلغ الإجمالي
+        { wch: 15 }, // المبلغ المدفوع
+        { wch: 15 }, // المبلغ المتبقي
+        { wch: 15 }, // تاريخ الإصدار
+        { wch: 15 }, // تاريخ الاستحقاق
+        { wch: 12 }, // الحالة
+        { wch: 12 }, // عدد العناصر
+        { wch: 50 }, // تفاصيل العناصر
+        { wch: 30 }, // الملاحظات
+        { wch: 15 }, // تاريخ الإنشاء
+        { wch: 15 }, // آخر تعديل
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // تصدير الملف
+      const fileName = `الفواتير_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      showSuccess('تم التصدير بنجاح', `تم تصدير ${exportData.length} فاتورة بنجاح`);
+    } catch (error) {
+      console.error('خطأ في تصدير الفواتير:', error);
+      showError('خطأ في التصدير', 'حدث خطأ أثناء تصدير الفواتير');
+    }
+  };
+
   const fmt = (n: number) => new Intl.NumberFormat().format(n || 0);
   const filteredUsers = useMemo(() => {
     const q = userSearch.trim().toLowerCase();
@@ -493,7 +561,14 @@ const AdminInvoices: React.FC = () => {
               <option value="asc">الأقدم</option>
             </select>
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end space-x-2">
+            <button
+              onClick={exportInvoicesToExcel}
+              disabled={invoices.length === 0}
+              className="px-1.5 py-0.5 rounded bg-green-600 text-white text-xs h-8 min-w-[110px] max-w-[160px] disabled:opacity-50"
+            >
+              تصدير البيانات
+            </button>
             <button
               className="w-full px-1.5 py-0.5 rounded bg-blue-600 text-white text-xs h-8 min-w-[110px] max-w-[160px]"
               onClick={() => fetchData()}
@@ -1116,6 +1191,15 @@ const AdminInvoices: React.FC = () => {
         cancelText="إلغاء"
         type="danger"
         isLoading={!!updatingId}
+      />
+      
+      {/* Custom Alert */}
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        type={alertState.type}
+        title={alertState.title}
+        message={alertState.message}
+        onClose={hideAlert}
       />
     </div>
   );

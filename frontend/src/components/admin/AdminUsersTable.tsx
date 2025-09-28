@@ -9,6 +9,7 @@ import AdminUsersTableList from './AdminUsersTableList';
 import AdminUsersTablePagination from './AdminUsersTablePagination';
 import AdminUserModals from './AdminUserModals';
 import { subscriptionAlertService } from '@/services/subscriptionAlertService';
+import * as XLSX from 'xlsx';
 
 const AdminUsersTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -575,6 +576,90 @@ const AdminUsersTable = () => {
     }
   };
 
+  // دالة تصدير البيانات إلى Excel
+  const exportToExcel = () => {
+    try {
+      // تحضير البيانات للتصدير
+      const exportData = filteredUsers.map(user => ({
+        'الاسم': user.name || '',
+        'البريد الإلكتروني': user.email || '',
+        'الدور': getRoleText(user.role),
+        'رقم الهاتف': user.phone || '',
+        'تاريخ الميلاد': user.dob ? new Date(user.dob).toLocaleDateString('ar-EG') : '',
+        'العنوان': user.address || '',
+        'الرصيد': user.balance || 0,
+        'الحالة': user.status === 'active' ? 'نشط' : user.status === 'inactive' ? 'غير نشط' : 'محظور',
+        'تم التحقق من البريد': user.isEmailVerified ? 'نعم' : 'لا',
+        'تاريخ بداية الاشتراك': user.subscriptionStartDate ? new Date(user.subscriptionStartDate).toLocaleDateString('ar-EG') : '',
+        'تاريخ نهاية الاشتراك': user.subscriptionEndDate ? new Date(user.subscriptionEndDate).toLocaleDateString('ar-EG') : '',
+        'حالة الاشتراك': user.subscriptionStatus === 'active' ? 'نشط' : user.subscriptionStatus === 'expired' ? 'منتهي' : 'ملغي',
+        'تاريخ آخر دفع': user.lastPaymentDate ? new Date(user.lastPaymentDate).toLocaleDateString('ar-EG') : '',
+        'تاريخ استحقاق الدفع القادم': user.nextPaymentDueDate ? new Date(user.nextPaymentDueDate).toLocaleDateString('ar-EG') : '',
+        'نقاط الولاء': user.loyaltyPoints || 0,
+        'مستوى العضوية': user.membershipLevel || '',
+        'الأهداف': user.goals ? Object.entries(user.goals).filter(([_, value]) => value).map(([key, _]) => {
+          const goalNames = { weightLoss: 'فقدان الوزن', muscleGain: 'بناء العضلات', endurance: 'تحسين التحمل' };
+          return goalNames[key as keyof typeof goalNames] || key;
+        }).join(', ') : '',
+        'معرف المدرب': user.trainerId || '',
+        'تاريخ الإنشاء': user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : '',
+        'آخر تعديل': user.updatedAt ? new Date(user.updatedAt).toLocaleDateString('ar-EG') : '',
+      }));
+
+      // إنشاء ورقة عمل
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      // إنشاء كتاب عمل
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'بيانات المستخدمين');
+
+      // تحديد عرض الأعمدة
+      const columnWidths = [
+        { wch: 20 }, // الاسم
+        { wch: 30 }, // البريد الإلكتروني
+        { wch: 15 }, // الدور
+        { wch: 15 }, // رقم الهاتف
+        { wch: 15 }, // تاريخ الميلاد
+        { wch: 30 }, // العنوان
+        { wch: 10 }, // الرصيد
+        { wch: 10 }, // الحالة
+        { wch: 15 }, // تم التحقق من البريد
+        { wch: 20 }, // تاريخ بداية الاشتراك
+        { wch: 20 }, // تاريخ نهاية الاشتراك
+        { wch: 15 }, // حالة الاشتراك
+        { wch: 20 }, // تاريخ آخر دفع
+        { wch: 25 }, // تاريخ استحقاق الدفع القادم
+        { wch: 15 }, // نقاط الولاء
+        { wch: 15 }, // مستوى العضوية
+        { wch: 30 }, // الأهداف
+        { wch: 15 }, // معرف المدرب
+        { wch: 15 }, // تاريخ الإنشاء
+        { wch: 15 }, // آخر تعديل
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // تصدير الملف
+      const fileName = `بيانات_المستخدمين_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      // إظهار رسالة نجاح
+      window.dispatchEvent(new CustomEvent('toast', { 
+        detail: { 
+          type: 'success', 
+          message: `تم تصدير ${exportData.length} مستخدم بنجاح` 
+        } 
+      }));
+    } catch (error) {
+      console.error('خطأ في تصدير البيانات:', error);
+      window.dispatchEvent(new CustomEvent('toast', { 
+        detail: { 
+          type: 'error', 
+          message: 'حدث خطأ أثناء تصدير البيانات' 
+        } 
+      }));
+    }
+  };
+
   // userViewFields (جميع الحقول من User Schema)
   const userViewFields: { key: string; label: string; type?: 'object' }[] = [
     { key: 'name', label: 'الاسم' },
@@ -616,6 +701,7 @@ const AdminUsersTable = () => {
         filterRole={filterRole}
         setFilterRole={setFilterRole}
         onOpenCreate={openCreate}
+        onExportData={exportToExcel}
       />
       <AdminUsersTableList
         users={safeUsers}

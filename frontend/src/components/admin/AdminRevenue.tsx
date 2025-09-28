@@ -5,10 +5,14 @@ import { revenueService, userService } from '@/services';
 import type { Revenue } from '@/services/revenueService';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import type { User } from '@/types/models';
+import * as XLSX from 'xlsx';
+import CustomAlert from '@/components/ui/CustomAlert';
+import { useCustomAlert } from '@/hooks/useCustomAlert';
 
 type SortOrder = 'asc' | 'desc';
 
 const AdminRevenue: React.FC = () => {
+  const { alertState, showSuccess, showError, showWarning, hideAlert } = useCustomAlert();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -234,6 +238,38 @@ const AdminRevenue: React.FC = () => {
     setViewOpen(false);
   };
 
+  // دالة تصدير الدخل إلى Excel
+  const exportRevenueToExcel = () => {
+    try {
+      const exportData = items.map(row => {
+        const user = row.userId ? userMap[row.userId] : undefined;
+        return {
+          'التاريخ': row.date ? new Date(row.date).toLocaleDateString('ar-EG') : '',
+          'المبلغ (ج.م)': row.amount || 0,
+          'طريقة الدفع': row.paymentMethod || '',
+          'نوع المصدر': row.sourceType || '',
+          'العميل': user?.name || row.userId || '-',
+          'هاتف العميل': user?.phone || '-',
+          'ملاحظات': row.notes || '',
+          'تاريخ الإنشاء': row.createdAt ? new Date(row.createdAt).toLocaleDateString('ar-EG') : '',
+          'آخر تعديل': row.updatedAt ? new Date(row.updatedAt).toLocaleDateString('ar-EG') : '',
+        };
+      });
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'الدخل');
+      worksheet['!cols'] = [
+        { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 15 }
+      ];
+      const fileName = `الدخل_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+      showSuccess('تم التصدير بنجاح', `تم تصدير ${exportData.length} سجل دخل بنجاح`);
+    } catch (error) {
+      console.error('خطأ في تصدير الدخل:', error);
+      showError('خطأ في التصدير', 'حدث خطأ أثناء تصدير الدخل');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Filters */}
@@ -289,6 +325,15 @@ const AdminRevenue: React.FC = () => {
           <div className="flex items-end">
             <button className="w-full px-1.5 py-0.5 rounded border text-xs h-8" onClick={() => { setSkip(0); loadSummary(); }} disabled={loading}>ملخص</button>
           </div>
+          <div className="flex  mt-4">
+        <button
+          onClick={exportRevenueToExcel}
+          disabled={items.length === 0}
+          className="px-4 py-2 rounded bg-green-600 text-white text-sm disabled:opacity-50 shadow hover:bg-green-700 transition-colors"
+        >
+          تصدير البيانات
+        </button>
+      </div>
         </div>
       </div>
 
@@ -394,6 +439,7 @@ const AdminRevenue: React.FC = () => {
           )}
         </div>
       )}
+
 
       {/* List */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-auto">
@@ -546,6 +592,13 @@ const AdminRevenue: React.FC = () => {
         cancelText="إلغاء"
         type="danger"
         isLoading={loading}
+      />
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        type={alertState.type}
+        title={alertState.title}
+        message={alertState.message}
+        onClose={hideAlert}
       />
     </div>
   );

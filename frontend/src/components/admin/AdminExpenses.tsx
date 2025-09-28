@@ -4,10 +4,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { expenseService } from '@/services';
 import type { Expense } from '@/types';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
+import * as XLSX from 'xlsx';
+import CustomAlert from '@/components/ui/CustomAlert';
+import { useCustomAlert } from '@/hooks/useCustomAlert';
 
 type SortOrder = 'asc' | 'desc';
 
 const AdminExpenses: React.FC = () => {
+  const { alertState, showSuccess, showError, showWarning, hideAlert } = useCustomAlert();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -221,6 +225,35 @@ const AdminExpenses: React.FC = () => {
     }
   };
 
+  // دالة تصدير المصروفات إلى Excel
+  const exportExpensesToExcel = () => {
+    try {
+      const exportData = items.map(row => {
+        return {
+          'التاريخ': row.date ? new Date(row.date).toLocaleDateString('ar-EG') : '',
+          'التصنيف': row.category || '',
+          'المبلغ (ج.م)': row.amount || 0,
+          'المدفوع له': row.paidTo || '-',
+          'ملاحظات': row.notes || '',
+          'تاريخ الإنشاء': row.createdAt ? new Date(row.createdAt).toLocaleDateString('ar-EG') : '',
+          'آخر تعديل': row.updatedAt ? new Date(row.updatedAt).toLocaleDateString('ar-EG') : '',
+        };
+      });
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'المصروفات');
+      worksheet['!cols'] = [
+        { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 30 }, { wch: 15 }, { wch: 15 }
+      ];
+      const fileName = `المصروفات_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+      showSuccess('تم التصدير بنجاح', `تم تصدير ${exportData.length} سجل مصروف بنجاح`);
+    } catch (error) {
+      console.error('خطأ في تصدير المصروفات:', error);
+      showError('خطأ في التصدير', 'حدث خطأ أثناء تصدير المصروفات');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* المرشحات */}
@@ -322,6 +355,15 @@ const AdminExpenses: React.FC = () => {
               ملخص
             </button>
           </div>
+          <div className="flex  mt-4">
+        <button
+          onClick={exportExpensesToExcel}
+          disabled={items.length === 0}
+          className="px-4 py-2 rounded bg-green-600 text-white text-sm disabled:opacity-50 shadow hover:bg-green-700 transition-colors"
+        >
+          تصدير البيانات
+        </button>
+      </div>
         </div>
       </div>
 
@@ -473,6 +515,7 @@ const AdminExpenses: React.FC = () => {
         </div>
       )}
 
+
       {/* Success toast */}
       {successMessage && (
         <div className="fixed bottom-4 right-4 z-50 bg-green-600 text-white px-4 py-2 rounded shadow-lg">
@@ -562,6 +605,13 @@ const AdminExpenses: React.FC = () => {
         cancelText="إلغاء"
         type="danger"
         isLoading={loading}
+      />
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        type={alertState.type}
+        title={alertState.title}
+        message={alertState.message}
+        onClose={hideAlert}
       />
     </div>
   );

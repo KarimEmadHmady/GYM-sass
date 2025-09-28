@@ -5,10 +5,14 @@ import { payrollService, userService } from '@/services';
 import type { Payroll } from '@/services/payrollService';
 import type { User } from '@/types/models';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
+import * as XLSX from 'xlsx';
+import CustomAlert from '@/components/ui/CustomAlert';
+import { useCustomAlert } from '@/hooks/useCustomAlert';
 
 type SortOrder = 'asc' | 'desc';
 
 const AdminPayroll: React.FC = () => {
+  const { alertState, showSuccess, showError, showWarning, hideAlert } = useCustomAlert();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -234,6 +238,68 @@ const AdminPayroll: React.FC = () => {
     setTotalPayrollAll(s.totals.payroll || 0);
   };
 
+  // دالة تصدير الرواتب إلى Excel
+  const exportPayrollToExcel = () => {
+    try {
+      const exportData = rows.map(payroll => {
+        const user = userMap[payroll.employeeId];
+        const netSalary = (payroll.salaryAmount || 0) + (payroll.bonuses || 0) - (payroll.deductions || 0);
+        
+        return {
+          'الموظف': user?.name || payroll.employeeId || 'غير محدد',
+          'هاتف الموظف': user?.phone || 'غير محدد',
+          'بريد الموظف': user?.email || 'غير محدد',
+          'دور الموظف': user ? ((user as any).role === 'trainer' ? 'مدرب' : (user as any).role === 'manager' ? 'مدير' : 'غير محدد') : 'غير محدد',
+          'الراتب الأساسي (ج.م)': payroll.salaryAmount || 0,
+          'المكافآت (ج.م)': payroll.bonuses || 0,
+          'الخصومات (ج.م)': payroll.deductions || 0,
+          'صافي الراتب (ج.م)': netSalary,
+          'تاريخ الدفع': payroll.paymentDate ? new Date(payroll.paymentDate).toLocaleDateString('ar-EG') : '',
+          'الشهر': payroll.paymentDate ? new Date(payroll.paymentDate).getMonth() + 1 : '',
+          'السنة': payroll.paymentDate ? new Date(payroll.paymentDate).getFullYear() : '',
+          'الملاحظات': payroll.notes || '',
+          'تاريخ الإنشاء': payroll.createdAt ? new Date(payroll.createdAt).toLocaleDateString('ar-EG') : '',
+          'آخر تعديل': payroll.updatedAt ? new Date(payroll.updatedAt).toLocaleDateString('ar-EG') : '',
+        };
+      });
+
+      // إنشاء ورقة عمل
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      // إنشاء كتاب عمل
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'الرواتب');
+
+      // تحديد عرض الأعمدة
+      const columnWidths = [
+        { wch: 20 }, // الموظف
+        { wch: 15 }, // هاتف الموظف
+        { wch: 25 }, // بريد الموظف
+        { wch: 12 }, // دور الموظف
+        { wch: 15 }, // الراتب الأساسي
+        { wch: 15 }, // المكافآت
+        { wch: 15 }, // الخصومات
+        { wch: 15 }, // صافي الراتب
+        { wch: 15 }, // تاريخ الدفع
+        { wch: 8 },  // الشهر
+        { wch: 8 },  // السنة
+        { wch: 30 }, // الملاحظات
+        { wch: 15 }, // تاريخ الإنشاء
+        { wch: 15 }, // آخر تعديل
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // تصدير الملف
+      const fileName = `الرواتب_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      showSuccess('تم التصدير بنجاح', `تم تصدير ${exportData.length} قيد راتب بنجاح`);
+    } catch (error) {
+      console.error('خطأ في تصدير الرواتب:', error);
+      showError('خطأ في التصدير', 'حدث خطأ أثناء تصدير الرواتب');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Filters */}
@@ -271,12 +337,22 @@ const AdminPayroll: React.FC = () => {
               <option value="asc">الأقدم</option>
             </select>
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end space-x-2">
+   
             <button className="w-full px-1.5 py-0.5 rounded bg-blue-600 text-white text-xs h-8" onClick={loadList} disabled={loading}>{loading ? 'جارِ التحميل...' : 'تحديث'}</button>
           </div>
           <div className="flex items-end">
             <button className="w-full px-1.5 py-0.5 rounded border text-xs h-8" onClick={() => { setSkip(0); loadSummary(); }} disabled={loading}>ملخص</button>
           </div>
+          <div className="flex items-end">
+          <button
+              onClick={exportPayrollToExcel}
+              disabled={rows.length === 0}
+              className="px-1.5 py-0.5 rounded bg-green-600 text-white text-xs h-8 disabled:opacity-50"
+            >
+              تصدير البيانات
+            </button>          
+            </div>
         </div>
       </div>
 
@@ -518,6 +594,15 @@ const AdminPayroll: React.FC = () => {
           </div>
         </div>
       )}
+      
+      {/* Custom Alert */}
+      <CustomAlert
+        isOpen={alertState.isOpen}
+        type={alertState.type}
+        title={alertState.title}
+        message={alertState.message}
+        onClose={hideAlert}
+      />
     </div>
   );
 };

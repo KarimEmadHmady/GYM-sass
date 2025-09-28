@@ -7,6 +7,9 @@ import type { WorkoutPlan } from '@/types';
 import { workoutService, userService } from '@/services';
 import { dietService } from '@/services';
 import type { DietPlan } from '@/types';
+import * as XLSX from 'xlsx';
+import CustomAlert from '@/components/ui/CustomAlert';
+import { useCustomAlert } from '@/hooks/useCustomAlert';
 
 type AdminPlansOverviewProps = {
   filterUserIds?: Set<string>;
@@ -14,6 +17,7 @@ type AdminPlansOverviewProps = {
 
 const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => {
   const { user } = useAuth();
+  const { alertState, showSuccess, showError, showWarning, hideAlert } = useCustomAlert();
   const currentRole = (user as any)?.role as string | undefined;
   const currentTrainerId = React.useMemo(() => ((user as any)?._id ?? (user as any)?.id ?? ''), [user]);
   const [activeTab, setActiveTab] = useState('workout');
@@ -203,6 +207,109 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
     return t(`AdminPlansOverview.statuses.${status}`);
   };
 
+  // دالة تصدير خطط التمرين إلى Excel
+  const exportWorkoutPlansToExcel = () => {
+    try {
+      const exportData = filteredWorkoutPlans.map(plan => ({
+        'اسم الخطة': plan.planName || '',
+        'المستخدم': userNameMap[plan.userId] || 'غير محدد',
+        'المدرب': plan.trainerId ? (userNameMap[plan.trainerId] || 'غير محدد') : 'غير محدد',
+        'الوصف': plan.description || '',
+        'تاريخ البداية': plan.startDate ? new Date(plan.startDate).toLocaleDateString('ar-EG') : '',
+        'تاريخ النهاية': plan.endDate ? new Date(plan.endDate).toLocaleDateString('ar-EG') : '',
+        'عدد التمارين': plan.exercises?.length || 0,
+        'التدريبات': plan.exercises?.map(ex => 
+          `${ex.name} (${ex.sets} مجموعات × ${ex.reps} تكرار)${ex.notes ? ' - ' + ex.notes : ''}`
+        ).join(' | ') || '',
+        'تاريخ الإنشاء': plan.createdAt ? new Date(plan.createdAt).toLocaleDateString('ar-EG') : '',
+        'آخر تعديل': plan.updatedAt ? new Date(plan.updatedAt).toLocaleDateString('ar-EG') : '',
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'خطط التمرين');
+
+      // تحديد عرض الأعمدة
+      const columnWidths = [
+        { wch: 20 }, // اسم الخطة
+        { wch: 20 }, // المستخدم
+        { wch: 20 }, // المدرب
+        { wch: 30 }, // الوصف
+        { wch: 15 }, // تاريخ البداية
+        { wch: 15 }, // تاريخ النهاية
+        { wch: 12 }, // عدد التمارين
+        { wch: 50 }, // التدريبات
+        { wch: 15 }, // تاريخ الإنشاء
+        { wch: 15 }, // آخر تعديل
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      const fileName = `خطط_التمرين_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      showSuccess('تم التصدير بنجاح', `تم تصدير ${exportData.length} خطة تمرين بنجاح`);
+    } catch (error) {
+      console.error('خطأ في تصدير خطط التمرين:', error);
+      showError('خطأ في التصدير', 'حدث خطأ أثناء تصدير خطط التمرين');
+    }
+  };
+
+  // دالة تصدير الخطط الغذائية إلى Excel
+  const exportDietPlansToExcel = () => {
+    try {
+      const exportData = filteredDietPlans.map((plan: any) => ({
+        'اسم الخطة': plan.planName || '',
+        'المستخدم': userNameMap[plan.userId] || 'غير محدد',
+        'المدرب': plan.trainerId ? (userNameMap[plan.trainerId] || 'غير محدد') : 'غير محدد',
+        'الوصف': plan.description || '',
+        'تاريخ البداية': plan.startDate ? new Date(plan.startDate).toLocaleDateString('ar-EG') : '',
+        'تاريخ النهاية': plan.endDate ? new Date(plan.endDate).toLocaleDateString('ar-EG') : '',
+        'عدد الوجبات': plan.meals?.length || 0,
+        'الوجبات': plan.meals?.map((meal: any) => 
+          `${meal.mealName} (${meal.calories} سعرة حرارية - ${meal.quantity})${meal.notes ? ' - ' + meal.notes : ''}`
+        ).join(' | ') || '',
+        'تاريخ الإنشاء': plan.createdAt ? new Date(plan.createdAt).toLocaleDateString('ar-EG') : '',
+        'آخر تعديل': plan.updatedAt ? new Date(plan.updatedAt).toLocaleDateString('ar-EG') : '',
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'الخطط الغذائية');
+
+      // تحديد عرض الأعمدة
+      const columnWidths = [
+        { wch: 20 }, // اسم الخطة
+        { wch: 20 }, // المستخدم
+        { wch: 20 }, // المدرب
+        { wch: 30 }, // الوصف
+        { wch: 15 }, // تاريخ البداية
+        { wch: 15 }, // تاريخ النهاية
+        { wch: 12 }, // عدد الوجبات
+        { wch: 50 }, // الوجبات
+        { wch: 15 }, // تاريخ الإنشاء
+        { wch: 15 }, // آخر تعديل
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      const fileName = `الخطط_الغذائية_${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      showSuccess('تم التصدير بنجاح', `تم تصدير ${exportData.length} خطة غذائية بنجاح`);
+    } catch (error) {
+      console.error('خطأ في تصدير الخطط الغذائية:', error);
+      showError('خطأ في التصدير', 'حدث خطأ أثناء تصدير الخطط الغذائية');
+    }
+  };
+
+  // دالة التصدير العامة حسب التاب النشط
+  const handleExportData = () => {
+    if (activeTab === 'workout') {
+      exportWorkoutPlansToExcel();
+    } else if (activeTab === 'diet') {
+      exportDietPlansToExcel();
+    }
+  };
+
   const filteredWorkoutPlans = useMemo(() => {
     if (!filterUserIds || filterUserIds.size === 0) return workoutPlans;
     return workoutPlans.filter((p) => filterUserIds.has(p.userId as any));
@@ -271,7 +378,10 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
                   }}>إنشاء خطة غذائية</button>
                 </>
               )}
-              <button className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+              <button 
+                onClick={handleExportData}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm transition-colors"
+              >
                 {t('AdminPlansOverview.exportData')}
               </button>
             </div>
@@ -1100,6 +1210,15 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
         </div>
       </div>
     )}
+    
+    {/* Custom Alert */}
+    <CustomAlert
+      isOpen={alertState.isOpen}
+      type={alertState.type}
+      title={alertState.title}
+      message={alertState.message}
+      onClose={hideAlert}
+    />
     </>
   );
 };

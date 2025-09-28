@@ -7,6 +7,7 @@ interface AdminUsersTableHeaderProps {
   setFilterRole: (v: string) => void;
   onOpenCreate?: () => void;
   hideCreateButton?: boolean;
+  onExportData?: () => void;
 }
 
 const AdminUsersTableHeader: React.FC<AdminUsersTableHeaderProps> = ({
@@ -16,6 +17,7 @@ const AdminUsersTableHeader: React.FC<AdminUsersTableHeaderProps> = ({
   setFilterRole,
   onOpenCreate,
   hideCreateButton,
+  onExportData,
 }) => (
   <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -29,6 +31,14 @@ const AdminUsersTableHeader: React.FC<AdminUsersTableHeaderProps> = ({
             className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
           >
             إضافة مستخدم
+          </button>
+        )}
+        {onExportData && (
+          <button
+            onClick={onExportData}
+            className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm"
+          >
+            تصدير البيانات
           </button>
         )}
         <input
