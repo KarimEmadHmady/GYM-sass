@@ -20,7 +20,7 @@ const DashboardPage: React.FC = () => {
 
     // Redirect to role-specific dashboard
     if (user) {
-      const redirectPath = getRoleBasedRedirect(user.role as UserRole);
+      const redirectPath = getRoleBasedRedirect(user.role as UserRole, user.id);
       router.push(redirectPath);
     }
   }, [isAuthenticated, user, isLoading, router]);

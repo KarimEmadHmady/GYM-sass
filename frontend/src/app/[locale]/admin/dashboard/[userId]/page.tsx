@@ -40,17 +40,20 @@ const AdminDashboard = ({ params }: { params: { userId: string } }) => {
 
   useEffect(() => {
     if (isLoading) return;
-
     if (!isAuthenticated) {
       router.push('/login');
       return;
     }
-
     if (user?.role !== 'admin') {
       router.push('/unauthorized');
       return;
     }
-  }, [isAuthenticated, user, isLoading, router]);
+    // إعادة التوجيه إذا كان userId في الرابط لا يساوي user.id
+    if (params.userId && user?.id && params.userId !== user.id) {
+      router.replace(`/ar/admin/dashboard/${user.id}`);
+      return;
+    }
+  }, [isAuthenticated, user, isLoading, router, params.userId]);
 
   // Keep state in sync if URL query changes externally
   useEffect(() => {

@@ -46,7 +46,12 @@ const MemberProfile = ({ params }: { params: { userId: string } }) => {
       router.push('/unauthorized');
       return;
     }
-  }, [isAuthenticated, user, isLoading, router]);
+    // إعادة التوجيه إذا كان userId في الرابط لا يساوي user.id
+    if (params.userId && user?.id && params.userId !== user.id) {
+      router.replace(`/ar/member/profile/${user.id}`);
+      return;
+    }
+  }, [isAuthenticated, user, isLoading, router, params.userId]);
 
   // Sync activeTab with URL changes
   useEffect(() => {
