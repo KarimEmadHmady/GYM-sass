@@ -48,6 +48,8 @@ const SessionSchedulesManagement = ({
   const [trainerClients, setTrainerClients] = useState<User[]>([]);
   const [clientsLoading, setClientsLoading] = useState(false);
   const [filterDate, setFilterDate] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     loadData();
@@ -292,6 +294,17 @@ const SessionSchedulesManagement = ({
     return true;
   }) || [];
 
+  // إعادة تعيين الصفحة عند تغيير التاب أو الفلتر
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, filterDate]);
+
+  // Pagination calculations
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const totalPages = Math.max(1, Math.ceil(filteredSessions.length / itemsPerPage));
+  const visibleSessions = filteredSessions.slice(startIndex, endIndex);
+
   const totalRevenue = filteredSessions.reduce((sum, session) => sum + (session.price || 0), 0);
 
   if (loading) {
@@ -431,7 +444,7 @@ const SessionSchedulesManagement = ({
           /* Overview Cards View */
           <div className="p-6">
             <div className="space-y-4">
-              {filteredSessions.map((session) => (
+              {visibleSessions.map((session) => (
                 <div
                   key={session._id}
                   className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
@@ -529,7 +542,7 @@ const SessionSchedulesManagement = ({
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredSessions.map((session) => (
+              {visibleSessions.map((session) => (
                 <tr key={session._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="flex items-center">
@@ -599,6 +612,54 @@ const SessionSchedulesManagement = ({
             </tbody>
           </table>
         </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="bg-white dark:bg-gray-800 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                عرض {startIndex + 1} إلى {Math.min(endIndex, filteredSessions.length)} من {filteredSessions.length} نتيجة
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <label className="text-sm text-gray-700 dark:text-gray-300">عدد العناصر:</label>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  >
+                    السابق
+                  </button>
+                  <span className="px-3 py-1 text-sm text-gray-700 dark:text-gray-300">
+                    صفحة {currentPage} من {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  >
+                    التالي
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
 

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useUsers } from '@/hooks/useUsers';
 import { SessionScheduleService } from '@/services/sessionScheduleService';
 import { apiGet } from '@/lib/api';
 import { WorkoutService } from '@/services/workoutService';
@@ -9,6 +8,7 @@ import { DietService } from '@/services/dietService';
 import { AttendanceService } from '@/services/attendanceService';
 import { useLoyaltyStats } from '@/hooks/useLoyaltyStats';
 import { UserService } from '@/services/userService';
+import { payrollService } from '@/services';
 
 const AdminReports = () => {
   const [activeReport, setActiveReport] = useState('financial');
@@ -17,6 +17,11 @@ const AdminReports = () => {
   const [financialSummary, setFinancialSummary] = useState<any>(null);
   const [financialLoading, setFinancialLoading] = useState(true);
   const [financialError, setFinancialError] = useState<string | null>(null);
+
+  // --- الرواتب ---
+  const [payrollData, setPayrollData] = useState<any>(null);
+  const [payrollLoading, setPayrollLoading] = useState(false);
+  const [payrollError, setPayrollError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFinancial = async () => {
@@ -37,20 +42,68 @@ const AdminReports = () => {
   }, [activeReport]);
 
   // --- المستخدمين ---
-  const { list: fetchUsers, isLoading: usersLoading, error: usersError } = useUsers();
   const [users, setUsers] = useState<any[]>([]);
   const [usersLoaded, setUsersLoaded] = useState(false);
-  // جلب المستخدمين دائماً عند تحميل الصفحة
-  useEffect(() => {
-    let mounted = true;
-    fetchUsers().then((data) => {
-      if (mounted) {
-        setUsers(data);
-        setUsersLoaded(true);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
+  const userService = new UserService();
+
+  // جلب المستخدمين
+  const fetchUsers = async () => {
+    setUsersLoading(true);
+    setUsersError(null);
+    try {
+      const res = await userService.getUsers({});
+      let usersArr: any[] = [];
+      if (Array.isArray(res)) {
+        usersArr = res;
+      } else if (Array.isArray(res.data)) {
+        usersArr = res.data;
       }
-    });
-    return () => { mounted = false; };
-  }, [fetchUsers]);
+      setUsers(usersArr);
+      setUsersLoaded(true);
+    } catch (err: any) {
+      setUsersError(err?.message || 'فشل تحميل بيانات المستخدمين');
+      setUsers([]);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  // جلب المستخدمين عند تحميل الصفحة
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // جلب بيانات المستخدمين عند فتح تاب المستخدمين
+  useEffect(() => {
+    if (activeReport === 'users' && !usersLoaded) {
+      fetchUsers();
+    }
+  }, [activeReport]);
+
+  // جلب بيانات الرواتب
+  useEffect(() => {
+    const fetchPayroll = async () => {
+      setPayrollLoading(true);
+      setPayrollError(null);
+      try {
+        // استخدام payrollService للحصول على إجمالي الرواتب
+        const summary = await payrollService.summary();
+        setPayrollData({ totalPayroll: summary.totals.payroll || 0 });
+      } catch (e: any) {
+        setPayrollError('فشل تحميل بيانات الرواتب');
+        // في حالة عدم وجود endpoint، نحسب من بيانات المستخدمين
+        const totalPayroll = users
+          .filter(u => u.role === 'trainer' || u.role === 'manager')
+          .reduce((sum, user) => sum + (user.salary || 0), 0);
+        setPayrollData({ totalPayroll });
+      } finally {
+        setPayrollLoading(false);
+      }
+    };
+    if (activeReport === 'financial') fetchPayroll();
+  }, [activeReport]);
 
   // --- الحصص ---
   const [sessions, setSessions] = useState<any[]>([]);
@@ -189,9 +242,10 @@ const AdminReports = () => {
     const growth = prev ? (((latest.revenue - prev.revenue) / (prev.revenue || 1)) * 100).toFixed(1) : '0';
     financialData = {
       monthly: {
-        revenue: latest.revenue,
-        expenses: latest.expense,
-        profit: latest.netProfit,
+        revenue: latest.revenue || 0,
+        expenses: latest.expense || 0,
+        profit: latest.netProfit || 0,
+        payroll: latest.payroll || 0,
         growth: growth,
       },
       // يمكنك إضافة weekly/daily لو backend يدعم
@@ -201,16 +255,32 @@ const AdminReports = () => {
   // المستخدمين
   const userStats = useMemo(() => {
     if (!users || users.length === 0) return null;
+    
     const total = users.length;
     const active = users.filter((u) => u.status === 'active').length;
     const inactive = users.filter((u) => u.status === 'inactive').length;
+    
+    // حساب المستخدمين الجدد هذا الشهر
     const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
     const newThisMonth = users.filter((u) => {
+      if (!u.createdAt) return false;
       const created = new Date(u.createdAt);
-      return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+      return created.getMonth() === currentMonth && created.getFullYear() === currentYear;
     }).length;
-    const growth = ((newThisMonth / (total || 1)) * 100).toFixed(1);
-    return { total, active, inactive, newThisMonth, growth };
+    
+    // حساب النمو
+    const growth = total > 0 ? ((newThisMonth / total) * 100).toFixed(1) : '0';
+    
+    return { 
+      total, 
+      active, 
+      inactive, 
+      newThisMonth, 
+      growth 
+    };
   }, [users]);
 
   // الحصص
@@ -278,7 +348,7 @@ const AdminReports = () => {
             ) : (
               <>
                 {/* Financial Summary */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                     <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">الإيرادات</h4>
                     <p className="text-2xl font-bold text-green-600 dark:text-green-400">
@@ -301,6 +371,15 @@ const AdminReports = () => {
                       ج.م{financialData.monthly.profit.toLocaleString()}
                     </p>
                   </div>
+                  <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                    <h4 className="font-medium text-purple-800 dark:text-purple-200 mb-2">الرواتب</h4>
+                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      ج.م{(payrollData?.totalPayroll || 0).toLocaleString()}
+                    </p>
+                    <p className="text-sm text-purple-600 dark:text-purple-400">
+                      إجمالي رواتب الموظفين
+                    </p>
+                  </div>
                 </div>
               </>
             )}
@@ -311,14 +390,16 @@ const AdminReports = () => {
         {activeReport === 'users' && (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">تقارير المستخدمين</h3>
-            {usersLoading && !usersLoaded ? (
+            {usersLoading ? (
               <div className="text-center py-8 text-blue-600">جاري التحميل...</div>
             ) : usersError ? (
               <div className="text-center py-8 text-red-600">{usersError}</div>
-            ) : usersLoaded && users.length === 0 ? (
+            ) : !usersLoaded ? (
+              <div className="text-center py-8 text-gray-500">جاري تحميل بيانات المستخدمين...</div>
+            ) : users.length === 0 ? (
               <div className="text-center py-8 text-gray-500">لا توجد بيانات مستخدمين متاحة</div>
             ) : !userStats ? (
-              <div className="text-center py-8 text-gray-500">لا توجد بيانات مستخدمين متاحة</div>
+              <div className="text-center py-8 text-gray-500">جاري حساب الإحصائيات...</div>
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -348,11 +429,11 @@ const AdminReports = () => {
                   <table className="min-w-full bg-white dark:bg-gray-800">
                     <thead>
                       <tr className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm">
-                        <th className="py-2 px-4">الاسم</th>
-                        <th className="py-2 px-4">الإيميل</th>
-                        <th className="py-2 px-4">رقم الهاتف</th>
-                        <th className="py-2 px-4">الحالة</th>
-                        <th className="py-2 px-4">تاريخ التسجيل</th>
+                        <th className="py-2 px-4 text-center">الاسم</th>
+                        <th className="py-2 px-4 text-center">الإيميل</th>
+                        <th className="py-2 px-4 text-center">رقم الهاتف</th>
+                        <th className="py-2 px-4 text-center">الحالة</th>
+                        <th className="py-2 px-4 text-center">تاريخ التسجيل</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -362,15 +443,15 @@ const AdminReports = () => {
                         .slice(0, 8)
                         .map((user) => (
                           <tr key={user._id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                            <td className="py-2 px-4 font-medium">{user.name}</td>
-                            <td className="py-2 px-4">{user.email}</td>
-                            <td className="py-2 px-4">{user.phone || '-'}</td>
-                            <td className="py-2 px-4">
+                            <td className="py-2 px-4 font-medium text-center">{user.name}</td>
+                            <td className="py-2 px-4 text-center">{user.email}</td>
+                            <td className="py-2 px-4 text-center">{user.phone || '-'}</td>
+                            <td className="py-2 px-4 text-center">
                               <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                 {user.status === 'active' ? 'نشط' : 'غير نشط'}
                               </span>
                             </td>
-                            <td className="py-2 px-4">{new Date(user.createdAt).toLocaleDateString('ar-EG')}</td>
+                            <td className="py-2 px-4 text-center">{new Date(user.createdAt).toLocaleDateString('ar-EG')}</td>
                           </tr>
                         ))}
                     </tbody>
@@ -459,25 +540,76 @@ const AdminReports = () => {
                   </div>
                 </div>
                 {/* أحدث الخطط */}
-                <div className="mt-6">
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">أحدث خطط التمرين</h4>
-                  <ul className="list-disc pr-6 text-sm text-gray-700 dark:text-gray-300">
-                    {plansStats.latestWorkout.map((plan: any) => {
-                      const info = getUserInfo(plan.userId);
-                      return (
-                        <li key={plan._id}>{plan.planName} - {info.name} {info.phone && `(${info.phone})`}</li>
-                      );
-                    })}
-                  </ul>
-                  <h4 className="font-medium text-gray-900 dark:text-white mt-4 mb-2">أحدث خطط التغذية</h4>
-                  <ul className="list-disc pr-6 text-sm text-gray-700 dark:text-gray-300">
-                    {plansStats.latestDiet.map((plan: any) => {
-                      const info = getUserInfo(plan.userId);
-                      return (
-                        <li key={plan._id}>{plan.planName} - {info.name} {info.phone && `(${info.phone})`}</li>
-                      );
-                    })}
-                  </ul>
+                <div className="mt-6 space-y-6">
+                  {/* أحدث خطط التمرين */}
+                  <div className="overflow-x-auto rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                    <h4 className="font-medium text-gray-900 dark:text-white mb-4 p-4 bg-gray-50 dark:bg-gray-700">أحدث خطط التمرين</h4>
+                    <table className="min-w-full bg-white dark:bg-gray-800">
+                      <thead>
+                        <tr className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm">
+                          <th className="py-2 px-4 text-center">اسم الخطة</th>
+                          <th className="py-2 px-4 text-center">المستخدم</th>
+                          <th className="py-2 px-4 text-center">رقم الهاتف</th>
+                          <th className="py-2 px-4 text-center">تاريخ البداية</th>
+                          <th className="py-2 px-4 text-center">تاريخ النهاية</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {plansStats.latestWorkout.map((plan: any) => {
+                          const info = getUserInfo(plan.userId);
+                          return (
+                            <tr key={plan._id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                              <td className="py-2 px-4 font-medium text-center">{plan.planName}</td>
+                              <td className="py-2 px-4 text-center">{info.name}</td>
+                              <td className="py-2 px-4 text-center">{info.phone || '-'}</td>
+                              <td className="py-2 px-4 text-center">{plan.startDate ? new Date(plan.startDate).toLocaleDateString('ar-EG') : '-'}</td>
+                              <td className="py-2 px-4 text-center">{plan.endDate ? new Date(plan.endDate).toLocaleDateString('ar-EG') : '-'}</td>
+                            </tr>
+                          );
+                        })}
+                        {plansStats.latestWorkout.length === 0 && (
+                          <tr>
+                            <td colSpan={5} className="py-6 text-center text-gray-500">لا توجد خطط تمرين</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* أحدث خطط التغذية */}
+                  <div className="overflow-x-auto rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                    <h4 className="font-medium text-gray-900 dark:text-white mb-4 p-4 bg-gray-50 dark:bg-gray-700">أحدث خطط التغذية</h4>
+                    <table className="min-w-full bg-white dark:bg-gray-800">
+                      <thead>
+                        <tr className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm">
+                          <th className="py-2 px-4 text-center">اسم الخطة</th>
+                          <th className="py-2 px-4 text-center">المستخدم</th>
+                          <th className="py-2 px-4 text-center">رقم الهاتف</th>
+                          <th className="py-2 px-4 text-center">تاريخ البداية</th>
+                          <th className="py-2 px-4 text-center">تاريخ النهاية</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {plansStats.latestDiet.map((plan: any) => {
+                          const info = getUserInfo(plan.userId);
+                          return (
+                            <tr key={plan._id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                              <td className="py-2 px-4 font-medium text-center">{plan.planName}</td>
+                              <td className="py-2 px-4 text-center">{info.name}</td>
+                              <td className="py-2 px-4 text-center">{info.phone || '-'}</td>
+                              <td className="py-2 px-4 text-center">{plan.startDate ? new Date(plan.startDate).toLocaleDateString('ar-EG') : '-'}</td>
+                              <td className="py-2 px-4 text-center">{plan.endDate ? new Date(plan.endDate).toLocaleDateString('ar-EG') : '-'}</td>
+                            </tr>
+                          );
+                        })}
+                        {plansStats.latestDiet.length === 0 && (
+                          <tr>
+                            <td colSpan={5} className="py-6 text-center text-gray-500">لا توجد خطط تغذية</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </>
             )}
@@ -603,12 +735,59 @@ const AdminReports = () => {
                 </div>
                 {/* Top users */}
                 <div className="mt-6">
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">أعلى المستخدمين بالنقاط</h4>
-                  <ul className="list-disc pr-6 text-sm text-gray-700 dark:text-gray-300">
-                    {loyaltyStats.topUsers?.slice(0, 5).map((u: any) => (
-                      <li key={u._id}>{u.name} - {u.loyaltyPoints} نقطة</li>
-                    ))}
-                  </ul>
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-4">أعلى المستخدمين بالنقاط</h4>
+                  <div className="overflow-x-auto rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                    <table className="min-w-full bg-white dark:bg-gray-800">
+                      <thead>
+                        <tr className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm">
+                          <th className="py-2 px-4 text-center">الترتيب</th>
+                          <th className="py-2 px-4 text-center">اسم المستخدم</th>
+                          <th className="py-2 px-4 text-center">رقم الهاتف</th>
+                          <th className="py-2 px-4 text-center">نقاط الولاء</th>
+                          <th className="py-2 px-4 text-center">مستوى العضوية</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {loyaltyStats.topUsers?.slice(0, 5).map((u: any, index: number) => (
+                          <tr key={u._id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                            <td className="py-2 px-4 text-center">
+                              <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                                index === 0 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                index === 1 ? 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200' :
+                                index === 2 ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200' :
+                                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                              }`}>
+                                {index + 1}
+                              </span>
+                            </td>
+                            <td className="py-2 px-4 font-medium text-center">{u.name}</td>
+                            <td className="py-2 px-4 text-center">{u.phone || '-'}</td>
+                            <td className="py-2 px-4 text-center">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                                {u.loyaltyPoints} نقطة
+                              </span>
+                            </td>
+                            <td className="py-2 px-4 text-center">
+                              <span className={`inline-flex px-2 py-1 rounded-full text-xs font-bold ${
+                                u.membershipLevel === 'premium' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' :
+                                u.membershipLevel === 'gold' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                              }`}>
+                                {u.membershipLevel === 'premium' ? 'مميز' :
+                                 u.membershipLevel === 'gold' ? 'ذهبي' :
+                                 u.membershipLevel === 'silver' ? 'فضي' : 'أساسي'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                        {(!loyaltyStats.topUsers || loyaltyStats.topUsers.length === 0) && (
+                          <tr>
+                            <td colSpan={5} className="py-6 text-center text-gray-500">لا توجد بيانات مستخدمين</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </>
             )}
