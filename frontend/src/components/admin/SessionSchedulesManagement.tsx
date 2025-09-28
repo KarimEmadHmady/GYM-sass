@@ -390,16 +390,20 @@ const SessionSchedulesManagement = ({
               )}
             </div>
               {viewMode === 'management' && (
-                <button 
+                <div className="flex items-end justify-center">
+                  <button 
                   onClick={() => setShowCreateModal(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors"
-                >
+                  className="bg-blue-600 text-white w-32 py-3 rounded-md text-sm hover:bg-blue-700 transition-colors text-center"
+                  >
                   إضافة حصة جديدة
                 </button>
+              </div>
               )}
-              <button className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+              <div className="flex items-end justify-center">
+              <button className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-3 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
                 تصدير البيانات
               </button>
+              </div>
             </div>
           </div>
         </div>

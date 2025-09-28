@@ -1,92 +1,186 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useRouter } from '@/i18n/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
 const AdminQuickActions = () => {
+  const router = useRouter();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState<string | null>(null);
+
+  const handleAction = async (actionId: string, action: () => Promise<void> | void) => {
+    setLoading(actionId);
+    try {
+      await action();
+    } catch (error) {
+      console.error('Error executing action:', error);
+    } finally {
+      setLoading(null);
+    }
+  };
+
   const actions = [
     {
+      id: 'add_member',
       title: 'إضافة عضو جديد',
       description: 'تسجيل عضو جديد في الجيم',
       icon: '👤',
       color: 'blue',
-      action: () => console.log('Add new member')
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=users`)
     },
     {
+      id: 'add_trainer',
       title: 'إضافة مدرب',
       description: 'تسجيل مدرب جديد',
       icon: '🏋️',
       color: 'green',
-      action: () => console.log('Add new trainer')
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=trainers`)
     },
     {
+      id: 'add_manager',
       title: 'إضافة مدير',
       description: 'تسجيل مدير جديد',
       icon: '👨‍💼',
       color: 'purple',
-      action: () => console.log('Add new manager')
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=users`)
     },
     {
+      id: 'create_workout',
       title: 'إنشاء خطة تمرين',
       description: 'إنشاء خطة تمرين جديدة',
       icon: '📋',
       color: 'orange',
-      action: () => console.log('Create workout plan')
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=plans`)
     },
     {
+      id: 'create_diet',
       title: 'إنشاء خطة غذائية',
       description: 'إنشاء خطة غذائية جديدة',
       icon: '🍎',
       color: 'yellow',
-      action: () => console.log('Create diet plan')
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=plans`)
     },
     {
+      id: 'schedule_session',
       title: 'جدولة حصة',
       description: 'جدولة حصة تدريبية جديدة',
       icon: '📅',
       color: 'indigo',
-      action: () => console.log('Schedule session')
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=sessions`)
     },
     {
+      id: 'add_expense',
       title: 'إضافة مصروف',
       description: 'تسجيل مصروف جديد',
       icon: '💸',
       color: 'red',
-      action: () => console.log('Add expense')
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=financial`)
     },
     {
+      id: 'add_revenue',
       title: 'إضافة إيراد',
       description: 'تسجيل إيراد جديد',
       icon: '💰',
       color: 'green',
-      action: () => console.log('Add revenue')
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=financial`)
     },
     {
+      id: 'create_invoice',
       title: 'إنشاء فاتورة',
       description: 'إنشاء فاتورة جديدة',
       icon: '🧾',
       color: 'blue',
-      action: () => console.log('Create invoice')
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=financial`)
     },
     {
+      id: 'manage_payroll',
       title: 'إدارة الرواتب',
       description: 'إدارة رواتب الموظفين',
       icon: '💳',
       color: 'purple',
-      action: () => console.log('Manage payroll')
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=financial`)
     },
     {
+      id: 'view_reports',
       title: 'عرض التقارير',
       description: 'عرض تقارير مفصلة',
       icon: '📊',
       color: 'pink',
-      action: () => console.log('View reports')
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=reports`)
     },
     {
+      id: 'manage_system',
       title: 'إدارة النظام',
       description: 'تعديل إعدادات النظام',
       icon: '⚙️',
       color: 'gray',
-      action: () => console.log('Manage system')
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=settings`)
+    },
+    // إضافات ناقصة من التبويبات المتاحة في الصفحة
+    {
+      id: 'attendance',
+      title: 'الحضور',
+      description: 'تسجيل وعرض الحضور',
+      icon: '📝',
+      color: 'indigo',
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=attendance`)
+    },
+    {
+      id: 'payments',
+      title: 'مدفوعات',
+      description: 'إدارة المدفوعات',
+      icon: '💵',
+      color: 'green',
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=payments`)
+    },
+    {
+      id: 'purchases',
+      title: 'مشتريات',
+      description: 'إدارة المشتريات',
+      icon: '🛒',
+      color: 'orange',
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=purchases`)
+    },
+    {
+      id: 'messages',
+      title: 'رسائل',
+      description: 'عرض وإرسال الرسائل',
+      icon: '✉️',
+      color: 'blue',
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=messages`)
+    },
+    {
+      id: 'progress',
+      title: 'تقدم العملاء',
+      description: 'متابعة تقدم العملاء',
+      icon: '📈',
+      color: 'pink',
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=progress`)
+    },
+    {
+      id: 'feedback',
+      title: 'التقييمات',
+      description: 'إدارة التقييمات',
+      icon: '⭐',
+      color: 'yellow',
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=feedback`)
+    },
+    {
+      id: 'loyalty',
+      title: 'نقاط الولاء',
+      description: 'إدارة نقاط الولاء',
+      icon: '🎯',
+      color: 'red',
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=loyalty`)
+    },
+    {
+      id: 'search',
+      title: 'بحث',
+      description: 'البحث في النظام',
+      icon: '🔎',
+      color: 'gray',
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=search`)
     }
   ];
 
@@ -106,22 +200,29 @@ const AdminQuickActions = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
         الإجراءات السريعة - الإدارة
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {actions.map((action, index) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+        {actions.map((action) => (
           <button
-            key={index}
-            onClick={action.action}
-            className={`bg-gradient-to-r ${getColorClasses(action.color)} text-white rounded-lg p-4 text-left hover:shadow-lg transform hover:scale-105 transition-all duration-200`}
+            key={action.id}
+            onClick={() => handleAction(action.id, action.action)}
+            disabled={loading === action.id}
+            className={`bg-gradient-to-r ${getColorClasses(action.color)} text-white rounded-md p-3 text-center cursor-pointer hover:shadow-md transform hover:scale-[1.02] transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
           >
-            <div className="flex items-center mb-2">
-              <span className="text-2xl mr-3">{action.icon}</span>
-              <h4 className="font-semibold text-sm">{action.title}</h4>
+            <div className="flex items-center justify-center mb-1 text-center w-full">
+              <span className="text-xl mr-2">{action.icon}</span>
+              <h4 className="font-semibold text-xs">{action.title}</h4>
             </div>
-            <p className="text-xs opacity-90">{action.description}</p>
+            <p className="text-[10px] opacity-90 text-center">{action.description}</p>
+            {loading === action.id && (
+              <div className="mt-1 flex items-center">
+                <div className="animate-spin rounded-full h-2 w-2 border-b-2 border-white mr-2"></div>
+                <span className="text-[10px]">جارِ التوجيه...</span>
+              </div>
+            )}
           </button>
         ))}
       </div>

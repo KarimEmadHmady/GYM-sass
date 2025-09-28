@@ -8,6 +8,7 @@ import AdminUsersTableHeader from './AdminUsersTableHeader';
 import AdminUsersTableList from './AdminUsersTableList';
 import AdminUsersTablePagination from './AdminUsersTablePagination';
 import AdminUserModals from './AdminUserModals';
+import { subscriptionAlertService } from '@/services/subscriptionAlertService';
 
 const AdminUsersTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -75,6 +76,7 @@ const AdminUsersTable = () => {
   const [viewUser, setViewUser] = useState<any>(null);
   const [viewLoading, setViewLoading] = useState(false);
   const [allUsers, setAllUsers] = useState<UserModel[]>([]);
+  const [hasPlayedAlert, setHasPlayedAlert] = useState(false);
 
   useEffect(() => {
     const fetchAllUsers = async () => {
@@ -89,6 +91,15 @@ const AdminUsersTable = () => {
           usersArr = res.data as unknown as UserModel[];
         }
         setAllUsers(usersArr);
+        
+        // فحص التحذيرات (بدون تشغيل الصوت - يتم من SoundManager)
+        if (!hasPlayedAlert) {
+          const alerts = await subscriptionAlertService.getSubscriptionAlerts();
+          const criticalAlerts = alerts.filter(alert => alert.severity === 'critical');
+          if (criticalAlerts.length > 0) {
+            setHasPlayedAlert(true);
+          }
+        }
       } catch (err) {
         setAllUsers([]);
       } finally {
@@ -96,7 +107,7 @@ const AdminUsersTable = () => {
       }
     };
     fetchAllUsers();
-  }, [refresh]);
+  }, [refresh, hasPlayedAlert]);
 
   // فلترة وبحث محلي
   const filteredUsers = allUsers.filter(user => {

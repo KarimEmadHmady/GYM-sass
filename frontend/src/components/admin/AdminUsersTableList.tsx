@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { User as UserModel } from '@/types/models';
+import UserSubscriptionAlert from './UserSubscriptionAlert';
+import AlertResetButton from './AlertResetButton';
 
 interface AdminUsersTableListProps {
   users: UserModel[];
@@ -33,8 +35,25 @@ const AdminUsersTableList: React.FC<AdminUsersTableListProps> = ({
   getRoleColor,
   getStatusColor,
   getSubscriptionColor,
-}) => (
+}) => {
+  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+
+  const handleDismissAlert = (userId: string) => {
+    setDismissedAlerts(prev => new Set([...prev, userId]));
+  };
+
+  return (
   <div className="overflow-x-auto">
+    {/* زر إعادة تعيين التحذيرات */}
+    {dismissedAlerts.size > 0 && (
+      <div className="mb-4 flex justify-end">
+        <AlertResetButton 
+          onReset={() => setDismissedAlerts(new Set())}
+          className="text-xs"
+        />
+      </div>
+    )}
+    
     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
       <thead className="bg-gray-50 dark:bg-gray-700">
         <tr>
@@ -63,6 +82,14 @@ const AdminUsersTableList: React.FC<AdminUsersTableListProps> = ({
                   <div className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
                 </div>
+                {!dismissedAlerts.has(user._id) && (
+                  <UserSubscriptionAlert 
+                    user={user} 
+                    size="sm" 
+                    dismissible={true}
+                    onDismiss={() => handleDismissAlert(user._id)}
+                  />
+                )}
               </div>
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -109,6 +136,7 @@ const AdminUsersTableList: React.FC<AdminUsersTableListProps> = ({
       </tbody>
     </table>
   </div>
-);
+  );
+};
 
 export default AdminUsersTableList;

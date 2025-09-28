@@ -25,6 +25,10 @@ import AdminFeedback from '@/components/admin/AdminFeedback';
 import AdminLoyalty from '@/components/admin/AdminLoyalty';
 import AdminSearch from '@/components/admin/AdminSearch';
 import TrainersDirectory from '@/components/shared/TrainersDirectory';
+import SubscriptionAlertIndicator from '@/components/admin/SubscriptionAlertIndicator';
+import SubscriptionAlertBadge from '@/components/admin/SubscriptionAlertBadge';
+import SubscriptionAlertsSummary from '@/components/admin/SubscriptionAlertsSummary';
+import SoundManager from '@/components/admin/SoundManager';
 
 
 const AdminDashboard = ({ params }: { params: { userId: string } }) => {
@@ -78,7 +82,7 @@ const AdminDashboard = ({ params }: { params: { userId: string } }) => {
 
   const tabs = [
     { id: 'overview', name: t('Tabs.overview'), icon: '📊' },
-    { id: 'users', name: t('Tabs.users'), icon: '👥' },
+    { id: 'users', name: t('Tabs.users'), icon: '👥', showAlert: true },
     { id: 'trainers', name: 'المدربون', icon: '🧑‍🏫' },
     { id: 'sessions', name: t('Tabs.sessions'), icon: '🏋️' },
     { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
@@ -172,11 +176,18 @@ const AdminDashboard = ({ params }: { params: { userId: string } }) => {
               >
                 <span className="mr-2">{tab.icon}</span>
                 {tab.name}
+                {tab.showAlert && <SubscriptionAlertBadge className="ml-2" />}
               </button>
             ))}
           </nav>
         </div>
       </div>
+
+      {/* Subscription Alert Indicator */}
+      <SubscriptionAlertIndicator />
+      
+      {/* Sound Manager */}
+      <SoundManager activeTab={activeTab} />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -195,6 +206,7 @@ const AdminDashboard = ({ params }: { params: { userId: string } }) => {
 
         {activeTab === 'users' && (
           <div className="space-y-8">
+            <SubscriptionAlertsSummary />
             <AdminUsersTable />
           </div>
         )}

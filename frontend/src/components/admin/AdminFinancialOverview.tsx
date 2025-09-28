@@ -735,7 +735,7 @@ const AdminFinancialOverview = () => {
                       className={`p-3 rounded-lg border transition-colors text-right ${
                         selectedReport === 'invoices' 
                           ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                          : 'border-gray-200 hover:bg-gray-50'
+                          : 'border-gray-200 hover:bg-gray-500'
                       }`}
                     >
                       <div className="text-2xl mb-1">🧾</div>
@@ -746,7 +746,7 @@ const AdminFinancialOverview = () => {
                       className={`p-3 rounded-lg border transition-colors text-right ${
                         selectedReport === 'payrolls' 
                           ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                          : 'border-gray-200 hover:bg-gray-50'
+                          : 'border-gray-200 hover:bg-gray-500'
                       }`}
                     >
                       <div className="text-2xl mb-1">🧑‍💼</div>
@@ -757,7 +757,7 @@ const AdminFinancialOverview = () => {
                       className={`p-3 rounded-lg border transition-colors text-right ${
                         selectedReport === 'revenues' 
                           ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                          : 'border-gray-200 hover:bg-gray-50'
+                          : 'border-gray-200 hover:bg-gray-500'
                       }`}
                     >
                       <div className="text-2xl mb-1">💹</div>
@@ -768,7 +768,7 @@ const AdminFinancialOverview = () => {
                       className={`p-3 rounded-lg border transition-colors text-right ${
                         selectedReport === 'expenses' 
                           ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                          : 'border-gray-200 hover:bg-gray-50'
+                          : 'border-gray-200 hover:bg-gray-500'
                       }`}
                     >
                       <div className="text-2xl mb-1">💸</div>
@@ -779,7 +779,7 @@ const AdminFinancialOverview = () => {
                       className={`p-3 rounded-lg border transition-colors text-right ${
                         selectedReport === 'summary' 
                           ? 'bg-blue-50 border-blue-200 text-blue-700' 
-                          : 'border-gray-200 hover:bg-gray-50'
+                          : 'border-gray-200 hover:bg-gray-500'
                       }`}
                     >
                       <div className="text-2xl mb-1">📊</div>
@@ -974,7 +974,7 @@ const AdminFinancialOverview = () => {
                               <h5 className="font-medium text-gray-500 mb-2">آخر الرواتب</h5>
                               <div className="space-y-2 max-h-48 overflow-y-auto">
                                 {reportsData.payrolls.data.slice(0, 5).map((payroll: any, index: number) => (
-                                  <div key={payroll._id || index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                                  <div key={payroll._id || index} className="flex justify-between items-center p-2 rounded">
                                     <div>
                                       <div className="font-medium text-sm text-gray-400">راتب - {userMap[payroll.employeeId]?.name || payroll.employeeId || 'موظف'}</div>
                                       <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -1110,8 +1110,8 @@ const AdminFinancialOverview = () => {
                             <h5 className="font-medium text-gray-400 mb-2">توزيع المصروفات حسب الفئة</h5>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {Object.entries(reportsData.expenses.byCategory).map(([category, amount]: [string, any]) => (
-                                <div key={category} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                                  <span className="text-gray-600 capitalize">{category}:</span>
+                                <div key={category} className="flex justify-between items-center p-3 bg-gray-700 rounded">
+                                  <span className="text-white-600 capitalize">{category}:</span>
                                   <span className="font-medium text-red-600">ج.م{new Intl.NumberFormat().format(amount)}</span>
                                 </div>
                               ))}

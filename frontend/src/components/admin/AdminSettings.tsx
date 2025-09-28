@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { GymSettingsService, type GymSettings } from '@/services/gymSettingsService';
+import SubscriptionAlertSettings from './SubscriptionAlertSettings';
 
 const AdminSettings = () => {
   const [settings, setSettings] = useState<GymSettings | null>(null);
@@ -144,6 +145,11 @@ const AdminSettings = () => {
             </div>
           </div>
         )}
+        
+        {/* إعدادات تحذيرات الاشتراكات */}
+        <div className="mt-8">
+          <SubscriptionAlertSettings />
+        </div>
       </div>
     </div>
   );
