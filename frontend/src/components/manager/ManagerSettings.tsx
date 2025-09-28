@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import type { User as UserModel } from '@/types/models';
 import { UserService } from '@/services/userService';
+import SubscriptionAlertSettings from '@/components/admin/SubscriptionAlertSettings';
 
 const ManagerSettings: React.FC = () => {
   const { user: authUser } = usePermissions();
@@ -188,6 +189,11 @@ const ManagerSettings: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* إعدادات تحذيرات الاشتراكات */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <SubscriptionAlertSettings />
+      </div>
     </div>
   );
 };

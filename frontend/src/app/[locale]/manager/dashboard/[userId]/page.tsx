@@ -24,6 +24,10 @@ import TrainersDirectory from '@/components/shared/TrainersDirectory';
 import ManagerFeedback from '@/components/manager/ManagerFeedback';
 import ManagerInvoices from '@/components/manager/ManagerInvoices';
 import AdminSessionsOverview from '@/components/admin/AdminSessionsOverview';
+import SubscriptionAlertIndicator from '@/components/admin/SubscriptionAlertIndicator';
+import SubscriptionAlertBadge from '@/components/admin/SubscriptionAlertBadge';
+import SubscriptionAlertsSummary from '@/components/admin/SubscriptionAlertsSummary';
+import SoundManager from '@/components/admin/SoundManager';
 import dynamic from 'next/dynamic';
 const ManagerAddExpense = dynamic(() => import('@/components/manager/ManagerAddExpense'), { ssr: false });
 const ManagerAddRevenue = dynamic(() => import('@/components/manager/ManagerAddRevenue'), { ssr: false });
@@ -81,7 +85,7 @@ const ManagerDashboard = ({ params }: { params: { userId: string } }) => {
 
   const tabs = [
     { id: 'overview', name: t('Tabs.overview'), icon: '📊' },
-    { id: 'users', name: t('Tabs.users'), icon: '👥' },
+    { id: 'users', name: t('Tabs.users'), icon: '👥', showAlert: true },
     { id: 'trainers', name: 'المدربون', icon: '🧑‍🏫' },
     { id: 'sessions', name: t('Tabs.sessions'), icon: '🏋️' },
     { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
@@ -178,11 +182,18 @@ const ManagerDashboard = ({ params }: { params: { userId: string } }) => {
               >
                 <span className="mr-2">{tab.icon}</span>
                 {tab.name}
+                {tab.showAlert && <SubscriptionAlertBadge className="ml-2" />}
               </button>
             ))}
           </nav>
         </div>
       </div>
+
+      {/* Subscription Alert Indicator */}
+      <SubscriptionAlertIndicator />
+      
+      {/* Sound Manager */}
+      <SoundManager activeTab={activeTab} />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -201,6 +212,7 @@ const ManagerDashboard = ({ params }: { params: { userId: string } }) => {
 
         {activeTab === 'users' && (
           <div className="space-y-8">
+            <SubscriptionAlertsSummary />
             <ManagerUsersTable />
           </div>
         )}

@@ -13,6 +13,7 @@ const SubscriptionAlertSettings: React.FC<SubscriptionAlertSettingsProps> = ({ c
   const [alertThreshold, setAlertThreshold] = useState(3);
   const [reminderThreshold, setReminderThreshold] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     // تحميل الإعدادات المحفوظة
@@ -25,7 +26,33 @@ const SubscriptionAlertSettings: React.FC<SubscriptionAlertSettingsProps> = ({ c
     setIsNotificationEnabled(savedNotificationEnabled);
     setAlertThreshold(savedAlertThreshold);
     setReminderThreshold(savedReminderThreshold);
+    setIsInitialized(true);
   }, []);
+
+  // حفظ الإعدادات تلقائياً عند التغيير (بعد التهيئة)
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem('subscription-alert-sound', isSoundEnabled.toString());
+    }
+  }, [isSoundEnabled, isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem('subscription-alert-notification', isNotificationEnabled.toString());
+    }
+  }, [isNotificationEnabled, isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem('subscription-alert-threshold', alertThreshold.toString());
+    }
+  }, [alertThreshold, isInitialized]);
+
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem('subscription-alert-reminder-threshold', reminderThreshold.toString());
+    }
+  }, [reminderThreshold, isInitialized]);
 
   const handleSaveSettings = async () => {
     setIsLoading(true);
