@@ -457,7 +457,7 @@ const MemberLoyaltyPoints = () => {
                         
                         {reward.validUntil && (
                           <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                            صالح حتى: {new Date(reward.validUntil).toLocaleDateString('ar-SA')}
+                            صالح حتى: {new Date(reward.validUntil).toLocaleDateString('en-GB')}
                           </p>
                         )}
                         

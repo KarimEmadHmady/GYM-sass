@@ -5,6 +5,7 @@ import { AttendanceService } from '@/services/attendanceService';
 import type { AttendanceRecord } from '@/types/models';
 import { UserService } from '@/services/userService';
 import type { User } from '@/types/models';
+import * as XLSX from 'xlsx';
 
 const AdminAttendance = () => {
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
@@ -151,6 +152,30 @@ const AdminAttendance = () => {
     return users.filter(u => (u.name || '').toLowerCase().includes(q) || (u.phone || '').toLowerCase().includes(q));
   }, [users, addUserQuery]);
 
+  // تصدير البيانات إلى Excel
+  const handleExportToExcel = () => {
+    const exportData = filteredRecords.map((rec) => {
+      const user = userMap[rec.userId];
+      const dateObj = new Date(rec.date);
+      return {
+        'اسم العضو': user?.name || '---',
+        'رقم الهاتف': user?.phone || '-',
+        'التاريخ': dateObj.toLocaleDateString('en-GB'),
+        'الساعة': dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+        'الحالة': rec.status === 'present' ? 'حاضر' : rec.status === 'absent' ? 'غائب' : 'بعذر',
+        'ملاحظات': rec.notes || '-'
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'سجلات الحضور');
+    
+    // تصدير الملف
+    const fileName = `سجلات_الحضور_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-4">
@@ -163,6 +188,18 @@ const AdminAttendance = () => {
             placeholder="ابحث بالاسم أو رقم الهاتف"
             className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          <button
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm flex items-center gap-1"
+            onClick={handleExportToExcel}
+            disabled={filteredRecords.length === 0}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7,10 12,15 17,10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            تصدير Excel
+          </button>
           <button
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
             onClick={openAddModal}

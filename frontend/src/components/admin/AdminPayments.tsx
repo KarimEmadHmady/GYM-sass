@@ -5,6 +5,7 @@ import { PaymentService, type Payment } from '@/services/paymentService';
 import { UserService } from '@/services/userService';
 import type { User } from '@/types/models';
 import { useAuth } from '@/hooks/useAuth';
+import * as XLSX from 'xlsx';
 
 const AdminPayments = () => {
   const { user } = useAuth();
@@ -139,23 +140,61 @@ const AdminPayments = () => {
     await removePayment(id);
   };
 
+  // تصدير البيانات إلى Excel
+  const handleExportToExcel = () => {
+    const exportData = filtered.map((payment) => {
+      const user = userMap[payment.userId];
+      const dateObj = new Date(payment.date);
+      return {
+        'اسم المستخدم': user?.name || '---',
+        'رقم الهاتف': user?.phone || '-',
+        'الإيميل': user?.email || '-',
+        'المبلغ': payment.amount,
+        'التاريخ': dateObj.toLocaleDateString('en-GB'),
+        'الساعة': dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+        'طريقة الدفع': payment.method === 'cash' ? 'نقدي' : payment.method === 'card' ? 'بطاقة' : payment.method === 'bank_transfer' ? 'تحويل بنكي' : 'أخرى',
+        'ملاحظات': payment.notes || '-'
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'المدفوعات');
+    
+    // تصدير الملف
+    const fileName = `المدفوعات_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">المدفوعات</h3>
-        {canEdit && (
-          <div className="flex items-center gap-2">
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="ابحث بالاسم/الهاتف/الإيميل" className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm" />
-            <select value={methodFilter} onChange={e=>setMethodFilter(e.target.value)} className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white  text-sm p-[4px]">
-              <option value="all">كل الطرق</option>
-              <option value="cash">نقدي</option>
-              <option value="card">بطاقة</option>
-              <option value="bank_transfer">تحويل بنكي</option>
-              <option value="other">أخرى</option>
-            </select>
+        <div className="flex items-center gap-2">
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="ابحث بالاسم/الهاتف/الإيميل" className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm" />
+          <select value={methodFilter} onChange={e=>setMethodFilter(e.target.value)} className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white  text-sm p-[4px]">
+            <option value="all">كل الطرق</option>
+            <option value="cash">نقدي</option>
+            <option value="card">بطاقة</option>
+            <option value="bank_transfer">تحويل بنكي</option>
+            <option value="other">أخرى</option>
+          </select>
+          <button
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm flex items-center gap-1"
+            onClick={handleExportToExcel}
+            disabled={filtered.length === 0}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7,10 12,15 17,10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            تصدير Excel
+          </button>
+          {canEdit && (
             <button onClick={openAdd} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">إضافة مدفوع</button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {loading ? (

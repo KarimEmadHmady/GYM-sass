@@ -5,6 +5,7 @@ import { PurchaseService, type PurchaseDTO } from '@/services/purchaseService';
 import { UserService } from '@/services/userService';
 import type { User } from '@/types/models';
 import { useAuth } from '@/hooks/useAuth';
+import * as XLSX from 'xlsx';
 
 const AdminPurchases = () => {
   const { user } = useAuth();
@@ -85,6 +86,28 @@ const AdminPurchases = () => {
   const endIndex = Math.min(startIndex + pageSize, filtered.length);
   const paginated = useMemo(() => filtered.slice(startIndex, endIndex), [filtered, startIndex, endIndex]);
 
+  // تصدير البيانات إلى Excel
+  const handleExportToExcel = () => {
+    const exportData = filtered.map((purchase) => {
+      const d = purchase.date ? new Date(purchase.date) : (purchase.createdAt ? new Date(purchase.createdAt) : null);
+      return {
+        'اسم العنصر': purchase.itemName,
+        'السعر': purchase.price,
+        'التاريخ': d ? d.toLocaleDateString('en-GB') : '-',
+        'الساعة': d ? d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '-',
+        'المستخدم': selectedUserId ? users.find(u => u._id === selectedUserId)?.name || '---' : 'جميع المستخدمين'
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'المشتريات');
+    
+    // تصدير الملف
+    const fileName = `المشتريات_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-4">
@@ -106,6 +129,18 @@ const AdminPurchases = () => {
             placeholder="ابحث باسم العنصر/السعر"
             className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white px-3 py-2 text-sm"
           />
+          <button
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm flex items-center gap-1"
+            onClick={handleExportToExcel}
+            disabled={filtered.length === 0}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7,10 12,15 17,10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            تصدير Excel
+          </button>
           {selectedUserId && (
             <button onClick={()=>{ setEditing(null); setForm({ itemName: '', price: '', date: formatForDateTimeLocal(new Date()) }); setModalOpen(true); }} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">إضافة مشتري</button>
           )}

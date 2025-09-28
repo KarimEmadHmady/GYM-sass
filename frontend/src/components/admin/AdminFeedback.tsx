@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { getAllFeedback, deleteFeedback, createFeedback, updateFeedback } from '@/services/feedbackService';
 import { userService } from '@/services';
 import type { Feedback, User } from '@/types/models';
-import { Star, X, AlertTriangle, Trash2 } from 'lucide-react';
+import { Star, X, AlertTriangle, Trash2, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 const initialForm = {
   fromUserId: '',
@@ -164,11 +165,54 @@ const AdminFeedback = () => {
   const endIndex = Math.min(startIndex + pageSize, filteredFeedbacks.length);
   const paginatedFeedbacks = filteredFeedbacks.slice(startIndex, endIndex);
 
+  // تصدير البيانات إلى Excel
+  const handleExportToExcel = () => {
+    const exportData = filteredFeedbacks.map((feedback) => {
+      const sender = users.find(u => u._id === feedback.fromUserId);
+      const recipient = users.find(u => u._id === feedback.toUserId);
+      const dateObj = new Date(feedback.date);
+      
+      return {
+        'اسم المرسل': sender?.name || 'غير معروف',
+        'هاتف المرسل': sender?.phone || '-',
+        'إيميل المرسل': sender?.email || '-',
+        'دور المرسل': sender?.role || '-',
+        'اسم المستلم': recipient?.name || 'غير معروف',
+        'هاتف المستلم': recipient?.phone || '-',
+        'إيميل المستلم': recipient?.email || '-',
+        'دور المستلم': recipient?.role || '-',
+        'التقييم': feedback.rating,
+        'التقييم (نجوم)': '★'.repeat(feedback.rating) + '☆'.repeat(5 - feedback.rating),
+        'التعليق': feedback.comment || '-',
+        'التاريخ': dateObj.toLocaleDateString('en-GB'),
+        'الساعة': dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'التقييمات');
+    
+    // تصدير الملف
+    const fileName = `التقييمات_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">التقييمات والملاحظات</h3>
-        <button onClick={openAddModal} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">إضافة تقييم</button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportToExcel}
+            disabled={filteredFeedbacks.length === 0}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-md text-sm"
+          >
+            <Download className="w-4 h-4" />
+            تصدير Excel
+          </button>
+          <button onClick={openAddModal} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">إضافة تقييم</button>
+        </div>
       </div>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2 md:gap-4">
         <div className="flex-1">

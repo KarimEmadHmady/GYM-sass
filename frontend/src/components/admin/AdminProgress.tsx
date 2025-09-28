@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import type { ClientProgress, User } from '@/types/models';
 import { userService } from '@/services';
 import { ProgressService } from '@/services/progressService';
+import * as XLSX from 'xlsx';
 
 type TrainerRow = {
   trainer: User;
@@ -231,14 +232,92 @@ const AdminProgress = () => {
     }
   }, [editProgressId, editProgressData, trainerProgress]);
 
+  // تصدير بيانات تقدم عميل محدد
+  const handleExportClientProgress = (clientId: string) => {
+    const client = trainerClients.find(c => c._id === clientId);
+    const clientProgress = trainerProgress.filter(p => p.userId === clientId);
+    
+    const exportData = clientProgress.map((progress) => {
+      const dateObj = new Date(progress.date);
+      return {
+        'اسم العميل': client?.name || '---',
+        'هاتف العميل': client?.phone || '-',
+        'إيميل العميل': client?.email || '-',
+        'التاريخ': dateObj.toLocaleDateString('en-GB'),
+        'الوزن (كجم)': progress.weight || '-',
+        'نسبة الدهون (%)': progress.bodyFatPercentage || '-',
+        'الكتلة العضلية (كجم)': progress.muscleMass || '-',
+        'مقاس الوسط (سم)': progress.waist || '-',
+        'مقاس الصدر (سم)': progress.chest || '-',
+        'مقاس الذراع (سم)': progress.arms || '-',
+        'مقاس الرجل (سم)': progress.legs || '-',
+        'تغير الوزن (كجم)': progress.weightChange || '-',
+        'تغير الدهون (%)': progress.fatChange || '-',
+        'تغير الكتلة العضلية (كجم)': progress.muscleChange || '-',
+        'الحالة العامة': progress.status || '-',
+        'نصيحة المدرب': progress.advice || '-',
+        'ملاحظات': progress.notes || '-'
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, `تقدم_${client?.name || 'عميل'}`);
+    
+    const fileName = `تقدم_${client?.name || 'عميل'}_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
+  // تصدير بيانات تقدم مدرب محدد
+  const handleExportTrainerProgress = (trainerId: string) => {
+    const trainer = trainers.find(t => t.trainer._id === trainerId);
+    const trainerProgressData = trainerProgress;
+    
+    const exportData = trainerProgressData.map((progress) => {
+      const client = trainerClients.find(c => c._id === progress.userId);
+      const dateObj = new Date(progress.date);
+      return {
+        'اسم المدرب': trainer?.trainer.name || '---',
+        'هاتف المدرب': trainer?.trainer.phone || '-',
+        'إيميل المدرب': trainer?.trainer.email || '-',
+        'اسم العميل': client?.name || '---',
+        'هاتف العميل': client?.phone || '-',
+        'إيميل العميل': client?.email || '-',
+        'التاريخ': dateObj.toLocaleDateString('en-GB'),
+        'الوزن (كجم)': progress.weight || '-',
+        'نسبة الدهون (%)': progress.bodyFatPercentage || '-',
+        'الكتلة العضلية (كجم)': progress.muscleMass || '-',
+        'مقاس الوسط (سم)': progress.waist || '-',
+        'مقاس الصدر (سم)': progress.chest || '-',
+        'مقاس الذراع (سم)': progress.arms || '-',
+        'مقاس الرجل (سم)': progress.legs || '-',
+        'تغير الوزن (كجم)': progress.weightChange || '-',
+        'تغير الدهون (%)': progress.fatChange || '-',
+        'تغير الكتلة العضلية (كجم)': progress.muscleChange || '-',
+        'الحالة العامة': progress.status || '-',
+        'نصيحة المدرب': progress.advice || '-',
+        'ملاحظات': progress.notes || '-'
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, `تقدم_${trainer?.trainer.name || 'مدرب'}`);
+    
+    const fileName = `تقدم_${trainer?.trainer.name || 'مدرب'}_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">إدارة تقدم العملاء</h3>
-        <button
-          onClick={() => setAddModalOpen(true)}
-          className="px-3 py-2 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white"
-        >إضافة تقدم</button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setAddModalOpen(true)}
+            className="px-3 py-2 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white"
+          >إضافة تقدم</button>
+        </div>
       </div>
 
       <div className="flex gap-2 mb-4">
@@ -275,10 +354,23 @@ const AdminProgress = () => {
                   <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 text-center">{row.progressCount}</td>
                   <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 text-center">{row.latestProgressDate ? new Date(row.latestProgressDate).toLocaleDateString() : '-'}</td>
                   <td className="px-3 py-2 text-right">
-                    <button
-                      onClick={() => openTrainer(row.trainer)}
-                      className="px-3 py-1.5 text-sm rounded-md bg-blue-600 hover:bg-blue-700 text-white"
-                    >عرض التفاصيل</button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleExportTrainerProgress(row.trainer._id)}
+                        className="px-3 py-1.5 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white"
+                        title="تصدير بيانات المدرب"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="7,10 12,15 17,10"/>
+                          <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => openTrainer(row.trainer)}
+                        className="px-3 py-1.5 text-sm rounded-md bg-blue-600 hover:bg-blue-700 text-white"
+                      >عرض التفاصيل</button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -304,27 +396,39 @@ const AdminProgress = () => {
                 <div className="text-sm font-medium mb-2 text-gray-900 dark:text-white">العملاء ({trainerClients.length})</div>
                 <div className="space-y-2 max-h-72 overflow-y-auto">
                   {trainerClients.map(c => (
-                    <button
-                      key={c._id}
-                      onClick={async () => {
-                        setSaving(true);
-                        try {
-                          const list = await progressService.getUserProgress(c._id);
-                          setTrainerProgress(list);
-                        } finally {
-                          setSaving(false);
-                        }
-                      }}
-                      className="w-full text-center text-sm flex items-center justify-between px-2 py-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-900 dark:text-white">{c.name}</span>
-                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs font-bold">
-                          {trainerProgress.filter(p => p.userId === c._id).length}
-                        </span>
-                      </div>
-                      <span className="text-xs text-gray-400">عرض السجلات</span>
-                    </button>
+                    <div key={c._id} className="flex items-center justify-between px-2 py-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <button
+                        onClick={async () => {
+                          setSaving(true);
+                          try {
+                            const list = await progressService.getUserProgress(c._id);
+                            setTrainerProgress(list);
+                          } finally {
+                            setSaving(false);
+                          }
+                        }}
+                        className="flex-1 text-center text-sm flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-900 dark:text-white">{c.name}</span>
+                          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-xs font-bold">
+                            {trainerProgress.filter(p => p.userId === c._id).length}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-400">عرض السجلات</span>
+                      </button>
+                      <button
+                        onClick={() => handleExportClientProgress(c._id)}
+                        className="ml-2 px-2 py-1 text-xs rounded bg-green-600 hover:bg-green-700 text-white"
+                        title="تصدير بيانات العميل"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="7,10 12,15 17,10"/>
+                          <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>

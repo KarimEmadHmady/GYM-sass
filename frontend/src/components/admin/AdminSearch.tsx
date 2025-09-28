@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { apiGet } from '@/lib/api';
 import { UserService } from '@/services/userService';
+import * as XLSX from 'xlsx';
+import { Download } from 'lucide-react';
 
 interface SearchResult {
   type: string;
@@ -221,6 +223,40 @@ const AdminSearch = () => {
   const endIndex = startIndex + filters.limit;
   const totalPages = Math.max(1, Math.ceil((results?.length || 0) / filters.limit));
   const visibleResults = results.slice(startIndex, endIndex);
+
+  // تصدير البيانات إلى Excel
+  const handleExportToExcel = () => {
+    const exportData = results.map((result) => {
+      const userInfo = result.userId ? getUserInfo(result.userId) : null;
+      const dateObj = new Date(result.date);
+      
+      return {
+        'نوع المعاملة': getTypeLabel(result.type),
+        'المبلغ (ج.م)': result.amount,
+        'التاريخ': dateObj.toLocaleDateString('en-GB'),
+        'الساعة': dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+        'اسم المستخدم': userInfo?.name || '-',
+        'هاتف المستخدم': userInfo?.phone || '-',
+        'رقم الفاتورة': result.invoiceNumber || '-',
+        'اسم المنتج': result.itemName || '-',
+        'طريقة الدفع': result.method || '-',
+        'الحالة': result.status || '-',
+        'الفئة': result.category || '-',
+        'نوع المصدر': result.sourceType || '-',
+        'المكافآت': result.bonuses || '-',
+        'الخصومات': result.deductions || '-',
+        'ملاحظات': result.notes || '-'
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'نتائج_البحث');
+    
+    // تصدير الملف
+    const fileName = `نتائج_البحث_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
 
   return (
     <div className="space-y-6">
@@ -441,7 +477,18 @@ const AdminSearch = () => {
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
               نتائج البحث ({Math.min(endIndex, totalCount).toLocaleString()} / {totalCount.toLocaleString()})
             </h4>
-            {loading && <span className="text-sm text-blue-600">جاري البحث...</span>}
+            <div className="flex items-center gap-2">
+              {loading && <span className="text-sm text-blue-600">جاري البحث...</span>}
+              {results.length > 0 && (
+                <button
+                  onClick={handleExportToExcel}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  تصدير Excel
+                </button>
+              )}
+            </div>
           </div>
 
           {error && (

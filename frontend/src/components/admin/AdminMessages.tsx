@@ -6,6 +6,7 @@ import { userService } from '@/services';
 import { useAuth } from '@/hooks/useAuth';
 import type { Message } from '@/types';
 import type { User } from '@/types/models';
+import * as XLSX from 'xlsx';
 import { 
   Mail, 
   MailOpen, 
@@ -16,7 +17,8 @@ import {
   Filter,
   Calendar,
   User as UserIcon,
-  MessageSquare
+  MessageSquare,
+  Download
 } from 'lucide-react';
 
 const AdminMessages = () => {
@@ -181,6 +183,34 @@ const AdminMessages = () => {
     setShowViewModal(message);
   };
 
+  // تصدير البيانات إلى Excel
+  const handleExportToExcel = () => {
+    const exportData = filteredMessages.map((message) => {
+      const dateObj = new Date(message.date);
+      return {
+        'المرسل': getUserName(message.fromUserId),
+        'إيميل المرسل': getUserEmail(message.fromUserId),
+        'هاتف المرسل': getUserPhone(message.fromUserId),
+        'المستلم': getUserName(message.userId),
+        'إيميل المستلم': getUserEmail(message.userId),
+        'هاتف المستلم': getUserPhone(message.userId),
+        'الموضوع': message.subject || '-',
+        'نص الرسالة': message.message,
+        'التاريخ': dateObj.toLocaleDateString('en-GB'),
+        'الساعة': dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+        'الحالة': message.read ? 'مقروءة' : 'غير مقروءة'
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'الرسائل');
+    
+    // تصدير الملف
+    const fileName = `الرسائل_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
   if (loading) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -199,13 +229,23 @@ const AdminMessages = () => {
           <MessageSquare className="w-8 h-8 text-blue-600" />
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white">إدارة الرسائل</h3>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          <span>رسالة جديدة</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={handleExportToExcel}
+            disabled={filteredMessages.length === 0}
+            className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            <span>تصدير Excel</span>
+          </button>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>رسالة جديدة</span>
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
