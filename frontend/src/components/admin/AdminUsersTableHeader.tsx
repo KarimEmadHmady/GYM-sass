@@ -22,7 +22,7 @@ const AdminUsersTableHeader: React.FC<AdminUsersTableHeaderProps> = ({
   <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 sm:mb-0">
-        إدارة المستخدمين - الإدارة
+        إدارة المستخدمين
       </h3>
       <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
         {!hideCreateButton && (

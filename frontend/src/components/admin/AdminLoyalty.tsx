@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { UserService } from '@/services/userService';
 import { useLoyaltyStats } from '@/hooks/useLoyaltyStats';
 import type { User } from '@/types/models';
+import * as XLSX from 'xlsx';
 
 const loyaltyService = new LoyaltyService();
 const userService = new UserService();
@@ -423,6 +424,96 @@ const AdminLoyalty = () => {
     });
     fetchRedemptions();
   };
+
+  // دالة تصدير الاستبدالات إلى Excel
+  const handleExportRedemptions = () => {
+    try {
+      if (!filteredRedemptions || filteredRedemptions.length === 0) {
+        return;
+      }
+
+      // تحضير البيانات للتصدير
+      const exportData = filteredRedemptions.map((redemption, index) => {
+        const user = allUsers.find(u => u._id === redemption.userId);
+        const reward = rewards.find(r => r._id === redemption.rewardId);
+        
+        return {
+          'الرقم التسلسلي': index + 1,
+          'اسم المستخدم': user?.name || 'غير معروف',
+          'بريد المستخدم': user?.email || '',
+          'هاتف المستخدم': user?.phone || '',
+          'اسم الجائزة': reward?.name || 'جائزة مستبدلة',
+          'وصف الجائزة': reward?.description || '',
+          'النقاط المطلوبة': reward?.pointsRequired || 0,
+          'النقاط المستخدمة': Math.abs(redemption.points),
+          'النقاط المتبقية': redemption.remainingPoints || 0,
+          'سبب الاستبدال': redemption.reason || 'جائزة مستبدلة',
+          'تاريخ الاستبدال': redemption.createdAt ? new Date(redemption.createdAt).toLocaleDateString('ar-EG') : '',
+          'وقت الاستبدال': redemption.createdAt ? new Date(redemption.createdAt).toLocaleTimeString('ar-EG') : '',
+        };
+      });
+
+      // إنشاء ورقة عمل
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      // إنشاء كتاب عمل
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'الاستبدالات');
+
+      // تصدير الملف
+      const fileName = `استبدالات_نقاط_الولاء_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+    } catch (error) {
+      console.error('خطأ في تصدير الاستبدالات:', error);
+    }
+  };
+
+  // دالة تصدير سجل النقاط إلى Excel
+  const handleExportHistory = () => {
+    try {
+      if (!filteredHistory || filteredHistory.length === 0) {
+        return;
+      }
+
+      // تحضير البيانات للتصدير
+      const exportData = filteredHistory.map((history, index) => {
+        const user = allUsers.find(u => u._id === history.userId);
+        
+        return {
+          'الرقم التسلسلي': index + 1,
+          'اسم المستخدم': user?.name || 'غير معروف',
+          'بريد المستخدم': user?.email || '',
+          'هاتف المستخدم': user?.phone || '',
+          'النقاط': history.points,
+          'نوع العملية': history.type === 'earned' ? 'مكتسبة' :
+                        history.type === 'redeemed' ? 'مستبدلة' :
+                        history.type === 'admin_added' ? 'مضافة من الإدارة' :
+                        history.type === 'admin_deducted' ? 'مخصومة من الإدارة' :
+                        history.type === 'payment_bonus' ? 'مكافأة دفع' :
+                        history.type === 'attendance_bonus' ? 'مكافأة حضور' :
+                        history.type === 'expired' ? 'منتهية' : history.type,
+          'السبب': history.reason || '',
+          'تاريخ العملية': history.createdAt ? new Date(history.createdAt).toLocaleDateString('ar-EG') : '',
+          'وقت العملية': history.createdAt ? new Date(history.createdAt).toLocaleTimeString('ar-EG') : '',
+        };
+      });
+
+      // إنشاء ورقة عمل
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      // إنشاء كتاب عمل
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'سجل_النقاط');
+
+      // تصدير الملف
+      const fileName = `سجل_نقاط_الولاء_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+    } catch (error) {
+      console.error('خطأ في تصدير سجل النقاط:', error);
+    }
+  };
   
   // تحديث تلقائي عند تغيير الفلاتر
   useEffect(() => {
@@ -611,6 +702,13 @@ const AdminLoyalty = () => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">الاستبدالات</h3>
+              <button
+                onClick={handleExportRedemptions}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={redemptionsLoading || filteredRedemptions.length === 0}
+              >
+                تصدير Excel
+              </button>
             </div>
             
             {/* فلاتر الاستبدالات */}
@@ -758,21 +856,32 @@ const AdminLoyalty = () => {
 
         {activeTab === 'history' && (
           <div>
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">سجل النقاط</h3>
-              <form onSubmit={handleHistoryFilter} className="flex flex-col md:flex-row gap-2 items-center">
-                <div>
+              <button
+                onClick={handleExportHistory}
+                className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={historyLoading || filteredHistory.length === 0}
+              >
+                تصدير Excel
+              </button>
+            </div>
+            <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <form onSubmit={handleHistoryFilter} className="flex flex-col sm:flex-row gap-2 items-end">
+                <div className="flex-1 min-w-[200px]">
                   <input
                     type="text"
                     placeholder="ابحث بالاسم أو الهاتف أو الإيميل"
                     value={searchUser}
                     onChange={e => setSearchUser(e.target.value)}
-                    className="rounded border px-2 py-1 mb-2 w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full px-2 py-2 text-xs rounded border bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   />
+                </div>
+                <div className="min-w-[150px]">
                   <select
                     value={historyFilterUserId}
                     onChange={e => setHistoryFilterUserId(e.target.value)}
-                    className="rounded border px-2 py-1 w-full bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+                    className="w-full px-2 py-1 text-xs rounded border bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                   >
                     <option value="">كل المستخدمين</option>
                     {filteredUsers.map(u => (
@@ -780,22 +889,24 @@ const AdminLoyalty = () => {
                     ))}
                   </select>
                 </div>
-                <select
-                  value={historyFilterType}
-                  onChange={e => setHistoryFilterType(e.target.value)}
-                  className="rounded border px-2 py-1 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
-                >
-                  <option value="">كل الأنواع</option>
-                  <option value="earned">مكتسبة</option>
-                  <option value="redeemed">مستبدلة</option>
-                  <option value="admin_added">مضافة من الإدارة</option>
-                  <option value="admin_deducted">مخصومة من الإدارة</option>
-                  <option value="payment_bonus">مكافأة دفع</option>
-                  <option value="attendance_bonus">مكافأة حضور</option>
-                  <option value="expired">منتهية</option>
-                </select>
-                <button type="submit" className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">بحث</button>
-                <button type="button" onClick={handleResetFilters} className="px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200">إعادة تعيين</button>
+                <div className="min-w-[120px]">
+                  <select
+                    value={historyFilterType}
+                    onChange={e => setHistoryFilterType(e.target.value)}
+                    className="w-full px-2 py-1 text-xs rounded border bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  >
+                    <option value="">كل الأنواع</option>
+                    <option value="earned">مكتسبة</option>
+                    <option value="redeemed">مستبدلة</option>
+                    <option value="admin_added">مضافة من الإدارة</option>
+                    <option value="admin_deducted">مخصومة من الإدارة</option>
+                    <option value="payment_bonus">مكافأة دفع</option>
+                    <option value="attendance_bonus">مكافأة حضور</option>
+                    <option value="expired">منتهية</option>
+                  </select>
+                </div>
+                <button type="submit" className="px-3 py-1 text-xs rounded bg-blue-600 text-white hover:bg-blue-700">بحث</button>
+                <button type="button" onClick={handleResetFilters} className="px-3 py-1 text-xs rounded bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200">إعادة تعيين</button>
               </form>
             </div>
             {historyLoading ? (

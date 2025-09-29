@@ -6,6 +6,7 @@ import { userService } from '@/services';
 import type { Feedback, User } from '@/types/models';
 import { Star, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import * as XLSX from 'xlsx';
 
 const initialForm = {
   fromUserId: '',
@@ -118,6 +119,55 @@ const ManagerFeedback = () => {
     }
   };
 
+  // دالة تصدير البيانات إلى Excel
+  const handleExportData = () => {
+    try {
+      if (!filteredFeedbacks || filteredFeedbacks.length === 0) {
+        return;
+      }
+
+      // تحضير البيانات للتصدير
+      const exportData = filteredFeedbacks.map((feedback, index) => {
+        const sender = users.find(u => u._id === feedback.fromUserId);
+        const recipient = users.find(u => u._id === feedback.toUserId);
+        
+        return {
+          'الرقم التسلسلي': index + 1,
+          'اسم المرسل': sender?.name || 'غير معروف',
+          'بريد المرسل': sender?.email || '',
+          'هاتف المرسل': sender?.phone || '',
+          'دور المرسل': sender?.role || '',
+          'اسم المستلم (المدرب)': recipient?.name || 'غير معروف',
+          'بريد المستلم': recipient?.email || '',
+          'هاتف المستلم': recipient?.phone || '',
+          'التقييم (نجوم)': feedback.rating || 0,
+          'التقييم (نص)': feedback.rating === 5 ? 'ممتاز' :
+                          feedback.rating === 4 ? 'جيد جداً' :
+                          feedback.rating === 3 ? 'جيد' :
+                          feedback.rating === 2 ? 'مقبول' : 'ضعيف',
+          'التعليق': feedback.comment || '',
+          'تاريخ التقييم': feedback.date ? new Date(feedback.date).toLocaleDateString('ar-EG') : '',
+          'تاريخ الإنشاء': feedback.createdAt ? new Date(feedback.createdAt).toLocaleDateString('ar-EG') : '',
+          'آخر تحديث': feedback.updatedAt ? new Date(feedback.updatedAt).toLocaleDateString('ar-EG') : '',
+        };
+      });
+
+      // إنشاء ورقة عمل
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      // إنشاء كتاب عمل
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'التقييمات');
+
+      // تصدير الملف
+      const fileName = `تقييمات_المدربين_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+    } catch (error) {
+      console.error('خطأ في تصدير البيانات:', error);
+    }
+  };
+
   // Only non-trainers can be senders
   const senderOptions = users.filter(u => u.role !== 'trainer');
   // Only trainers can be recipients
@@ -142,6 +192,13 @@ const ManagerFeedback = () => {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">التقييمات والملاحظات</h3>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportData}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={loading || filteredFeedbacks.length === 0}
+          >
+            تصدير Excel
+          </button>
           <button
             onClick={openAddModal}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm disabled:opacity-60 disabled:cursor-not-allowed"

@@ -5,6 +5,7 @@ import { invoiceService, userService } from '@/services';
 import type { Invoice, GetInvoicesFilters, InvoiceSummary } from '@/services/invoiceService';
 import type { User } from '@/types/models';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
+import * as XLSX from 'xlsx';
 
 type CreateInvoiceItem = { description: string; quantity: number; price: number };
 type CreateInvoiceForm = {
@@ -243,6 +244,52 @@ const ManagerInvoices: React.FC = () => {
     );
   }, [users, userSearch]);
 
+  // دالة تصدير البيانات إلى Excel
+  const handleExportData = () => {
+    try {
+      if (!invoices || invoices.length === 0) {
+        return;
+      }
+
+      // تحضير البيانات للتصدير
+      const exportData = invoices.map((invoice, index) => {
+        const user = userMap[invoice.userId];
+        return {
+          'الرقم التسلسلي': index + 1,
+          'رقم الفاتورة': invoice.invoiceNumber || '',
+          'اسم العضو': user?.name || 'غير معروف',
+          'بريد العضو': user?.email || '',
+          'هاتف العضو': user?.phone || '',
+          'المبلغ الإجمالي': invoice.amount || 0,
+          'المبلغ المدفوع': invoice.paidAmount || 0,
+          'المبلغ المتبقي': (invoice.amount || 0) - (invoice.paidAmount || 0),
+          'تاريخ الإصدار': invoice.issueDate ? new Date(invoice.issueDate).toLocaleDateString('ar-EG') : '',
+          'تاريخ الاستحقاق': invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString('ar-EG') : '',
+          'الحالة': invoice.status === 'paid' ? 'مدفوعة' : 
+                   invoice.status === 'overdue' ? 'متأخرة' : 'قيد الانتظار',
+          'عدد العناصر': invoice.items?.length || 0,
+          'ملاحظات': invoice.notes || '',
+          'تاريخ الإنشاء': invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString('ar-EG') : '',
+          'آخر تحديث': invoice.updatedAt ? new Date(invoice.updatedAt).toLocaleDateString('ar-EG') : '',
+        };
+      });
+
+      // إنشاء ورقة عمل
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      // إنشاء كتاب عمل
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'الفواتير');
+
+      // تصدير الملف
+      const fileName = `فواتير_الجيم_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+    } catch (error) {
+      console.error('خطأ في تصدير البيانات:', error);
+    }
+  };
+
   // نطاق زمني مشتق من الفلاتر أو من بيانات الفواتير
   const derivedRange = useMemo(() => {
     const safeFormat = (d?: Date | null) => (d && !isNaN(d.getTime()) ? d.toISOString().slice(0, 10) : '-');
@@ -331,9 +378,16 @@ const ManagerInvoices: React.FC = () => {
               <option value="asc">الأقدم</option>
             </select>
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end gap-2">
             <button className="w-full px-1.5 py-0.5 rounded bg-blue-600 text-white text-xs h-8 min-w-[110px] max-w-[160px]" onClick={() => fetchData()}>
               {loading ? 'جارِ التحميل...' : 'تحديث'}
+            </button>
+            <button 
+              className="w-full px-1.5 py-0.5 rounded bg-green-600 text-white text-xs h-8 min-w-[110px] max-w-[160px] hover:bg-green-700" 
+              onClick={handleExportData}
+              disabled={loading || invoices.length === 0}
+            >
+              تصدير Excel
             </button>
           </div>
         </div>

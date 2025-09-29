@@ -8,6 +8,7 @@ import AdminUsersTableHeader from '../admin/AdminUsersTableHeader';
 import AdminUsersTableList from '../admin/AdminUsersTableList';
 import AdminUsersTablePagination from '../admin/AdminUsersTablePagination';
 import AdminUserModals from '../admin/AdminUserModals';
+import * as XLSX from 'xlsx';
 
 const ManagerUsersTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -97,6 +98,62 @@ const ManagerUsersTable = () => {
     return colors[subscription as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
   const safeUsers = Array.isArray(users) ? users : [];
+
+  // دالة تصدير البيانات إلى Excel
+  const handleExportData = () => {
+    try {
+      // تحضير البيانات للتصدير
+      const exportData = filteredUsers.map((user, index) => ({
+        'الرقم': index + 1,
+        'الاسم': user.name || '',
+        'البريد الإلكتروني': user.email || '',
+        'الدور': getRoleText(user.role),
+        'رقم الهاتف': user.phone || '',
+        'تاريخ الميلاد': user.dob ? new Date(user.dob).toLocaleDateString('ar-EG') : '',
+        'العنوان': user.address || '',
+        'الرصيد': user.balance || 0,
+        'الحالة': user.status === 'active' ? 'نشط' : user.status === 'inactive' ? 'غير نشط' : 'محظور',
+        'تاريخ بداية الاشتراك': user.subscriptionStartDate ? new Date(user.subscriptionStartDate).toLocaleDateString('ar-EG') : '',
+        'تاريخ نهاية الاشتراك': user.subscriptionEndDate ? new Date(user.subscriptionEndDate).toLocaleDateString('ar-EG') : '',
+        'حالة الاشتراك': user.subscriptionStatus === 'active' ? 'نشط' : user.subscriptionStatus === 'expired' ? 'منتهي' : 'ملغي',
+        'نقاط الولاء': user.loyaltyPoints || 0,
+        'مستوى العضوية': user.membershipLevel || '',
+        'الطول (سم)': (user as any).heightCm || '',
+        'وزن الأساس (كجم)': (user as any).baselineWeightKg || '',
+        'وزن الهدف (كجم)': (user as any).targetWeightKg || '',
+        'مستوى النشاط': (user as any).activityLevel || '',
+        'تاريخ الإنشاء': user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : '',
+        'آخر تعديل': user.updatedAt ? new Date(user.updatedAt).toLocaleDateString('ar-EG') : '',
+      }));
+
+      // إنشاء ورقة عمل
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      // إنشاء كتاب عمل
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'المستخدمين');
+
+      // تصدير الملف
+      const fileName = `مستخدمين_الجيم_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      // إظهار رسالة نجاح
+      window.dispatchEvent(new CustomEvent('toast', { 
+        detail: { 
+          type: 'success', 
+          message: `تم تصدير ${exportData.length} مستخدم بنجاح` 
+        } 
+      }));
+    } catch (error) {
+      console.error('خطأ في تصدير البيانات:', error);
+      window.dispatchEvent(new CustomEvent('toast', { 
+        detail: { 
+          type: 'error', 
+          message: 'حدث خطأ أثناء تصدير البيانات' 
+        } 
+      }));
+    }
+  };
 
   // handlers (نفس الأدمن)
   const handleEdit = (id: string) => {
@@ -436,6 +493,8 @@ const ManagerUsersTable = () => {
         setFilterRole={setFilterRole}
         // لا تمرر onOpenCreate لإخفاء زر الإضافة
         hideCreateButton={true}
+        // تمرير دالة التصدير
+        onExportData={handleExportData}
       />
       <AdminUsersTableList
         users={safeUsers}

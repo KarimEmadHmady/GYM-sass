@@ -18,7 +18,6 @@ import AdminPurchases from '@/components/admin/AdminPurchases';
 import AdminMessages from '@/components/admin/AdminMessages';
 import AdminProgress from '@/components/admin/AdminProgress';
 import AdminLoyalty from '@/components/admin/AdminLoyalty';
-import AdminSearch from '@/components/admin/AdminSearch';
 import ManagerSettings from '@/components/manager/ManagerSettings';
 import TrainersDirectory from '@/components/shared/TrainersDirectory';
 import ManagerFeedback from '@/components/manager/ManagerFeedback';
@@ -29,6 +28,7 @@ import SubscriptionAlertBadge from '@/components/admin/SubscriptionAlertBadge';
 import SubscriptionAlertsSummary from '@/components/admin/SubscriptionAlertsSummary';
 import SoundManager from '@/components/admin/SoundManager';
 import dynamic from 'next/dynamic';
+import ManagerReports from '@/components/manager/ManagerReports';
 const ManagerAddExpense = dynamic(() => import('@/components/manager/ManagerAddExpense'), { ssr: false });
 const ManagerAddRevenue = dynamic(() => import('@/components/manager/ManagerAddRevenue'), { ssr: false });
 
@@ -100,8 +100,8 @@ const ManagerDashboard = ({ params }: { params: { userId: string } }) => {
     { id: 'progress', name: 'تقدم العملاء', icon: '📈' },
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
     { id: 'loyalty', name: 'نقاط الولاء', icon: '🎯' },
-    { id: 'search', name: 'بحث', icon: '🔎' },
     { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' },
+    // { id: 'search', name: 'بحث', icon: '🔎' },
 
   ];
 
@@ -236,16 +236,7 @@ const ManagerDashboard = ({ params }: { params: { userId: string } }) => {
         )}
 
         {activeTab === 'reports' && (
-          <div className="space-y-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                التقارير والإحصائيات
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                صفحة التقارير قيد التطوير...
-              </p>
-            </div>
-          </div>
+          <ManagerReports />
         )}
 
         {activeTab === 'attendance' && (
@@ -308,11 +299,11 @@ const ManagerDashboard = ({ params }: { params: { userId: string } }) => {
           </div>
         )}
 
-        {activeTab === 'search' && (
+        {/* {activeTab === 'search' && (
           <div className="space-y-8">
             <AdminSearch />
           </div>
-        )}
+        )} */}
 
         {activeTab === 'settings' && (
           <div className="space-y-8">
