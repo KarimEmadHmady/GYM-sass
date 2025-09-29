@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AttendanceService } from '@/services/attendanceService';
 import { UserService } from '@/services/userService';
 import type { AttendanceRecord, User } from '@/types/models';
+import * as XLSX from 'xlsx';
 
 const TrainerAttendance = () => {
   const { user, isAuthenticated } = useAuth();
@@ -98,12 +99,37 @@ const TrainerAttendance = () => {
     }
   };
 
+  // Helper to export myRecords to Excel
+  const handleExport = () => {
+    const data = myRecords.map(rec => {
+      const d = new Date(rec.date);
+      return {
+        'التاريخ': d.toLocaleDateString(),
+        'الساعة': d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        'الحالة': rec.status === 'present' ? 'حاضر' : rec.status === 'absent' ? 'غائب' : 'بعذر',
+        'ملاحظات': rec.notes || '-',
+      };
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
+    XLSX.writeFile(wb, 'my_attendance.xlsx');
+  };
+
   return (
     <div className="space-y-8">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">سجلات حضوري</h3>
-          <button onClick={openAddModal} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">إضافة سجل</button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleExport}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm"
+            >
+              تصدير البيانات
+            </button>
+            <button onClick={openAddModal} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">إضافة سجل</button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">

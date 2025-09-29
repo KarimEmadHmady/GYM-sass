@@ -1,66 +1,35 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from '@/i18n/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
 const TrainerQuickActions = () => {
+  const router = useRouter();
+  const { user } = useAuth();
+  const trainerId = ((user as any)?._id ?? (user as any)?.id ?? '') as string;
+
   const actions = [
-    {
-      title: 'جدولة حصة جديدة',
-      description: 'جدولة حصة تدريبية جديدة',
-      icon: '📅',
-      color: 'blue',
-      action: () => console.log('Schedule new session')
-    },
-    {
-      title: 'إنشاء خطة تمرين',
-      description: 'إنشاء خطة تمرين جديدة',
-      icon: '📋',
-      color: 'green',
-      action: () => console.log('Create workout plan')
-    },
-    {
-      title: 'إنشاء خطة غذائية',
-      description: 'إنشاء خطة غذائية جديدة',
-      icon: '🍎',
-      color: 'orange',
-      action: () => console.log('Create diet plan')
-    },
-    {
-      title: 'تسجيل حضور عميل',
-      description: 'تسجيل حضور عميل في الحصة',
-      icon: '✅',
-      color: 'purple',
-      action: () => console.log('Mark client attendance')
-    },
-    {
-      title: 'تسجيل تقدم عميل',
-      description: 'تسجيل تقدم عميل في التدريب',
-      icon: '📈',
-      color: 'indigo',
-      action: () => console.log('Record client progress')
-    },
-    {
-      title: 'إضافة تقييم',
-      description: 'إضافة تقييم لعميل',
-      icon: '⭐',
-      color: 'yellow',
-      action: () => console.log('Add client feedback')
-    },
-    {
-      title: 'إرسال رسالة',
-      description: 'إرسال رسالة لعملائي',
-      icon: '💬',
-      color: 'pink',
-      action: () => console.log('Send message to clients')
-    },
-    {
-      title: 'عرض تقريري',
-      description: 'عرض تقرير أدائي',
-      icon: '📊',
-      color: 'gray',
-      action: () => console.log('View my report')
+    { id: 'clients', title: 'عملائي', description: 'إدارة العملاء المرتبطين بك', icon: '👥', color: 'blue' },
+    { id: 'plans', title: 'الخطط', description: 'إدارة خطط التمرين والغذاء', icon: '📋', color: 'green' },
+    { id: 'progress', title: 'التقدم', description: 'متابعة تقدم عملائك', icon: '📈', color: 'indigo' },
+    { id: 'attendance', title: 'حضوري', description: 'سجل حضورك وحضور العملاء', icon: '📝', color: 'purple' },
+    { id: 'clientSessions', title: 'حصص العملاء', description: 'إدارة وجدولة حصص عملائك', icon: '📅', color: 'orange' },
+    { id: 'feedback', title: 'التقييمات', description: 'عرض تقييماتك وملاحظات العملاء', icon: '⭐', color: 'yellow' },
+    { id: 'messages', title: 'الرسائل', description: 'تواصل مع عملائك', icon: '✉️', color: 'pink' },
+    { id: 'loyalty', title: 'نقاط الولاء', description: 'مكافآت ونقاط ولاء العملاء', icon: '🎁', color: 'gray' },
+    { id: 'schedule', title: 'الجدول', description: 'عرض جدولك الزمني', icon: '📅', color: 'blue' },
+    { id: 'profile', title: 'الملف الشخصى', description: 'تحديث بيانات ملفك', icon: '👤', color: 'green' },
+  ].map(a => ({
+    ...a,
+    action: () => {
+      if (trainerId) {
+        router.push(`/trainer/dashboard/${trainerId}?tab=${a.id}`);
+      } else {
+        router.push(`/trainer/dashboard?tab=${a.id}`);
+      }
     }
-  ];
+  }));
 
   const getColorClasses = (color: string) => {
     const colors = {
@@ -77,22 +46,22 @@ const TrainerQuickActions = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
         الإجراءات السريعة - المدرب
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {actions.map((action, index) => (
           <button
             key={index}
             onClick={action.action}
-            className={`bg-gradient-to-r ${getColorClasses(action.color)} text-white rounded-lg p-4 text-left hover:shadow-lg transform hover:scale-105 transition-all duration-200`}
+            className={`bg-gradient-to-r ${getColorClasses(action.color)} text-white rounded-lg p-3 text-left hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200`}
           >
-            <div className="flex items-center mb-2">
-              <span className="text-2xl mr-3">{action.icon}</span>
-              <h4 className="font-semibold text-sm">{action.title}</h4>
+            <div className="flex items-center mb-1.5">
+              <span className="text-xl mr-2">{action.icon}</span>
+              <h4 className="font-semibold text-xs">{action.title}</h4>
             </div>
-            <p className="text-xs opacity-90">{action.description}</p>
+            <p className="text-[11px] opacity-90">{action.description}</p>
           </button>
         ))}
       </div>

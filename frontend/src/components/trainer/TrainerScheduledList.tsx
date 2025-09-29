@@ -6,6 +6,7 @@ import { SessionScheduleService } from '@/services/sessionScheduleService';
 import { userService } from '@/services';
 import { useAuth } from '@/hooks/useAuth';
 import { Calendar, Clock, User as UserIcon, MapPin, CheckCircle2 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 const sessionScheduleService = new SessionScheduleService();
 
@@ -81,6 +82,23 @@ const TrainerScheduledList = () => {
     );
   }
 
+  // Helper to export scheduled sessions to Excel
+  const handleExport = () => {
+    const data = sessions.map(session => ({
+      'نوع الحصة': session.sessionType,
+      'التاريخ': new Date(session.date).toLocaleDateString('ar-EG'),
+      'وقت البداية': session.startTime,
+      'وقت النهاية': session.endTime,
+      'المدة': session.duration || '-',
+      'السعر': session.price || 0,
+      'المكان': session.location || '-',
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'ScheduledSessions');
+    XLSX.writeFile(wb, 'scheduled_sessions.xlsx');
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-6">
@@ -88,9 +106,17 @@ const TrainerScheduledList = () => {
           <CheckCircle2 className="w-5 h-5 text-blue-600" />
           الحصص المجدولة
         </h3>
-        <span className="text-sm px-3 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
-          {sessions.length} حصة
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm px-3 py-2 rounded-[5px] bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+            {sessions.length} حصة
+          </span>
+          <button
+            onClick={handleExport}
+            className="px-3 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition-colors"
+          >
+            تصدير البيانات
+          </button>
+        </div>
       </div>
 
       <div className="space-y-3">

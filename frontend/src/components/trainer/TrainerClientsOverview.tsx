@@ -8,6 +8,7 @@ import { apiRequest } from '@/lib/api';
 import { UserService } from '@/services/userService';
 import { ProgressService } from '@/services/progressService';
 import { useRouter, usePathname } from '@/i18n/navigation';
+import * as XLSX from 'xlsx';
 
 const TrainerClientsOverview = () => {
   const { user } = useAuth();
@@ -158,6 +159,31 @@ const TrainerClientsOverview = () => {
     return matchesSearch && matchesStatus;
   });
 
+  // Helper to export filteredClients to Excel
+  const handleExport = () => {
+    // Prepare data for export (same fields as grid)
+    const data = filteredClients.map(client => ({
+      'الاسم': client.name,
+      'البريد الإلكتروني': client.email,
+      'رقم الهاتف': client.phone || '-',
+      'الحالة': getStatusText(client.status),
+      'بداية الاشتراك': formatDateShort((client as any).subscriptionStartDate),
+      'نهاية الاشتراك': formatDateShort((client as any).subscriptionEndDate),
+      'الوزن (ابتدائي)': (client as any).baselineWeightKg ?? '-',
+      'الوزن المستهدف': (client as any).targetWeightKg ?? '-',
+      'الطول (سم)': (client as any).heightCm ?? (client as any).metadata?.heightCm ?? '-',
+      'العمر': calcAge(client.dob),
+      'نقاط الولاء': client.loyaltyPoints,
+      'Freeze Days': (client as any).subscriptionFreezeDays ?? 0,
+      'Freeze Used': (client as any).subscriptionFreezeUsed ?? 0,
+      'الأهداف': client.goals && Object.entries(client.goals).filter(([_, v]) => v).map(([k]) => k === 'weightLoss' ? 'تخسيس' : k === 'muscleGain' ? 'بناء عضلات' : k === 'endurance' ? 'قوة تحمل' : k).join(', ') || 'لا يوجد أهداف',
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Clients');
+    XLSX.writeFile(wb, 'clients_export.xlsx');
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -167,6 +193,12 @@ const TrainerClientsOverview = () => {
             عملائي
           </h3>
           <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+            <button
+              onClick={handleExport}
+              className="px-3 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition-colors mb-2 sm:mb-0"
+            >
+              تصدير البيانات
+            </button>
             <input
               type="text"
               placeholder="البحث عن عميل..."

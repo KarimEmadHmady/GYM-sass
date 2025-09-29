@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import type { User } from '@/types/models';
 import { UserService } from '@/services/userService';
 import { ProgressService } from '@/services/progressService';
+import * as XLSX from 'xlsx';
 
 const TrainerProgressOverview = () => {
   const { user } = useAuth();
@@ -48,6 +49,44 @@ const TrainerProgressOverview = () => {
     fetchClients();
   }, [currentTrainerId]);
 
+  // Helper to export clients table to Excel
+  const handleExport = () => {
+    const data = clients.map(client => ({
+      'الاسم': client.name,
+      'البريد الإلكتروني': client.email,
+      'رقم الهاتف': client.phone || '-',
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Clients');
+    XLSX.writeFile(wb, 'clients_progress_overview.xlsx');
+  };
+
+  // Helper to export progressModalList to Excel (for selected client)
+  const handleExportProgress = () => {
+    if (!progressModalClient || !progressModalList) return;
+    const data = progressModalList.map((p) => ({
+      'التاريخ': p.date ? new Date(p.date).toLocaleDateString() : '-',
+      'الوزن': p.weight ?? '-',
+      'نسبة الدهون': p.bodyFatPercentage ?? '-',
+      'الكتلة العضلية': p.muscleMass ?? '-',
+      'مقاس الوسط': p.waist ?? '-',
+      'مقاس الصدر': p.chest ?? '-',
+      'مقاس الذراع': p.arms ?? '-',
+      'مقاس الرجل': p.legs ?? '-',
+      'تغير الوزن': p.weightChange ?? '-',
+      'تغير الدهون': p.fatChange ?? '-',
+      'تغير الكتلة العضلية': p.muscleChange ?? '-',
+      'الحالة العامة': p.status ?? '-',
+      'نصيحة المدرب': p.advice ?? '-',
+      'ملاحظات': p.notes || '-',
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Progress');
+    XLSX.writeFile(wb, `progress_${progressModalClient.name || 'client'}.xlsx`);
+  };
+
   return (
     <div className="space-y-6">
       {/* Overall Stats */}
@@ -61,6 +100,14 @@ const TrainerProgressOverview = () => {
   </div>
 </div>
 
+     <div className="flex justify-end mb-2 px-2">
+        <button
+          onClick={handleExport}
+          className="px-3 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition-colors"
+        >
+          تصدير البيانات
+        </button>
+      </div>
       {/* Client Progress Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -117,7 +164,13 @@ const TrainerProgressOverview = () => {
               <div className="text-lg font-semibold text-gray-900 dark:text-white">سجلات التقدم - {progressModalClient.name}</div>
               <button onClick={() => setProgressModalClient(null)} className="px-3 py-1.5 text-sm rounded-md bg-gray-200 dark:bg-gray-800 dark:text-white">إغلاق</button>
             </div>
-            <div className="mb-4 flex justify-end">
+            <div className="mb-4 flex justify-end gap-2">
+              <button
+                onClick={handleExportProgress}
+                className="px-3 py-2 text-sm rounded-md bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                تصدير السجلات
+              </button>
               <button onClick={() => { setProgressAddOpen(true); setProgressAddData({ date: '', weight: '', bodyFatPercentage: '', notes: '' }); }} className="px-3 py-2 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white">إضافة سجل جديد</button>
             </div>
             {progressModalLoading ? (

@@ -1,64 +1,100 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { sessionScheduleService, messageService } from '@/services';
+import { getFeedbackForUser } from '@/services/feedbackService';
+import { ProgressService } from '@/services/progressService';
+import type { SessionSchedule, Feedback, ClientProgress, Message } from '@/types';
+
+// دالة لحساب الوقت النسبي بالعربي
+function getRelativeTime(date: Date | string) {
+  const now = new Date();
+  const d = new Date(date);
+  const diff = Math.floor((now.getTime() - d.getTime()) / 1000);
+  if (diff < 60) return 'الآن';
+  if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
+  if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
+  if (diff < 604800) return `منذ ${Math.floor(diff / 86400)} يوم`;
+  return d.toLocaleDateString('ar-EG');
+}
 
 const TrainerRecentActivity = () => {
-  const activities = [
-    {
-      id: 1,
-      type: 'session_completed',
-      title: 'حصة مكتملة',
-      description: 'حصة تدريبية مع أحمد محمد - المجموعة أ',
-      time: 'منذ 30 دقيقة',
-      icon: '🏋️',
-      color: 'green'
-    },
-    {
-      id: 2,
-      type: 'client_progress',
-      title: 'تقدم عميل',
-      description: 'تسجيل تقدم فاطمة حسن في خطة التخسيس',
-      time: 'منذ ساعة',
-      icon: '📈',
-      color: 'blue'
-    },
-    {
-      id: 3,
-      type: 'plan_created',
-      title: 'خطة جديدة',
-      description: 'إنشاء خطة تمرين للمبتدئين',
-      time: 'منذ ساعتين',
-      icon: '📋',
-      color: 'purple'
-    },
-    {
-      id: 4,
-      type: 'client_feedback',
-      title: 'تقييم جديد',
-      description: 'تقييم 5 نجوم من محمد علي',
-      time: 'منذ 3 ساعات',
-      icon: '⭐',
-      color: 'yellow'
-    },
-    {
-      id: 5,
-      type: 'session_scheduled',
-      title: 'حصة مجدولة',
-      description: 'جدولة حصة شخصية مع نور الدين',
-      time: 'منذ 4 ساعات',
-      icon: '📅',
-      color: 'indigo'
-    },
-    {
-      id: 6,
-      type: 'message_sent',
-      title: 'رسالة مرسلة',
-      description: 'إرسال تذكير للحصة القادمة',
-      time: 'منذ 5 ساعات',
-      icon: '💬',
-      color: 'pink'
-    }
-  ];
+  const { user } = useAuth();
+  const trainerId = (user as any)?._id ?? user?.id ?? '';
+
+  const [activities, setActivities] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!trainerId) return;
+    setLoading(true);
+    const progressService = new ProgressService();
+    Promise.all([
+      sessionScheduleService.getSessionsByUser(trainerId),
+      getFeedbackForUser(trainerId),
+      progressService.getTrainerProgress(trainerId),
+      messageService.getMessagesForUser(trainerId),
+    ]).then(([sessions, feedbacks, progresses, messages]) => {
+      const acts: any[] = [];
+      // آخر حصة مكتملة أو مجدولة
+      const latestSession = (sessions || [])
+        .filter((s: SessionSchedule) => s.status === 'مكتملة' || s.status === 'مجدولة')
+        .sort((a: SessionSchedule, b: SessionSchedule) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+      if (latestSession) {
+        acts.push({
+          id: 'session',
+          type: latestSession.status === 'مكتملة' ? 'session_completed' : 'session_scheduled',
+          title: latestSession.status === 'مكتملة' ? 'حصة مكتملة' : 'حصة مجدولة',
+          description: latestSession.description || `حصة ${latestSession.sessionType} مع متدرب`,
+          time: getRelativeTime(latestSession.date),
+          icon: latestSession.status === 'مكتملة' ? '🏋️' : '📅',
+          color: latestSession.status === 'مكتملة' ? 'green' : 'indigo',
+        });
+      }
+      // آخر تقييم
+      const latestFeedback = (feedbacks || []).sort((a: Feedback, b: Feedback) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+      if (latestFeedback) {
+        acts.push({
+          id: 'feedback',
+          type: 'client_feedback',
+          title: 'تقييم جديد',
+          description: `${latestFeedback.rating} نجوم${latestFeedback.comment ? ' - ' + latestFeedback.comment : ''}`,
+          time: getRelativeTime(latestFeedback.date),
+          icon: '⭐',
+          color: 'yellow',
+        });
+      }
+      // آخر تقدم عميل
+      const latestProgress = (progresses || []).sort((a: ClientProgress, b: ClientProgress) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+      if (latestProgress) {
+        acts.push({
+          id: 'progress',
+          type: 'client_progress',
+          title: 'تقدم عميل',
+          description: latestProgress.notes || 'تم تسجيل تقدم جديد لأحد العملاء',
+          time: getRelativeTime(latestProgress.date),
+          icon: '📈',
+          color: 'blue',
+        });
+      }
+      // آخر رسالة غير مقروءة
+      const unreadMessages = (messages || []).filter((m: Message) => !m.read && m.userId === trainerId);
+      const latestUnread = unreadMessages.sort((a: Message, b: Message) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+      if (latestUnread) {
+        acts.push({
+          id: 'unread_message',
+          type: 'message_unread',
+          title: 'رسالة غير مقروءة',
+          description: latestUnread.subject ? latestUnread.subject : (latestUnread.message?.slice(0, 30) + '...'),
+          time: getRelativeTime(latestUnread.date),
+          icon: '💬',
+          color: 'pink',
+        });
+      }
+      setActivities(acts);
+    }).finally(() => setLoading(false));
+  }, [trainerId]);
 
   const getColorClasses = (color: string) => {
     const colors = {
@@ -82,32 +118,38 @@ const TrainerRecentActivity = () => {
           عرض الكل
         </button>
       </div>
-      
-      <div className="space-y-4">
-        {activities.map((activity) => (
-          <div
-            key={activity.id}
-            className="flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${getColorClasses(activity.color)}`}>
-              {activity.icon}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                  {activity.title}
-                </h4>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {activity.time}
-                </span>
+      {loading ? (
+        <div className="text-center text-gray-500 py-8">جاري التحميل...</div>
+      ) : (
+        <div className="space-y-4">
+          {activities.length === 0 && (
+            <div className="text-center text-gray-400">لا يوجد نشاط حديث</div>
+          )}
+          {activities.map((activity) => (
+            <div
+              key={activity.id}
+              className="flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${getColorClasses(activity.color)}`}>
+                {activity.icon}
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {activity.description}
-              </p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                    {activity.title}
+                  </h4>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {activity.time}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  {activity.description}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -10,6 +10,7 @@ import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { useCustomAlert } from '@/hooks/useCustomAlert';
 import { useConfirmationDialog } from '@/hooks/useConfirmationDialog';
 import { useAuth } from '@/hooks/useAuth';
+import * as XLSX from 'xlsx';
 
 const sessionScheduleService = new SessionScheduleService();
 
@@ -309,6 +310,29 @@ const TrainerClientSessions = () => {
 
   const totalRevenue = filteredSessions.reduce((sum, session) => sum + (session.price || 0), 0);
 
+  // Helper to export filteredSessions to Excel
+  const handleExport = () => {
+    const data = filteredSessions.map(session => {
+      const client = clients.find(c => c._id === session.userId);
+      return {
+        'اسم العميل': client?.name || 'غير محدد',
+        'رقم الهاتف': client?.phone || '-',
+        'نوع الحصة': session.sessionType,
+        'التاريخ': new Date(session.date).toLocaleDateString('ar-EG'),
+        'وقت البداية': session.startTime,
+        'وقت النهاية': session.endTime,
+        'المدة': session.duration || '-',
+        'السعر': session.price || 0,
+        'الحالة': session.status,
+        'الوصف': session.description || '-',
+      };
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Sessions');
+    XLSX.writeFile(wb, 'client_sessions.xlsx');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -337,7 +361,10 @@ const TrainerClientSessions = () => {
               >
                 جدولة حصة جديدة
               </button>
-              <button className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+              <button
+                onClick={handleExport}
+                className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
                 تصدير البيانات
               </button>
             </div>
