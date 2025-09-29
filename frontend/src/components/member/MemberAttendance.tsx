@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import * as XLSX from 'xlsx';
 import { useAuth } from '@/hooks/useAuth';
 import { AttendanceService } from '@/services/attendanceService';
 import type { AttendanceRecord } from '@/types/models';
@@ -68,11 +69,48 @@ const MemberAttendance = () => {
     }
   };
 
+  const getStatusArabic = (status: string) => (
+    status === 'present' ? 'حاضر' : status === 'absent' ? 'غائب' : 'بعذر'
+  );
+
+  const exportToExcel = () => {
+    try {
+      const rows = (records || []).map((rec) => {
+        const d = new Date(rec.date);
+        const dateStr = d.toLocaleDateString();
+        const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return {
+          'التاريخ': dateStr,
+          'الساعة': timeStr,
+          'الحالة': getStatusArabic(rec.status as any),
+          'ملاحظات': rec.notes || ''
+        } as Record<string, string>;
+      });
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'الحضور');
+
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = String(today.getMonth() + 1).padStart(2, '0');
+      const d = String(today.getDate()).padStart(2, '0');
+      const fileName = `attendance_${y}-${m}-${d}.xlsx`;
+
+      XLSX.writeFile(wb, fileName);
+    } catch (e) {
+      // no-op
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">سجلات حضوري</h3>
-        <button onClick={openAddModal} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">إضافة سجل</button>
+        <div className="flex items-center gap-2">
+          <button onClick={exportToExcel} className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm">تصدير</button>
+          <button onClick={openAddModal} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">إضافة سجل</button>
+        </div>
       </div>
 
       {loading ? (

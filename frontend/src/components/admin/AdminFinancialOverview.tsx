@@ -1427,7 +1427,7 @@ const AdminFinancialOverview = () => {
                             <h5 className="font-medium text-gray-400 mb-2">توزيع المصروفات حسب الفئة</h5>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               {Object.entries(reportsData.expenses.byCategory).map(([category, amount]: [string, any]) => (
-                                <div key={category} className="flex justify-between items-center p-3 bg-gray-700 rounded">
+                                <div key={category} className="flex justify-between items-center p-3 bg-gray-300 rounded">
                                   <span className="text-white-600 capitalize">{category}:</span>
                                   <span className="font-medium text-red-600">ج.م{new Intl.NumberFormat().format(amount)}</span>
                                 </div>

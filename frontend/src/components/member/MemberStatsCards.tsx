@@ -87,7 +87,7 @@ const MemberStatsCards = () => {
 
   const barsData = [
     { name: 'ساعات التدريب', value: trainingHours },
-    { name: 'غير مقروء', value: unreadMessages },
+    { name: 'رسائل غير مقروء', value: unreadMessages },
     { name: 'نقاط الولاء', value: loyaltyPoints }
   ];
 
@@ -96,7 +96,7 @@ const MemberStatsCards = () => {
   const BAR_COLORS = ['#8B5CF6', '#F97316', '#10B981'];
   const METRIC_UNITS: Record<string, string> = {
     'ساعات التدريب': 'ساعة',
-    'غير مقروء': 'رسالة',
+    'رسائل غير مقروء': 'رسالة',
     'نقاط الولاء': 'نقطة'
   };
 
@@ -183,7 +183,13 @@ const MemberStatsCards = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(107,114,128,0.2)" />
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v: any, name: any) => [`${v} ${METRIC_UNITS[name as string] || ''}`.trim(), name]} />
+                <Tooltip
+                  formatter={(v: any, _name: any, item: any) => {
+                    const metricName = item?.payload?.name as string;
+                    const unit = METRIC_UNITS[metricName] || metricName || '';
+                    return [`${v}`, unit];
+                  }}
+                />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                   {barsData.map((entry, index) => (
                     <Cell key={`bar-cell-${index}`} fill={BAR_COLORS[index % BAR_COLORS.length]} />

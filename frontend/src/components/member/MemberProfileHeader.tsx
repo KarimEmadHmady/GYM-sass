@@ -223,9 +223,9 @@ const MemberProfileHeader = () => {
                 <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
                   {trainerName && trainerName !== '-' ? trainerName.charAt(0) : '?'}
                 </div>
-                <div className="mr-3">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight">{trainerName}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">مدرب شخصي</p>
+                <div className="mr-3 p-2">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">مدرب شخصي </p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight text-center">{trainerName}</p>
                 </div>
               </div>
               <div className="text-right">
