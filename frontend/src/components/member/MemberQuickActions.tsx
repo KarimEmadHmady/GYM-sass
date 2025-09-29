@@ -1,68 +1,40 @@
 'use client';
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
+import { usePathname, useRouter } from '@/i18n/navigation';
+import { useSearchParams } from 'next/navigation';
+
+type QuickAction = {
+  id: string;
+  title: string;
+  description?: string;
+  icon: string;
+  color: 'blue' | 'green' | 'purple' | 'orange' | 'yellow' | 'pink' | 'indigo' | 'gray';
+};
 
 const MemberQuickActions = () => {
-  const actions = [
-    {
-      title: 'حجز حصة',
-      description: 'حجز حصة تدريبية جديدة',
-      icon: '📅',
-      color: 'blue',
-      action: () => console.log('Book session')
-    },
-    {
-      title: 'تسجيل حضور',
-      description: 'تسجيل حضور في الحصة',
-      icon: '✅',
-      color: 'green',
-      action: () => console.log('Check in')
-    },
-    {
-      title: 'عرض خططي',
-      description: 'عرض خطط التمرين والغذائية',
-      icon: '📋',
-      color: 'purple',
-      action: () => console.log('View plans')
-    },
-    {
-      title: 'تسجيل تقدمي',
-      description: 'تسجيل تقدمي في التدريب',
-      icon: '📈',
-      color: 'orange',
-      action: () => console.log('Record progress')
-    },
-    {
-      title: 'استبدال نقاط',
-      description: 'استبدال نقاط الولاء',
-      icon: '⭐',
-      color: 'yellow',
-      action: () => console.log('Redeem points')
-    },
-    {
-      title: 'إرسال رسالة',
-      description: 'إرسال رسالة لمدربي',
-      icon: '💬',
-      color: 'pink',
-      action: () => console.log('Send message')
-    },
-    {
-      title: 'عرض جدولي',
-      description: 'عرض جدولي الزمني',
-      icon: '📊',
-      color: 'indigo',
-      action: () => console.log('View schedule')
-    },
-    {
-      title: 'تحديث بروفايل',
-      description: 'تحديث معلوماتي الشخصية',
-      icon: '⚙️',
-      color: 'gray',
-      action: () => console.log('Update profile')
-    }
+  const t = useTranslations('MemberProfile');
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const actions: QuickAction[] = [
+    { id: 'attendance', title: 'الحضور', icon: '📝', color: 'green' },
+    { id: 'payments', title: 'مدفوعات', icon: '💵', color: 'yellow' },
+    { id: 'subscription', title: 'الاشتراك', icon: '📅', color: 'blue' },
+    { id: 'purchases', title: 'مشتريات', icon: '🛒', color: 'orange' },
+    { id: 'sessions', title: t('Tabs.sessions'), icon: '🏋️', color: 'purple' },
+    { id: 'plans', title: t('Tabs.plans'), icon: '📋', color: 'pink' },
+    { id: 'trainer', title: 'مدربي', icon: '👨‍🏫', color: 'indigo' },
+    { id: 'messages', title: 'الرسائل', icon: '💬', color: 'blue' },
+    { id: 'progress', title: t('Tabs.progress'), icon: '📈', color: 'orange' },
+    { id: 'feedback', title: 'التقييمات', icon: '⭐', color: 'yellow' },
+    { id: 'loyalty', title: t('Tabs.loyalty'), icon: '⭐', color: 'purple' },
+    { id: 'settings', title: t('Tabs.settings'), icon: '⚙️', color: 'gray' }
   ];
 
-  const getColorClasses = (color: string) => {
+  const getColorClasses = (color: QuickAction['color']) => {
     const colors = {
       blue: 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
       green: 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
@@ -72,27 +44,33 @@ const MemberQuickActions = () => {
       pink: 'from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700',
       indigo: 'from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700',
       gray: 'from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700'
-    };
-    return colors[color as keyof typeof colors] || 'from-gray-500 to-gray-600';
+    } as const;
+    return colors[color] || 'from-gray-500 to-gray-600';
+  };
+
+  const navigateToTab = (tabId: string) => {
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    params.set('tab', tabId);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-4">
         الإجراءات السريعة
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {actions.map((action, index) => (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        {actions.map((action) => (
           <button
-            key={index}
-            onClick={action.action}
-            className={`bg-gradient-to-r ${getColorClasses(action.color)} text-white rounded-lg p-4 text-left hover:shadow-lg transform hover:scale-105 transition-all duration-200`}
+            key={action.id}
+            onClick={() => navigateToTab(action.id)}
+            className={`bg-gradient-to-r ${getColorClasses(action.color)} text-white rounded-md p-3 text-right hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400`}
+            aria-label={action.title}
           >
-            <div className="flex items-center mb-2">
-              <span className="text-2xl mr-3">{action.icon}</span>
-              <h4 className="font-semibold text-sm">{action.title}</h4>
+            <div className="flex items-center mb-1">
+              <span className="text-xl ml-2">{action.icon}</span>
+              <h4 className="font-semibold text-xs">{action.title}</h4>
             </div>
-            <p className="text-xs opacity-90">{action.description}</p>
           </button>
         ))}
       </div>

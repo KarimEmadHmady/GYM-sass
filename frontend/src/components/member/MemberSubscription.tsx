@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import type { User as UserModel } from '@/types/models';
 import { UserService } from '@/services/userService';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const MemberSubscription = () => {
   const { user: authUser } = useAuth();
@@ -97,6 +98,56 @@ const MemberSubscription = () => {
             </div>
             <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
               متبقي: {daysLeft} يوم
+            </div>
+          </div>
+
+          {/* Subscription Chart Section */}
+          <div className="p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">نظرة عامة على الاشتراك</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+              <div className="h-56">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'المستخدم', value: usedDays },
+                        { name: 'المتبقي', value: Math.max(totalDays - usedDays, 0) }
+                      ]}
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      <Cell fill="#6366F1" />
+                      <Cell fill="#10B981" />
+                    </Pie>
+                    <Tooltip formatter={(val: any) => `${val} يوم`} />
+                    <Legend verticalAlign="bottom" height={24} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">مدة الاشتراك</span>
+                  <span className="font-semibold">{totalDays} يوم</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">المستخدم</span>
+                  <span className="font-semibold">{usedDays} يوم ({progress}%)</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">المتبقي</span>
+                  <span className="font-semibold">{Math.max(totalDays - usedDays, 0)} يوم</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">تاريخ البداية</span>
+                  <span className="font-semibold">{start ? start.toLocaleDateString('ar-EG') : '-'}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500">تاريخ النهاية</span>
+                  <span className="font-semibold">{end ? end.toLocaleDateString('ar-EG') : '-'}</span>
+                </div>
+              </div>
             </div>
           </div>
 

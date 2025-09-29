@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import type { User as UserModel } from '@/types/models';
 import { UserService } from '@/services/userService';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 const MemberProfileHeader = () => {
   const { user: authUser } = usePermissions();
@@ -85,49 +86,99 @@ const MemberProfileHeader = () => {
     return 'سمنة';
   };
 
+  // Compute subscription donut data from subscription dates if present
+  const startDate = (user as any)?.subscriptionStartDate ? new Date((user as any).subscriptionStartDate) : null;
+  const endDate = (user as any)?.subscriptionEndDate ? new Date((user as any).subscriptionEndDate) : null;
+  const today = new Date();
+  const totalDays = startDate && endDate ? Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))) : 0;
+  const usedDays = startDate ? Math.max(0, Math.ceil((Math.min(today.getTime(), endDate ? endDate.getTime() : today.getTime()) - startDate.getTime()) / (1000 * 60 * 60 * 24))) : 0;
+  const remainingDays = Math.max(totalDays - usedDays, 0);
+  const progress = totalDays > 0 ? Math.min(100, Math.max(0, Math.round((usedDays / totalDays) * 100))) : 0;
+
+  const donutData = [
+    { name: 'المستخدم', value: usedDays },
+    { name: 'المتبقي', value: remainingDays }
+  ];
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-        {/* Member Info */}
-        <div className="flex items-center space-x-6 mb-6 lg:mb-0">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Left: Avatar + Basic Info */}
+        <div className="flex items-start space-x-4">
           <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
             {derived.name.charAt(0)}
           </div>
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{derived.name}</h2>
-            <p className="text-gray-600 dark:text-gray-400">{derived.email}</p>
-            <p className="text-gray-600 dark:text-gray-400">{derived.phone}</p>
-            <div className="flex items-center mt-2">
-              <span className={`px-3 py-1 text-xs font-semibold rounded-full text-white ${getMembershipColor(derived.membershipType)}`}>
+          <div className="space-y-1.5">
+            <div className="flex items-center text-gray-900 dark:text-white">
+              <span className="text-base mr-2" aria-hidden>👤</span>
+              <h2 className="text-lg font-semibold leading-tight">{derived.name}</h2>
+            </div>
+            <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
+              <span className="text-base mr-2" aria-hidden>✉️</span>
+              <span className="truncate max-w-[16rem]">{derived.email}</span>
+            </div>
+            <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
+              <span className="text-base mr-2" aria-hidden>📞</span>
+              <span className="truncate max-w-[16rem]">{derived.phone}</span>
+            </div>
+            <div className="flex items-center text-gray-700 dark:text-gray-300 text-sm">
+              <span className="text-base mr-2" aria-hidden>🎖️</span>
+              <span className={`inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold rounded-full text-white ${getMembershipColor(derived.membershipType)}`}>
                 {derived.membershipType}
               </span>
-              <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">
+              <span className="text-xs text-gray-500 dark:text-gray-400 mr-2 flex items-center">
+                <span className="text-sm ml-1" aria-hidden>📅</span>
                 ينتهي في {derived.membershipExpiry}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Physical Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div className="text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">الطول</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{derived.height !== '-' ? `${derived.height} سم` : '-'}</p>
+        {/* Middle: Physical Stats */}
+        <div className="grid grid-cols-3 gap-4">
+          <div className="text-center p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="text-2xl mb-1" aria-hidden>📏</div>
+            <p className="text-xs text-gray-600 dark:text-gray-400">الطول</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{derived.height !== '-' ? `${derived.height} سم` : '-'}</p>
           </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">الوزن</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{derived.weight !== '-' ? `${derived.weight} كغ` : '-'}</p>
+          <div className="text-center p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="text-2xl mb-1" aria-hidden>⚖️</div>
+            <p className="text-xs text-gray-600 dark:text-gray-400">الوزن</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">{derived.weight !== '-' ? `${derived.weight} كغ` : '-'}</p>
           </div>
-          <div className="text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">مؤشر كتلة الجسم</p>
+          <div className="text-center p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="text-2xl mb-1" aria-hidden>🧮</div>
+            <p className="text-xs text-gray-600 dark:text-gray-400">مؤشر كتلة الجسم</p>
             {typeof derived.bmi === 'number' ? (
               <>
-                <p className={`text-2xl font-bold ${getBMIColor(derived.bmi)}`}>{derived.bmi}</p>
-                <p className={`text-xs ${getBMIColor(derived.bmi)}`}>{getBMIText(derived.bmi)}</p>
+                <p className={`text-xl font-bold ${getBMIColor(derived.bmi)} mt-1`}>{derived.bmi}</p>
+                <p className={`text-[11px] ${getBMIColor(derived.bmi)}`}>{getBMIText(derived.bmi)}</p>
               </>
             ) : (
-              <p className="text-2xl font-bold text-gray-400">-</p>
+              <p className="text-xl font-bold text-gray-400 mt-1">-</p>
             )}
+          </div>
+        </div>
+
+        {/* Right: Subscription Donut */}
+        <div className="grid grid-cols-2 gap-4 items-center">
+          <div className="h-36">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={donutData} dataKey="value" innerRadius={40} outerRadius={60} paddingAngle={2}>
+                  <Cell fill="#6366F1" />
+                  <Cell fill="#10B981" />
+                </Pie>
+                <Tooltip formatter={(val: any) => `${val} يوم`} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-900 dark:text-white">اشتراكك</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">المستخدم: {usedDays} يوم ({progress}%)</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">المتبقي: {remainingDays} يوم</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">البداية: {startDate ? startDate.toLocaleDateString('ar-EG') : '-'}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">النهاية: {endDate ? endDate.toLocaleDateString('ar-EG') : '-'}</p>
           </div>
         </div>
       </div>
@@ -135,32 +186,52 @@ const MemberProfileHeader = () => {
       {/* Goals and Trainer */}
       <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">أهدافي</h3>
-            <div className="flex flex-wrap gap-2">
+          {/* Goals */}
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/30">
+            <div className="text-2xl mb-1" aria-hidden>🎯</div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white">أهدافي</h3>
               {derived.goalsArr.length > 0 ? (
-                derived.goalsArr.map((goal, index) => (
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
+                  {derived.goalsArr.length} هدف
+                </span>
+              ) : null}
+            </div>
+            {derived.goalsArr.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {derived.goalsArr.map((goal, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200"
+                    className="inline-flex items-center px-3 py-1 rounded-full text-xs bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-200"
                   >
+                    <span className="ml-1">🎯</span>
                     {goal}
                   </span>
-                ))
-              ) : (
-                <span className="text-gray-500 dark:text-gray-400">لا توجد أهداف محددة</span>
-              )}
-            </div>
-          </div>
-          <div>
-            <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">مدربي</h3>
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                {trainerName && trainerName !== '-' ? trainerName.charAt(0) : '?'}
+                ))}
               </div>
-              <div className="mr-3">
-                <p className="font-medium text-gray-900 dark:text-white">{trainerName}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">مدرب شخصي</p>
+            ) : (
+              <div className="text-sm text-gray-500 dark:text-gray-400">لا توجد أهداف محددة</div>
+            )}
+          </div>
+
+          {/* Trainer */}
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/30">
+            <div className="text-2xl mb-1" aria-hidden>👨‍🏫</div>
+            <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">مدربي</h3>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                  {trainerName && trainerName !== '-' ? trainerName.charAt(0) : '?'}
+                </div>
+                <div className="mr-3">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight">{trainerName}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">مدرب شخصي</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="inline-flex items-center px-2 py-1 rounded-md text-[11px] bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-200">
+                  🗓️ جدول الجلسات
+                </span>
               </div>
             </div>
           </div>
