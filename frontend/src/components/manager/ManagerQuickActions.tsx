@@ -20,6 +20,8 @@ const managerTabs = [
   { id: 'progress', title: 'تقدم العملاء', description: 'متابعة تقدم العملاء', icon: '📈', color: 'pink' },
   { id: 'feedback', title: 'التقييمات', description: 'إدارة التقييمات', icon: '⭐', color: 'yellow' },
   { id: 'loyalty', title: 'نقاط الولاء', description: 'إدارة نقاط الولاء', icon: '🎯', color: 'red' },
+  { id: 'membership-cards', title: 'بطاقات العضوية', description: 'توليد وإدارة بطاقات العضوية', icon: '🪪', color: 'green' },
+  { id: 'attendance-log', title: 'قارئ QR', description: 'فتح ماسح QR لتسجيل الحضور', icon: '📷', color: 'purple' },
   { id: 'search', title: 'بحث', description: 'البحث في النظام', icon: '🔎', color: 'gray' },
   { id: 'settings', title: 'الإعدادات', description: 'تعديل إعدادات النظام', icon: '⚙️', color: 'gray' },
 ];
@@ -52,7 +54,14 @@ const ManagerQuickActions = () => {
         {managerTabs.map((tab, index) => (
           <button
             key={tab.id}
-            onClick={() => { if (user && user.id) router.push(`/manager/dashboard/${user.id}?tab=${tab.id}`); }}
+            onClick={() => {
+              if (!user || !user.id) return;
+              if (tab.id === 'qr-scanner') {
+                router.push(`/admin/attendance-scanner/${user.id}`);
+              } else {
+                router.push(`/manager/dashboard/${user.id}?tab=${tab.id}`);
+              }
+            }}
             className={`bg-gradient-to-r ${getColorClasses(tab.color)} text-white rounded-md p-2 text-left hover:shadow-lg transform hover:scale-105 transition-all duration-200 min-h-[70px]`}
           >
             <div className="flex items-center mb-1">

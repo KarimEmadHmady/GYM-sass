@@ -572,6 +572,62 @@ const AdminMembershipCards = () => {
               )}
               <span>توليد المحددين ({selectedUsers.length})</span>
             </Button>
+            <Button
+              onClick={async () => {
+                if (selectedUsers.length === 0) {
+                  toast.warning('اختر مستخدمين أولاً');
+                  return;
+                }
+                try {
+                  setIsGenerating(true);
+                  const blob = await membershipCardService.downloadCombinedCards(selectedUsers);
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `membership_cards_selected.pdf`;
+                  document.body.appendChild(a);
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                  document.body.removeChild(a);
+                  toast.success('تم تحميل ملف PDF مجمع للمحددين');
+                } catch (e) {
+                  toast.error('فشل تحميل الملف المجمع');
+                } finally {
+                  setIsGenerating(false);
+                }
+              }}
+              disabled={isGenerating || selectedUsers.length === 0}
+              className="flex items-center space-x-2 rtl:space-x-reverse dark:bg-green-700 dark:hover:bg-green-800 dark:text-white bg-green-600 text-white hover:bg-green-700"
+            >
+              <Download className="h-4 w-4" />
+              <span>تحميل PDF للمحددين</span>
+            </Button>
+            <Button
+              onClick={async () => {
+                try {
+                  setIsGenerating(true);
+                  const blob = await membershipCardService.downloadCombinedCardsAll();
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `membership_cards_all_members.pdf`;
+                  document.body.appendChild(a);
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                  document.body.removeChild(a);
+                  toast.success('تم تحميل ملف PDF مجمع لكل الأعضاء');
+                } catch (e) {
+                  toast.error('فشل تحميل الملف المجمع');
+                } finally {
+                  setIsGenerating(false);
+                }
+              }}
+              disabled={isGenerating}
+              className="flex items-center space-x-2 rtl:space-x-reverse dark:bg-green-700 dark:hover:bg-green-800 dark:text-white bg-green-600 text-white hover:bg-green-700"
+            >
+              <Download className="h-4 w-4" />
+              <span>تحميل PDF لجميع الأعضاء</span>
+            </Button>
           </div>
 
           {generationResult && (

@@ -30,6 +30,22 @@ const AdminQuickActions = () => {
       action: () => router.push(`/admin/dashboard/${user?.id}?tab=users`)
     },
     {
+      id: 'membership-cards',
+      title: 'بطاقات العضوية',
+      description: 'توليد وإدارة بطاقات العضوية',
+      icon: '🪪',
+      color: 'green',
+      action: () => router.push(`/admin/dashboard/${user?.id}?tab=membership-cards`)
+    },
+    {
+      id: 'qr-scanner',
+      title: 'قارئ QR',
+      description: 'فتح ماسح QR لتسجيل الحضور',
+      icon: '📷',
+      color: 'purple',
+      action: () => router.push(`/admin/attendance-scanner/${user?.id}`)
+    },
+    {
       id: 'add_trainer',
       title: 'إضافة مدرب',
       description: 'تسجيل مدرب جديد',

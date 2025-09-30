@@ -115,6 +115,24 @@ export const membershipCardService = {
   downloadCard: async (fileName: string): Promise<Blob> => {
     const response = await apiRequest(`/membership-cards/download/${fileName}`);
     return await response.blob();
+  },
+
+  // Generate and download a combined PDF for selected users
+  downloadCombinedCards: async (userIds: string[]): Promise<Blob> => {
+    const response = await apiRequest('/membership-cards/download/combined', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userIds })
+    });
+    return await response.blob();
+  },
+
+  // Generate and download a combined PDF for all active members
+  downloadCombinedCardsAll: async (): Promise<Blob> => {
+    const response = await apiRequest('/membership-cards/download/combined/all', {
+      method: 'POST'
+    });
+    return await response.blob();
   }
 };
 

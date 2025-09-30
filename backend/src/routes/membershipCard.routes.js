@@ -6,7 +6,9 @@ import {
   generateBatchCardsController,
   generateAllMemberCardsController,
   getGeneratedCardsController,
-  downloadCard
+  downloadCard,
+  downloadCombinedCards,
+  downloadCombinedCardsAll
 } from '../controllers/membershipCard.controller.js';
 
 const router = express.Router();
@@ -28,6 +30,12 @@ router.get('/list', authenticate, authorizeRole(['admin', 'manager']), getGenera
 
 // Download specific card
 router.get('/download/:fileName', authenticate, authorizeRole(['admin', 'manager']), downloadCard);
+
+// Generate and download combined PDF for selected users
+router.post('/download/combined', authenticate, authorizeRole(['admin', 'manager']), downloadCombinedCards);
+
+// Generate and download combined PDF for all active members
+router.post('/download/combined/all', authenticate, authorizeRole(['admin', 'manager']), downloadCombinedCardsAll);
 
 export default router;
 

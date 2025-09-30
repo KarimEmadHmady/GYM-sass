@@ -188,6 +188,173 @@ const generateMembershipCardPDF = async (user) => {
 };
 
 /**
+ * Draw a membership card onto an existing PDF document at a given position
+ * @param {PDFDocument} doc
+ * @param {Object} user
+ * @param {number} x
+ * @param {number} y
+ * @param {number} width
+ * @param {number} height
+ */
+const drawMembershipCardOnDoc = async (doc, user, x, y, width, height) => {
+  const { barcode, name, email, membershipLevel, subscriptionEndDate } = user;
+  const settings = await getGymSettingsService();
+  const style = settings?.membershipCardStyle || {};
+  const headerColor = style.headerColor || '#007bff';
+  const backgroundColor = style.backgroundColor || '#f8f9fa';
+  const textColor = style.textColor || '#000000';
+  const headerTitle = style.headerTitle || 'GYM MEMBERSHIP';
+  const logoUrl = style.logoUrl || settings?.logoUrl || '';
+  const logoWidth = style.logoWidth || 60;
+  const logoHeight = style.logoHeight || 60;
+
+  // Generate assets to match single card
+  const [qrCodeBuffer, barcodeBuffer] = await Promise.all([
+    generateQRCode(barcode, name, email),
+    generateBarcode(barcode)
+  ]);
+
+  // Draw exactly like the single-card PDF at origin, but translate to (x,y)
+  doc.save();
+  doc.translate(x, y);
+
+  // Background 400x250
+  doc.rect(0, 0, 400, 250).fill(backgroundColor);
+
+  // Header 0..60
+  doc.rect(0, 0, 400, 60).fill(headerColor);
+  doc.fillColor('white')
+     .fontSize(24)
+     .font('Helvetica-Bold')
+     .text(headerTitle, 20, 20, { width: 360, align: 'center' });
+
+  // Optional logo same sizes
+  if (logoUrl) {
+    try {
+      const res = await fetch(logoUrl);
+      if (res.ok) {
+        const logoArrayBuffer = await res.arrayBuffer();
+        const logoBuffer = Buffer.from(logoArrayBuffer);
+        doc.image(logoBuffer, 10, 10, { width: logoWidth, height: logoHeight, fit: [logoWidth, logoHeight] });
+      }
+    } catch {}
+  }
+
+  // Info block
+  doc.fillColor(textColor)
+     .fontSize(16)
+     .font('Helvetica-Bold')
+     .text('Member Information', 20, 80);
+
+  doc.fontSize(12).font('Helvetica');
+  let currentY = 105;
+  const lineGap = 20;
+  doc.text(`Name: ${name}`, 20, currentY);
+  currentY += lineGap;
+  doc.text(`Barcode: ${barcode}`, 20, currentY);
+  currentY += lineGap;
+  doc.text(`Level: ${String(membershipLevel || '').toUpperCase()}`, 20, currentY);
+  currentY += lineGap;
+  if (style.showMemberEmail && email) {
+    doc.text(`Email: ${email}`, 20, currentY);
+    currentY += lineGap;
+  }
+  if (style.showValidUntil) {
+    const validText = subscriptionEndDate ? new Date(subscriptionEndDate).toLocaleDateString() : 'N/A';
+    doc.text(`Valid Until: ${validText}`, 20, currentY);
+  }
+
+  // QR at 250,80 size 100; Barcode bottom
+  doc.image(qrCodeBuffer, 250, 80, { width: 100, height: 100 });
+  doc.image(barcodeBuffer, 50, 200, { width: 300, height: 30 });
+
+  doc.restore();
+};
+
+/**
+ * Generate a combined PDF containing multiple membership cards laid out in a grid
+ * @param {Array<string>} userIds
+ * @returns {Promise<{filePath: string, fileName: string, totalCards: number}>}
+ */
+export const generateCombinedCardsPDF = async (userIds) => {
+  // Page size A4 (portrait)
+  const PAGE_WIDTH = 595.28; // points
+  const PAGE_HEIGHT = 841.89;
+  const MARGIN = 20;
+  const GAP_X = 12;
+  const GAP_Y = 16;
+
+  // Match single-card exact size
+  const cardWidth = 400;
+  const cardHeight = 250;
+
+  // Compute how many cards fit per page
+  const cols = Math.max(1, Math.floor((PAGE_WIDTH - MARGIN * 2 + GAP_X) / (cardWidth + GAP_X)));
+  const rows = Math.max(1, Math.floor((PAGE_HEIGHT - MARGIN * 2 + GAP_Y) / (cardHeight + GAP_Y)));
+
+  // Center grid within page
+  const totalGridWidth = cols * cardWidth + (cols - 1) * GAP_X;
+  const totalGridHeight = rows * cardHeight + (rows - 1) * GAP_Y;
+  const startOffsetX = Math.max(MARGIN, (PAGE_WIDTH - totalGridWidth) / 2);
+  const startOffsetY = Math.max(MARGIN, (PAGE_HEIGHT - totalGridHeight) / 2);
+
+  const users = await User.find({ _id: { $in: userIds } }).lean();
+  if (!users || users.length === 0) {
+    throw new Error('No users found for combined PDF');
+  }
+
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const fileName = `membership_cards_combined_${users.length}_${timestamp}.pdf`;
+  const filePath = path.join(cardsDir, fileName);
+
+  const doc = new PDFDocument({ size: 'A4', margin: MARGIN });
+  const stream = fs.createWriteStream(filePath);
+  doc.pipe(stream);
+
+  let col = 0;
+  let row = 0;
+  for (let i = 0; i < users.length; i++) {
+    const u = users[i];
+    if (!u.barcode) continue; // skip users without barcode
+
+    const x = startOffsetX + col * (cardWidth + GAP_X);
+    const y = startOffsetY + row * (cardHeight + GAP_Y);
+    // eslint-disable-next-line no-await-in-loop
+    await drawMembershipCardOnDoc(doc, u, x, y, cardWidth, cardHeight);
+
+    col++;
+    if (col >= cols) {
+      col = 0;
+      row++;
+      if (row >= rows && i < users.length - 1) {
+        row = 0;
+        doc.addPage();
+      }
+    }
+  }
+
+  doc.end();
+
+  return new Promise((resolve, reject) => {
+    stream.on('finish', () => resolve({ filePath, fileName, totalCards: users.length }));
+    stream.on('error', reject);
+  });
+};
+
+/**
+ * Generate combined PDF for all active members
+ */
+export const generateCombinedAllMembersPDF = async () => {
+  const members = await User.find({ 
+    role: 'member', 
+    status: 'active',
+    barcode: { $exists: true, $ne: null }
+  }).select('_id');
+  const ids = members.map(m => m._id.toString());
+  return generateCombinedCardsPDF(ids);
+};
+
+/**
  * Generate membership card for a single user
  * @param {string} userId - User ID
  * @returns {Promise<Object>} Card generation result

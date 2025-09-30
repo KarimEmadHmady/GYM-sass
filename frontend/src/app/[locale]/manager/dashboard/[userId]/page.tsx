@@ -29,6 +29,8 @@ import SubscriptionAlertsSummary from '@/components/admin/SubscriptionAlertsSumm
 import SoundManager from '@/components/admin/SoundManager';
 import dynamic from 'next/dynamic';
 import ManagerReports from '@/components/manager/ManagerReports';
+import AdminMembershipCards from '@/components/admin/AdminMembershipCards';
+import ManagerAttendanceScanner from '@/components/manager/ManagerAttendanceScanner';
 const ManagerAddExpense = dynamic(() => import('@/components/manager/ManagerAddExpense'), { ssr: false });
 const ManagerAddRevenue = dynamic(() => import('@/components/manager/ManagerAddRevenue'), { ssr: false });
 
@@ -91,6 +93,7 @@ const ManagerDashboard = ({ params }: { params: { userId: string } }) => {
     { id: 'plans', name: t('Tabs.plans'), icon: '📋' },
     { id: 'reports', name: t('Tabs.reports'), icon: '📈' },
     { id: 'attendance', name: 'الحضور', icon: '📝' },
+    { id: 'attendance-log', name: 'سجل الحضور', icon: '🧾' },
     { id: 'payments', name: 'مدفوعات', icon: '💵' },
     { id: 'invoices', name: 'الفواتير', icon: '🧾' },
     { id: 'add-expense', name: 'إضافة مصروف', icon: '💸' },
@@ -100,6 +103,7 @@ const ManagerDashboard = ({ params }: { params: { userId: string } }) => {
     { id: 'progress', name: 'تقدم العملاء', icon: '📈' },
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
     { id: 'loyalty', name: 'نقاط الولاء', icon: '🎯' },
+    { id: 'membership-cards', name: 'بطاقات العضوية', icon: '🪪' },
     { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' },
     // { id: 'search', name: 'بحث', icon: '🔎' },
 
@@ -253,6 +257,19 @@ const ManagerDashboard = ({ params }: { params: { userId: string } }) => {
             <AdminAttendance />
           </div>
         )}
+
+        {activeTab === 'attendance-log' && (
+          <div className="space-y-8">
+            <ManagerAttendanceScanner params={{ userId: user!.id }} />
+          </div>
+        )}
+
+        {activeTab === 'membership-cards' && (
+          <div className="space-y-8">
+            <AdminMembershipCards />
+          </div>
+        )}
+
 
         {activeTab === 'payments' && (
           <div className="space-y-8">

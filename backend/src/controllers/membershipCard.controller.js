@@ -2,7 +2,9 @@ import {
   generateSingleCard,
   generateBatchCards,
   generateAllMemberCards,
-  getGeneratedCards
+  getGeneratedCards,
+  generateCombinedCardsPDF,
+  generateCombinedAllMembersPDF
 } from '../services/membershipCard.service.js';
 import path from 'path';
 import fs from 'fs';
@@ -130,6 +132,40 @@ export const downloadCard = async (req, res) => {
       success: false,
       message: error.message
     });
+  }
+};
+
+/**
+ * Generate a combined PDF for specified user IDs and return it as a downloadable file
+ */
+export const downloadCombinedCards = async (req, res) => {
+  try {
+    const { userIds } = req.body;
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ success: false, message: 'User IDs array is required' });
+    }
+    const { filePath, fileName } = await generateCombinedCardsPDF(userIds);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Generate a combined PDF for all active members
+ */
+export const downloadCombinedCardsAll = async (req, res) => {
+  try {
+    const { filePath, fileName } = await generateCombinedAllMembersPDF();
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 
