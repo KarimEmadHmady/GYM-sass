@@ -41,6 +41,9 @@ const userSchema = new mongoose.Schema(
 
     loyaltyPoints: { type: Number, default: 0 },
     membershipLevel: { type: String, enum: ["basic", "silver", "gold", "platinum"], default: "basic" },
+    
+    // Barcode for membership card
+    barcode: { type: String, unique: true, sparse: true },
 
     goals: {
       weightLoss: { type: Boolean, default: false },
@@ -72,6 +75,22 @@ userSchema.virtual("age").get(function () {
 // تضمين الvirtuals في المخرجات
 userSchema.set("toJSON", { virtuals: true });
 userSchema.set("toObject", { virtuals: true });
+
+// Auto-generate barcode for new users
+userSchema.pre("save", async function (next) {
+  // Generate barcode for new users
+  if (this.isNew && !this.barcode) {
+    try {
+      // Get the count of existing users to generate unique barcode
+      const userCount = await mongoose.model('User').countDocuments();
+      this.barcode = `G${String(userCount + 1).padStart(4, '0')}`;
+    } catch (err) {
+      // Fallback to timestamp-based barcode if count fails
+      this.barcode = `G${Date.now().toString().slice(-6)}`;
+    }
+  }
+  next();
+});
 
 userSchema.pre("save", async function (next) {
   // إذا لم يتم تعديل كلمة المرور، انتقل إلى الخطوة التالية

@@ -23,6 +23,7 @@ import AdminMessages from '@/components/admin/AdminMessages';
 import AdminProgress from '@/components/admin/AdminProgress';
 import AdminFeedback from '@/components/admin/AdminFeedback';
 import AdminLoyalty from '@/components/admin/AdminLoyalty';
+import AdminMembershipCards from '@/components/admin/AdminMembershipCards';
 import AdminSearch from '@/components/admin/AdminSearch';
 import TrainersDirectory from '@/components/shared/TrainersDirectory';
 import SubscriptionAlertIndicator from '@/components/admin/SubscriptionAlertIndicator';
@@ -89,12 +90,14 @@ const AdminDashboard = ({ params }: { params: { userId: string } }) => {
     { id: 'financial', name: t('Tabs.financial'), icon: '💰' },
     { id: 'reports', name: t('Tabs.reports'), icon: '📈' },
     { id: 'attendance', name: 'الحضور', icon: '📝' },
+    { id: 'attendance-scanner', name: 'ماسح الحضور', icon: '📱' },
     { id: 'payments', name: 'مدفوعات', icon: '💵' },
     { id: 'purchases', name: 'مشتريات', icon: '🛒' },
     { id: 'messages', name: 'رسائل', icon: '✉️' },
     { id: 'progress', name: 'تقدم العملاء', icon: '📈' },
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
     { id: 'loyalty', name: 'نقاط الولاء', icon: '🎯' },
+    { id: 'membership-cards', name: 'بطاقات العضوية', icon: '💳' },
     { id: 'search', name: 'بحث', icon: '🔎' },
     { id: 'settings', name: t('Tabs.settings'), icon: '⚙️' }
   ];
@@ -258,6 +261,21 @@ const AdminDashboard = ({ params }: { params: { userId: string } }) => {
           </div>
         )}
 
+        {activeTab === 'attendance-scanner' && (
+          <div className="space-y-8">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-400 mb-4">ماسح الحضور</h2>
+              <p className="text-gray-600 mb-6">استخدم ماسح الباركود لتسجيل حضور الأعضاء</p>
+              <button
+                onClick={() => router.push(`/admin/attendance-scanner/${user?.id}`)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg"
+              >
+                فتح ماسح الحضور
+              </button>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'payments' && (
           <div className="space-y-8">
             <AdminPayments />
@@ -292,6 +310,12 @@ const AdminDashboard = ({ params }: { params: { userId: string } }) => {
         {activeTab === 'loyalty' && (
           <div className="space-y-8">
             <AdminLoyalty />
+          </div>
+        )}
+
+        {activeTab === 'membership-cards' && (
+          <div className="space-y-8">
+            <AdminMembershipCards />
           </div>
         )}
 

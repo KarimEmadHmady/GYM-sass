@@ -23,6 +23,8 @@ import expenseRoutes from './src/routes/expense.routes.js';
 import invoiceRoutes from './src/routes/invoice.routes.js';
 import payrollRoutes from './src/routes/payroll.routes.js';
 import gymSettingsRoutes from './src/routes/gymSettings.routes.js';
+import membershipCardRoutes from './src/routes/membershipCard.routes.js';
+import attendanceScanRoutes from './src/routes/attendanceScan.routes.js';
 
 
 
@@ -56,6 +58,8 @@ app.use('/api/finance/expenses', expenseRoutes);
 app.use('/api/finance/invoices', invoiceRoutes);
 app.use('/api/finance/payrolls', payrollRoutes);
 app.use('/api/gym-settings', gymSettingsRoutes);
+app.use('/api/membership-cards', membershipCardRoutes);
+app.use('/api/attendance-scan', attendanceScanRoutes);
 
 app.use(errorHandler);
 
