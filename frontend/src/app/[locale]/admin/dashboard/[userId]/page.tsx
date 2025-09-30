@@ -129,7 +129,8 @@ const AdminDashboard = ({ params }: { params: { userId: string } }) => {
               </p>
             </div>
             <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto space-x-3 sm:space-x-4">
-              <div className="text-right">
+            <div className="flex flex-row sm:flex-row items-center space-x-3">
+            <div className="text-center">
                 <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
                   {user?.name}
                 </p>
@@ -140,7 +141,9 @@ const AdminDashboard = ({ params }: { params: { userId: string } }) => {
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center text-white font-bold">
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
-              <button
+            </div>
+            <div className="flex items-center space-x-3">
+            <button
                 onClick={logout}
                 aria-label={t('Logout.btn') as string}
                 className="bg-red-600 hover:bg-red-700 text-white p-2 sm:px-4 sm:py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-0 sm:space-x-2"
@@ -160,6 +163,9 @@ const AdminDashboard = ({ params }: { params: { userId: string } }) => {
                 </svg>
                 <span className="hidden sm:inline">{t('Language.btn')}</span>
               </button>
+            </div>
+
+
             </div>
           </div>
         </div>

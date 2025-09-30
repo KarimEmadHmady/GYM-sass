@@ -116,7 +116,8 @@ const TrainerDashboard = ({ params }: { params: { userId: string } }) => {
               </p>
             </div>
             <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto space-x-3 sm:space-x-4">
-              <div className="text-right">
+            <div className="flex flex-row sm:flex-row items-center space-x-3">
+            <div className="text-center">
                 <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
                   {user?.name}
                 </p>
@@ -127,6 +128,9 @@ const TrainerDashboard = ({ params }: { params: { userId: string } }) => {
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
+            </div>
+
+              <div className="flex items-center space-x-3">
               <button
                 onClick={logout}
                 aria-label={t('Logout.btn') as string}
@@ -147,6 +151,7 @@ const TrainerDashboard = ({ params }: { params: { userId: string } }) => {
                 </svg>
                 <span className="hidden sm:inline">{t('Language.btn')}</span>
               </button>
+              </div>
             </div>
           </div>
         </div>
