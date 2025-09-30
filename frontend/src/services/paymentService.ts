@@ -1,6 +1,8 @@
 import { BaseService } from './baseService';
 import { API_ENDPOINTS } from '@/lib/constants';
 import type { PaginationParams, PaginatedResponse } from '@/types';
+import { queuePayment } from '@/lib/offlineSync';
+import { v4 as uuidv4 } from 'uuid';
 
 export type Payment = {
   _id: string;
@@ -32,7 +34,19 @@ export class PaymentService extends BaseService {
   }
 
   async createPayment(data: Omit<Payment, '_id' | 'createdAt' | 'updatedAt'>): Promise<Payment> {
-    return this.create<Payment>(data as any);
+    const clientUuid = uuidv4();
+    const payload = { ...(data as any), clientUuid };
+    try {
+      return await this.create<Payment>(payload);
+    } catch (e) {
+      await queuePayment(payload);
+      return {
+        ...(data as any),
+        _id: clientUuid,
+        createdAt: new Date() as any,
+        updatedAt: new Date() as any,
+      } as Payment;
+    }
   }
 
   async updatePayment(id: string, data: Partial<Omit<Payment, '_id' | 'createdAt' | 'updatedAt'>>): Promise<Payment> {

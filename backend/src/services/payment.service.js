@@ -5,9 +5,17 @@ import { addPointsFromPayment } from './loyaltyPoints.service.js';
 
 // ➕ إنشاء دفعة جديدة
 export const createPaymentService = async (data) => {
-  const { userId, amount, date, method, notes, invoiceId, appliedAmount } = data;
+  const { userId, amount, date, method, notes, invoiceId, appliedAmount, clientUuid } = data;
   if (!userId || !amount || !date) {
     throw new Error('userId, amount, and date are required');
+  }
+
+  // Idempotency by clientUuid from frontend to avoid duplicates when syncing
+  if (clientUuid) {
+    const existing = await Payment.findOne({ clientUuid });
+    if (existing) {
+      return existing;
+    }
   }
 
   // إذا تم تمرير invoiceId، نتحقق من الفاتورة ونحسب التسوية الجزئية
@@ -25,7 +33,7 @@ export const createPaymentService = async (data) => {
     if (applied > remaining) applied = remaining;
   }
 
-  const allowed = { userId, amount, date, method, notes, invoiceId, appliedAmount: applied || undefined };
+  const allowed = { userId, amount, date, method, notes, invoiceId, appliedAmount: applied || undefined, clientUuid };
 
   // إنشاء الدفعة
   const payment = await Payment.create(allowed);

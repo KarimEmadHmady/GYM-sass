@@ -15,9 +15,14 @@ const attendanceRecordSchema = new mongoose.Schema(
     date: { type: Date, required: true }, // يوم الحضور أو الغياب
     status: { type: String, enum: ["present", "absent", "excused"], default: "present" }, // حالة الحضور
     notes: { type: String, default: "" }, // ملاحظات إضافية
+    // UUID مُنشأ من الواجهة الأمامية لضمان عدم التكرار عند العمل بدون إنترنت
+    clientUuid: { type: String, index: true, unique: true, sparse: true },
   },
   { timestamps: true } // إضافة createdAt و updatedAt تلقائياً
 );
+
+// فهرس لضمان تفرد clientUuid عندما يكون موجوداً (sparse حتى لا يؤثر على السجلات القديمة)
+attendanceRecordSchema.index({ clientUuid: 1 }, { unique: true, sparse: true });
 
 const AttendanceRecord = mongoose.model("AttendanceRecord", attendanceRecordSchema);
 export default AttendanceRecord;

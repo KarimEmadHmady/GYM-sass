@@ -50,8 +50,13 @@ const paymentSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    // UUID مُنشأ من الواجهة الأمامية لضمان عدم التكرار عند العمل بدون إنترنت
+    clientUuid: { type: String, index: true, unique: true, sparse: true },
   },
   { timestamps: true }
 );
+
+// فهرس فريد على clientUuid مع sparse للسجلات التي لا تحتويه
+paymentSchema.index({ clientUuid: 1 }, { unique: true, sparse: true });
 
 export default mongoose.model("Payment", paymentSchema);

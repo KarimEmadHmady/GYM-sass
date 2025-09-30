@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cairo, Roboto } from "next/font/google"; // ✅ ضفنا Cairo و Roboto
 import "./globals.css";
+import ClientOnlineSync from "@/components/ClientOnlineSync";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -29,6 +30,8 @@ export default function RootLayout({
       {/* ✅ Cairo + Roboto */}
       <body className={`${cairo.variable} ${roboto.variable} antialiased`}>
         {children}
+        {/* Initialize online listener in a client component */}
+        <ClientOnlineSync />
       </body>
     </html>
   );

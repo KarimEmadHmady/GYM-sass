@@ -3,11 +3,18 @@ import { addAttendancePoints } from './loyaltyPoints.service.js';
 
 // إنشاء سجل جديد
 export const createAttendanceRecordService = async (data) => {
-  const { userId, date, status, notes } = data;
+  const { userId, date, status, notes, clientUuid } = data;
   if (!userId || !date) {
     throw new Error('userId and date are required');
   }
-  const allowed = { userId, date, status, notes };
+  // إذا تم تمرير clientUuid من الواجهة، تحقق من وجود سجل سابق بنفس المعرف لتجنب التكرار
+  if (clientUuid) {
+    const existing = await AttendanceRecord.findOne({ clientUuid });
+    if (existing) {
+      return existing;
+    }
+  }
+  const allowed = { userId, date, status, notes, clientUuid };
   
   // إنشاء سجل الحضور
   const record = await AttendanceRecord.create(allowed);

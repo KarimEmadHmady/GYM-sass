@@ -244,6 +244,7 @@ const playSound = (type: 'success' | 'error' | 'warning') => {
 
 import QRCodeScanner from '@/components/admin/QRCodeScanner';
 import { attendanceScanService } from '@/services/membershipCardService';
+import { queueAttendance } from '@/lib/offlineSync';
 
 interface AttendanceResult {
   success: boolean;
@@ -405,9 +406,33 @@ const AttendanceScanner = ({ params }: { params: { userId: string } }) => {
 
   const handleScan = async (scannedBarcode: string) => {
     if (!scannedBarcode.trim()) return;
-
     setIsScanning(true);
     setBarcode(scannedBarcode);
+
+    // إذا كان أوفلاين: خزّن الحضور محليًا وأظهر رسالة مناسبة
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      try {
+        const clientUuid = `${scannedBarcode}-${Date.now()}`;
+        await queueAttendance({
+          clientUuid,
+          barcode: scannedBarcode,
+          time: new Date().toISOString(),
+          adminId: user?.id
+        });
+        toast.success('تم حفظ الحضور مؤقتًا وسيتم مزامنته عند عودة الاتصال بالإنترنت.');
+        fetchTodaySummary();
+        fetchRecentScans();
+      } catch (error) {
+        toast.error('حدث خطأ أثناء حفظ الحضور مؤقتًا.');
+      } finally {
+        setIsScanning(false);
+        setBarcode('');
+        setTimeout(() => {
+          if (inputRef.current) inputRef.current.focus();
+        }, 100);
+      }
+      return;
+    }
 
     try {
       const result = await attendanceScanService.scanBarcode(scannedBarcode);

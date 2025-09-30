@@ -1,6 +1,8 @@
 import { BaseService } from './baseService';
 import { API_ENDPOINTS } from '@/lib/constants';
 import type { AttendanceRecord, PaginationParams, PaginatedResponse } from '@/types';
+import { queueAttendance } from '@/lib/offlineSync';
+import { v4 as uuidv4 } from 'uuid';
 
 export class AttendanceService extends BaseService {
   constructor() {
@@ -19,7 +21,21 @@ export class AttendanceService extends BaseService {
 
   // Create new attendance record
   async createAttendanceRecord(attendanceData: Partial<AttendanceRecord>): Promise<AttendanceRecord> {
-    return this.create<AttendanceRecord>(attendanceData);
+    const clientUuid = uuidv4();
+    const payload = { ...attendanceData, clientUuid } as any;
+    try {
+      return await this.create<AttendanceRecord>(payload);
+    } catch (e) {
+      // If offline or request fails, enqueue locally
+      await queueAttendance(payload);
+      // Return a local echo object to optimistically update UI
+      return {
+        ...(attendanceData as any),
+        _id: clientUuid,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as unknown as AttendanceRecord;
+    }
   }
 
   // Update attendance record
@@ -69,15 +85,31 @@ export class AttendanceService extends BaseService {
 
   // Mark attendance
   async markAttendance(userId: string, status: 'present' | 'absent' | 'excused', notes?: string): Promise<AttendanceRecord> {
-    return this.apiCall<AttendanceRecord>('/mark', {
-      method: 'POST',
-      body: JSON.stringify({
-        userId,
-        status,
-        notes,
-        date: new Date().toISOString()
-      }),
-    });
+    const clientUuid = uuidv4();
+    const body = {
+      userId,
+      status,
+      notes,
+      date: new Date().toISOString(),
+      clientUuid,
+    };
+    try {
+      return await this.apiCall<AttendanceRecord>('/mark', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+    } catch (e) {
+      await queueAttendance(body);
+      return {
+        _id: clientUuid as any,
+        userId: userId as any,
+        status: status as any,
+        notes: notes as any,
+        date: new Date(body.date) as any,
+        createdAt: new Date() as any,
+        updatedAt: new Date() as any,
+      } as unknown as AttendanceRecord;
+    }
   }
 
   // Get attendance statistics
