@@ -193,11 +193,8 @@ const ManagerAttendanceScanner = ({ params }: { params: { userId: string } }) =>
       <div className="container mx-auto p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button variant="outline" onClick={() => router.push(`/manager/dashboard/${user?.id || params.userId}`)} className="flex items-center space-x-2 cursor-pointer">
-              <ArrowLeft className="h-4 w-4" />
-              <span>العودة للداشبورد</span>
-            </Button>
-            <div>
+
+            <div className="flex flex-col items-center justify-center gap-2">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">ماسح الحضور</h1>
               <p className="text-gray-600 dark:text-gray-300">امسح باركود الأعضاء لتسجيل الحضور</p>
             </div>

@@ -101,6 +101,8 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({ onScan, onClose }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const scanningIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const barcodeBufferRef = useRef<string>("");
+  const barcodeResetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     return () => {
@@ -130,7 +132,7 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({ onScan, onClose }) => {
 
     } catch (err) {
       console.error('Error accessing camera:', err);
-      setError('Unable to access camera. Please check permissions.');
+      setError('تعذر الوصول إلى الكاميرا. يرجى التحقق من الأذونات.');
       setIsScanning(false);
     }
   };
@@ -202,24 +204,76 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({ onScan, onClose }) => {
     setLastScannedData(data);
     stopScanning();
     onScan(data);
-    toast.success('QR Code scanned successfully!');
+    toast.success('تم مسح الرمز بنجاح!');
   };
 
   const handleManualInput = () => {
-    const input = prompt('Enter barcode or QR code data manually:');
+    const input = prompt('أدخل بيانات الباركود أو رمز QR يدوياً:');
     if (input && input.trim()) {
       onScan(input.trim());
     }
   };
 
+  // Keyboard wedge barcode scanner handling
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignore if focused on an input/textarea/contenteditable
+      const target = event.target as HTMLElement | null;
+      const isEditable = target && (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        (target as HTMLElement).isContentEditable
+      );
+      if (isEditable) {
+        return;
+      }
+
+      // Most barcode scanners type fast characters then send Enter
+      if (event.key === 'Enter') {
+        const buffered = barcodeBufferRef.current.trim();
+        if (buffered.length > 0) {
+          barcodeBufferRef.current = '';
+          if (barcodeResetTimeoutRef.current) {
+            clearTimeout(barcodeResetTimeoutRef.current);
+            barcodeResetTimeoutRef.current = null;
+          }
+          handleQRCodeDetected(buffered);
+        }
+        return;
+      }
+
+      // Accept only visible characters
+      if (event.key.length === 1) {
+        barcodeBufferRef.current += event.key;
+        if (barcodeResetTimeoutRef.current) {
+          clearTimeout(barcodeResetTimeoutRef.current);
+        }
+        // Reset buffer if no keys within 300ms (separates manual typing from scanner bursts)
+        barcodeResetTimeoutRef.current = setTimeout(() => {
+          barcodeBufferRef.current = '';
+          barcodeResetTimeoutRef.current = null;
+        }, 300);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      if (barcodeResetTimeoutRef.current) {
+        clearTimeout(barcodeResetTimeoutRef.current);
+        barcodeResetTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <Card className="w-full max-w-md mx-4">
-        <CardHeader>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" dir="rtl">
+      <Card className="w-full max-w-lg mx-4 rounded-xl shadow-lg">
+        <CardHeader className="bg-gradient-to-l from-blue-50 to-white">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center space-x-2">
+            <CardTitle className="flex items-center gap-2">
               <QrCode className="h-5 w-5" />
-              <span>QR Code Scanner</span>
+              <span>ماسح رمز الاستجابة السريعة</span>
             </CardTitle>
             <Button
               variant="ghost"
@@ -240,25 +294,26 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({ onScan, onClose }) => {
 
           {!isScanning ? (
             <div className="space-y-4">
-              <div className="text-center text-gray-600">
+              <div className="text-center text-gray-700">
                 <Camera className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                <p>Click to start scanning QR codes</p>
+                <p>اضغط لبدء المسح بالكاميرا</p>
+                <p className="text-xs text-gray-500 mt-1">يمكنك أيضاً استخدام ماسح الباركود الموصل بلوحة المفاتيح</p>
               </div>
               
-              <div className="flex space-x-2">
+              <div className="flex gap-2">
                 <Button
                   onClick={startScanning}
                   className="flex-1"
                 >
-                  <Camera className="h-4 w-4 mr-2" />
-                  Start Camera
+                  <Camera className="h-4 w-4 ml-2" />
+                  تشغيل الكاميرا
                 </Button>
                 <Button
                   variant="outline"
                   onClick={handleManualInput}
                   className="flex-1"
                 >
-                  Manual Input
+                  إدخال يدوي
                 </Button>
               </div>
             </div>
@@ -267,7 +322,7 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({ onScan, onClose }) => {
               <div className="relative">
                 <video
                   ref={videoRef}
-                  className="w-full h-48 bg-gray-100 rounded"
+                  className="w-full h-56 bg-gray-100 rounded-lg"
                   playsInline
                   muted
                 />
@@ -275,24 +330,24 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({ onScan, onClose }) => {
                   ref={canvasRef}
                   className="hidden"
                 />
-                <div className="absolute inset-0 border-2 border-blue-500 rounded pointer-events-none">
-                  <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-blue-500"></div>
+                <div className="absolute inset-0 border-2 border-blue-500 rounded-lg pointer-events-none">
                   <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-blue-500"></div>
-                  <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-blue-500"></div>
+                  <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-blue-500"></div>
                   <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-blue-500"></div>
+                  <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-blue-500"></div>
                 </div>
               </div>
               
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-2">
-                  Point your camera at a QR code
+                  وجّه الكاميرا نحو رمز QR
                 </p>
                 <Button
                   variant="outline"
                   onClick={stopScanning}
                   className="w-full"
                 >
-                  Stop Scanning
+                  إيقاف المسح
                 </Button>
               </div>
             </div>
@@ -302,7 +357,7 @@ const QRCodeScanner: React.FC<QRCodeScannerProps> = ({ onScan, onClose }) => {
             <Alert>
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>
-                <strong>Scanned:</strong> {lastScannedData}
+                <strong>تم المسح:</strong> {lastScannedData}
               </AlertDescription>
             </Alert>
           )}
