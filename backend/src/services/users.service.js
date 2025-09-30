@@ -31,7 +31,15 @@ export const updateUserRoleService = async (userId, role) => {
 
 
 export const updateUserByIdService = async (userId, updateData) => {
-    const user = await User.findByIdAndUpdate(userId, updateData, { new: true });
+    const user = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      }
+    );
     if (!user) {
       throw new Error('User not found');
     }

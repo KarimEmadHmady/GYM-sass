@@ -78,15 +78,32 @@ userSchema.set("toObject", { virtuals: true });
 
 // Auto-generate barcode for new users
 userSchema.pre("save", async function (next) {
-  // Generate barcode for new users
-  if (this.isNew && !this.barcode) {
+  // Generate barcode when creating a new user or when barcode is missing
+  if ((!this.barcode) && (this.isNew || this.isModified())) {
     try {
-      // Get the count of existing users to generate unique barcode
       const userCount = await mongoose.model('User').countDocuments();
       this.barcode = `G${String(userCount + 1).padStart(4, '0')}`;
     } catch (err) {
-      // Fallback to timestamp-based barcode if count fails
       this.barcode = `G${Date.now().toString().slice(-6)}`;
+    }
+  }
+  next();
+});
+
+// Ensure barcode exists when updating via findOneAndUpdate
+userSchema.pre('findOneAndUpdate', async function (next) {
+  const update = this.getUpdate() || {};
+  // If barcode explicitly provided, respect it; otherwise ensure it exists
+  if (!('barcode' in update)) {
+    // Only assign if current document has no barcode
+    const docToUpdate = await this.model.findOne(this.getQuery()).select('barcode').lean();
+    if (!docToUpdate?.barcode) {
+      try {
+        const userCount = await mongoose.model('User').countDocuments();
+        this.setUpdate({ ...update, barcode: `G${String(userCount + 1).padStart(4, '0')}` });
+      } catch (err) {
+        this.setUpdate({ ...update, barcode: `G${Date.now().toString().slice(-6)}` });
+      }
     }
   }
   next();
