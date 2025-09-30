@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import User from '../models/user.model.js';
+import { getGymSettingsService } from './gymSettings.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -79,6 +80,15 @@ const generateBarcode = async (barcode) => {
 const generateMembershipCardPDF = async (user) => {
   try {
     const { barcode, name, email, membershipLevel, subscriptionEndDate } = user;
+    const settings = await getGymSettingsService();
+    const style = settings?.membershipCardStyle || {};
+    const headerColor = style.headerColor || '#007bff';
+    const backgroundColor = style.backgroundColor || '#f8f9fa';
+    const textColor = style.textColor || '#000000';
+    const headerTitle = style.headerTitle || 'GYM MEMBERSHIP';
+    const logoUrl = style.logoUrl || settings?.logoUrl || '';
+    const logoWidth = style.logoWidth || 60;
+    const logoHeight = style.logoHeight || 60;
     
     // Generate QR Code and Barcode
     const [qrCodeBuffer, barcodeBuffer] = await Promise.all([
@@ -93,38 +103,64 @@ const generateMembershipCardPDF = async (user) => {
     });
 
     // Generate filename
-    const fileName = `${name.replace(/[^a-zA-Z0-9]/g, '_')}_card.pdf`;
+    const fileName = `${name.replace(/[^a-zA-Z0-9]/g, '_')}_${barcode}_card.pdf`;
     const filePath = path.join(cardsDir, fileName);
 
     // Pipe PDF to file
-    doc.pipe(fs.createWriteStream(filePath));
+    const stream = fs.createWriteStream(filePath);
+    doc.pipe(stream);
 
     // Card background
     doc.rect(0, 0, 400, 250)
-       .fill('#f8f9fa');
+       .fill(backgroundColor);
 
     // Header section
     doc.rect(0, 0, 400, 60)
-       .fill('#007bff');
+       .fill(headerColor);
     
     // Gym logo/name
     doc.fillColor('white')
        .fontSize(24)
        .font('Helvetica-Bold')
-       .text('GYM MEMBERSHIP', 20, 20, { align: 'center' });
+       .text(headerTitle, 20, 20, { align: 'center' });
+
+    // Optional logo
+    if (logoUrl) {
+      try {
+        const res = await fetch(logoUrl);
+        if (res.ok) {
+          const logoArrayBuffer = await res.arrayBuffer();
+          const logoBuffer = Buffer.from(logoArrayBuffer);
+          doc.image(logoBuffer, 10, 10, { width: logoWidth, height: logoHeight, fit: [logoWidth, logoHeight] });
+        }
+      } catch {}
+    }
 
     // Member info section
-    doc.fillColor('black')
+    doc.fillColor(textColor)
        .fontSize(16)
        .font('Helvetica-Bold')
        .text('Member Information', 20, 80);
 
-    doc.fontSize(12)
-       .font('Helvetica')
-       .text(`Name: ${name}`, 20, 105)
-       .text(`Barcode: ${barcode}`, 20, 125)
-       .text(`Level: ${membershipLevel.toUpperCase()}`, 20, 145)
-       .text(`Valid Until: ${subscriptionEndDate ? new Date(subscriptionEndDate).toLocaleDateString() : 'N/A'}`, 20, 165);
+    // Dynamic info lines with toggles
+    doc.fontSize(12).font('Helvetica');
+    let currentY = 105;
+    const lineGap = 20;
+    doc.text(`Name: ${name}`, 20, currentY);
+    currentY += lineGap;
+    doc.text(`Barcode: ${barcode}`, 20, currentY);
+    currentY += lineGap;
+    doc.text(`Level: ${String(membershipLevel || '').toUpperCase()}`, 20, currentY);
+    currentY += lineGap;
+    if (style.showMemberEmail && email) {
+      doc.text(`Email: ${email}`, 20, currentY);
+      currentY += lineGap;
+    }
+    if (style.showValidUntil) {
+      const validText = subscriptionEndDate ? new Date(subscriptionEndDate).toLocaleDateString() : 'N/A';
+      doc.text(`Valid Until: ${validText}`, 20, currentY);
+      currentY += lineGap;
+    }
 
     // QR Code (right side)
     doc.image(qrCodeBuffer, 250, 80, { width: 100, height: 100 });
@@ -132,17 +168,18 @@ const generateMembershipCardPDF = async (user) => {
     // Barcode (bottom)
     doc.image(barcodeBuffer, 50, 200, { width: 300, height: 30 });
 
-    // Footer
-    doc.fillColor('#666')
-       .fontSize(8)
-       .text('Scan QR code or barcode for attendance', 20, 235, { align: 'center' });
+  
 
     // Finalize PDF
     doc.end();
 
     return new Promise((resolve, reject) => {
-      doc.on('end', () => resolve(filePath));
-      doc.on('error', reject);
+      stream.on('finish', () => {
+        resolve(filePath);
+      });
+      stream.on('error', (err) => {
+        reject(err);
+      });
     });
 
   } catch (error) {

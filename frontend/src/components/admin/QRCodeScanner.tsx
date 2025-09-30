@@ -2,26 +2,31 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 // Simple UI components
-const Button = ({ children, onClick, disabled = false, className = '', variant = 'default' }: { 
+const Button = ({ children, onClick, disabled = false, className = '', variant = 'default', size = 'md' }: { 
   children: React.ReactNode; 
   onClick?: () => void; 
   disabled?: boolean; 
   className?: string;
   variant?: 'default' | 'outline' | 'destructive' | 'ghost';
+  size?: 'sm' | 'md';
 }) => {
-  const baseClasses = 'px-4 py-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const baseClasses = 'rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
   const variantClasses = {
     default: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
     outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-blue-500',
     destructive: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
     ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500'
   };
+  const sizeClasses = {
+    sm: 'px-2 py-1 text-sm',
+    md: 'px-4 py-2'
+  };
   
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`${baseClasses} ${variantClasses[variant]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+      className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
     >
       {children}
     </button>
@@ -52,11 +57,16 @@ const CardContent = ({ children, className = '' }: { children: React.ReactNode; 
   </div>
 );
 
-const Alert = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`p-4 rounded-md ${className}`}>
-    {children}
-  </div>
-);
+const Alert = ({ children, className = '', variant = 'default' }: { children: React.ReactNode; className?: string; variant?: 'default' | 'destructive' }) => {
+  const variantClasses = variant === 'destructive'
+    ? 'border border-red-200 bg-red-50 text-red-800'
+    : 'border border-gray-200 bg-gray-50 text-gray-800';
+  return (
+    <div className={`p-4 rounded-md ${variantClasses} ${className}`}>
+      {children}
+    </div>
+  );
+};
 
 const AlertDescription = ({ children }: { children: React.ReactNode }) => (
   <div className="text-sm">

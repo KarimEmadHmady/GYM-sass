@@ -41,6 +41,7 @@ export const login = async (req, res) => {
         membershipLevel: user.membershipLevel,
         goals: user.goals,
         trainerId: user.trainerId,
+        barcode: user.barcode,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
       }

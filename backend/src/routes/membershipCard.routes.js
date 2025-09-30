@@ -11,14 +11,17 @@ import {
 
 const router = express.Router();
 
-// Generate single user card
-router.post('/generate/:userId', authenticate, authorizeRole(['admin', 'manager']), generateUserCard);
+// Generate cards for multiple users (place before :userId)
+router.post('/generate/batch', (req, res, next) => {
+  console.log('ROUTE BODY:', req.body);
+  next();
+}, authenticate, authorizeRole(['admin', 'manager']), generateBatchCardsController);
 
-// Generate cards for multiple users
-router.post('/generate/batch', authenticate, authorizeRole(['admin', 'manager']), generateBatchCardsController);
-
-// Generate cards for all active members
+// Generate cards for all active members (place before :userId)
 router.post('/generate/all', authenticate, authorizeRole(['admin', 'manager']), generateAllMemberCardsController);
+
+// Generate single user card (keep after batch/all)
+router.post('/generate/:userId', authenticate, authorizeRole(['admin', 'manager']), generateUserCard);
 
 // Get list of generated cards
 router.get('/list', authenticate, authorizeRole(['admin', 'manager']), getGeneratedCardsController);

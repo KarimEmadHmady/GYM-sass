@@ -34,6 +34,19 @@ const gymSettingsSchema = new mongoose.Schema(
       privacy: { type: String, default: '' },
       refund: { type: String, default: '' },
     },
+    membershipCardStyle: {
+      headerColor: { type: String, default: '#007bff' },
+      backgroundColor: { type: String, default: '#f8f9fa' },
+      textColor: { type: String, default: '#000000' },
+      accentColor: { type: String, default: '#007bff' },
+      headerTitle: { type: String, default: 'GYM MEMBERSHIP' },
+      showGymName: { type: Boolean, default: true },
+      showMemberEmail: { type: Boolean, default: false },
+      showValidUntil: { type: Boolean, default: true },
+      logoUrl: { type: String, default: '' },
+      logoWidth: { type: Number, default: 60 },
+      logoHeight: { type: Number, default: 60 },
+    },
   },
   { timestamps: true }
 );

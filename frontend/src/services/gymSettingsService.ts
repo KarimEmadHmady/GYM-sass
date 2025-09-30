@@ -11,6 +11,19 @@ export type GymSettings = {
   membershipPlans?: Array<{ name: string; price: number; durationDays: number; features?: string[] }>;
   paymentSettings?: { cash?: boolean; card?: boolean; onlineGateway?: boolean; gatewayName?: string };
   policies?: { terms?: string; privacy?: string; refund?: string };
+  membershipCardStyle?: {
+    headerColor?: string;
+    backgroundColor?: string;
+    textColor?: string;
+    accentColor?: string;
+    headerTitle?: string;
+    showGymName?: boolean;
+    showMemberEmail?: boolean;
+    showValidUntil?: boolean;
+    logoUrl?: string;
+    logoWidth?: number;
+    logoHeight?: number;
+  };
 };
 
 export class GymSettingsService {

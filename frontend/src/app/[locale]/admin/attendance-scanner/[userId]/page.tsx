@@ -154,7 +154,7 @@ const PopupModal = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black bg-opacity-50" 
+        className="absolute inset-0 bg-black/70 bg-opacity-50" 
         onClick={onClose}
       />
       
@@ -375,6 +375,34 @@ const AttendanceScanner = ({ params }: { params: { userId: string } }) => {
     }
   };
 
+  const translateAttendanceError = (backendMessage: string | undefined, currentBarcode?: string) => {
+    const msg = (backendMessage || '').toLowerCase();
+    // Duplicate/Already scanned today
+    if (
+      msg.includes('already') ||
+      msg.includes('duplicate') ||
+      msg.includes('scanned') ||
+      msg.includes('تم') && msg.includes('الحضور')
+    ) {
+      return 'تم تسجيل الحضور مسبقًا لهذا اليوم.';
+    }
+    // Not found / invalid barcode
+    if (
+      msg.includes('not found') ||
+      msg.includes('no user') ||
+      msg.includes('invalid') ||
+      msg.includes('غير موجود')
+    ) {
+      return `الباركود الذي أدخلته غير موجود${currentBarcode ? `: ${currentBarcode}` : ''}`;
+    }
+    // Inactive / suspended account
+    if (msg.includes('inactive') || msg.includes('suspended') || msg.includes('محظور') || msg.includes('غير نشط')) {
+      return 'لا يمكن تسجيل الحضور لهذا الحساب لأنه غير نشط.';
+    }
+    // Default
+    return 'حدث خطأ أثناء مسح الباركود.';
+  };
+
   const handleScan = async (scannedBarcode: string) => {
     if (!scannedBarcode.trim()) return;
 
@@ -390,11 +418,12 @@ const AttendanceScanner = ({ params }: { params: { userId: string } }) => {
         fetchTodaySummary();
         fetchRecentScans();
       } else {
-        toast.warning(result.message);
+        toast.warning(translateAttendanceError(result.message, scannedBarcode));
       }
     } catch (error) {
       console.error('Error scanning barcode:', error);
-      toast.error('خطأ في مسح الباركود');
+      const message = error instanceof Error ? error.message : undefined;
+      toast.error(translateAttendanceError(message, scannedBarcode));
     } finally {
       setIsScanning(false);
       setBarcode('');

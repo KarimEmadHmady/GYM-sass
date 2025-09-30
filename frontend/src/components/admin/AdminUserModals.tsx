@@ -683,6 +683,12 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
                 <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🆔 معرّف المستخدم (ID)</span>
                 <span className="text-gray-900 dark:text-white break-all">{props.viewUser._id}</span>
               </div>
+              {props.viewUser.barcode && (
+                <div className="flex flex-col border-b pb-2">
+                  <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">🏷️ الباركود</span>
+                  <span className="text-gray-900 dark:text-white break-all">{props.viewUser.barcode}</span>
+                </div>
+              )}
 
               <div className="flex flex-col border-b pb-2">
                 <span className="font-bold text-gray-700 dark:text-gray-300 mb-1">👤 الاسم</span>

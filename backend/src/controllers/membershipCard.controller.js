@@ -4,6 +4,9 @@ import {
   generateAllMemberCards,
   getGeneratedCards
 } from '../services/membershipCard.service.js';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 /**
  * Generate membership card for a single user
@@ -101,9 +104,8 @@ export const getGeneratedCardsController = async (req, res) => {
 export const downloadCard = async (req, res) => {
   try {
     const { fileName } = req.params;
-    const path = require('path');
-    const fs = require('fs');
-    
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
     const cardsDir = path.join(__dirname, '../../cards');
     const filePath = path.join(cardsDir, fileName);
     
