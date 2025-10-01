@@ -7,7 +7,9 @@ export async function enqueue(table: 'attendance' | 'payments', record: Omit<Off
 }
 
 export async function listUnsynced(table: 'attendance' | 'payments') {
-  return offlineDB[table].where({ synced: false }).sortBy('createdAt');
+  // Avoid IDBKeyRange issues on some browsers by filtering in-memory
+  const all = await offlineDB[table].toArray();
+  return all.filter((r) => r.synced === false).sort((a, b) => a.createdAt - b.createdAt);
 }
 
 export async function markSynced(table: 'attendance' | 'payments', ids: number[]) {

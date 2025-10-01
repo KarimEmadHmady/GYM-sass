@@ -1,14 +1,15 @@
 import { enqueue, listUnsynced, markSynced } from './offlineQueue';
 import { API_ENDPOINTS } from './constants';
+import { apiRequest } from './api';
 
 async function postJson(url: string, body: any) {
-  const res = await fetch(url, {
+  // Route through api helper to include baseURL and auth token
+  const response = await apiRequest(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
+  return response.json();
 }
 
 export async function syncData(baseUrl = '') {
@@ -19,7 +20,8 @@ export async function syncData(baseUrl = '') {
     for (const item of unsyncedAttendance) {
       try {
         console.log('Syncing attendance:', item);
-        await postJson(`${baseUrl}${item.endpoint}`, item.payload);
+        // item.endpoint must be a path starting with '/'; apiRequest will prefix baseURL
+        await postJson(item.endpoint, item.payload);
         ids.push(item.id!);
         console.log('Attendance synced:', item);
       } catch (err) {
@@ -36,7 +38,7 @@ export async function syncData(baseUrl = '') {
     for (const item of unsyncedPayments) {
       try {
         console.log('Syncing payment:', item);
-        await postJson(`${baseUrl}${item.endpoint}`, item.payload);
+        await postJson(item.endpoint, item.payload);
         ids.push(item.id!);
         console.log('Payment synced:', item);
       } catch (err) {
@@ -60,12 +62,13 @@ export function initOnlineSync(baseUrl = '') {
 }
 
 // Helper to queue operations when offline
-export async function queueAttendance(payload: any) {
+export async function queueAttendance(payload: any & { userId?: string; status?: string; notes?: string }) {
   console.log('Queuing attendance:', payload);
   await enqueue('attendance', {
     clientUuid: payload.clientUuid,
     payload,
-    endpoint: '/api/attendance', // تم التعديل هنا
+    // If we have userId (from UI context), queue to records endpoint; otherwise use scan-by-barcode
+    endpoint: payload.userId ? '/attendance' : '/attendance-scan/scan',
     method: 'POST',
   });
 }
