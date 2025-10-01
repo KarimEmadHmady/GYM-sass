@@ -39,7 +39,7 @@ const userSchema = new mongoose.Schema(
     lastPaymentDate: { type: Date },
     nextPaymentDueDate: { type: Date },
 
-    loyaltyPoints: { type: Number, default: 0 },
+    loyaltyPoints: { type: Number, default: 100 },
     membershipLevel: { type: String, enum: ["basic", "silver", "gold", "platinum"], default: "basic" },
     
     // Barcode for membership card

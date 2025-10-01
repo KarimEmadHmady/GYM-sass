@@ -180,7 +180,8 @@ const MemberPlansOverview = () => {
                 className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-white">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                    <span className="text-base">🏋️</span>
                     {plan.planName}
                   </h4>
                 </div>
@@ -188,25 +189,25 @@ const MemberPlansOverview = () => {
                 <div className="space-y-3">
                   {plan.trainerId && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">المدرب:</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1"><span className="text-xs">🧑‍🏫</span>المدرب:</span>
                       <span className="text-sm font-medium text-gray-900 dark:text-white">{nameMap[plan.trainerId] || '...'}</span>
                     </div>
                   )}
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">الفترة:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1"><span className="text-xs">📅</span>الفترة:</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {new Date(plan.startDate).toLocaleDateString()} - {new Date(plan.endDate).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">عدد التمارين:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1"><span className="text-xs">🏋️</span>عدد التمارين:</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {plan.exercises?.length || 0} تمرين
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">الوصف:</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1"><span className="text-xs">📝</span>الوصف:</span>
                     <span className="text-sm font-medium text-gray-900 dark:text-white">
                       {plan.description || '-'}
                     </span>
@@ -214,7 +215,7 @@ const MemberPlansOverview = () => {
 
                   {/* تمارين الخطة */}
                   <div className="mt-4">
-                    <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">التمارين</h5>
+                    <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1"><span className="text-xs">📋</span>التمارين</h5>
                     {(!plan.exercises || plan.exercises.length === 0) ? (
                       <p className="text-xs text-gray-500">لا توجد تمارين في هذه الخطة.</p>
                     ) : (
@@ -226,10 +227,10 @@ const MemberPlansOverview = () => {
                               <span className="text-sm text-gray-900 dark:text-white">{ex.name}</span>
                             </div>
                             <div className="text-xs text-gray-700 dark:text-gray-300 text-right">
-                              <div>المجموعات: {ex.sets}</div>
-                              <div>التكرارات: {ex.reps}</div>
+                              <div><span className="mr-1">🏋️</span>المجموعات: {ex.sets}</div>
+                              <div><span className="mr-1">🏋️</span>التكرارات: {ex.reps}</div>
                               {ex.notes ? (
-                                <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">ملاحظات: {ex.notes}</div>
+                                <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1"><span className="mr-1">📝</span>ملاحظات: {ex.notes}</div>
                               ) : null}
                             </div>
                           </li>
@@ -248,18 +249,21 @@ const MemberPlansOverview = () => {
               ) : (dietPlans as any[]).map((plan: any) => (
                 <div key={plan._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
                   <div className="flex items-start justify-between mb-2">
-                    <h4 className="text-lg font-medium text-gray-900 dark:text-white">{plan.planName}</h4>
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                      <span className="text-base">🍎</span>
+                      {plan.planName}
+                    </h4>
                   </div>
                   {plan.trainerId && (
-                    <p className="text-xs text-gray-500 mb-1">المدرب: {nameMap[plan.trainerId] || '...'}</p>
+                    <p className="text-xs text-gray-500 mb-1 flex items-center gap-1"><span className="text-xs">🧑‍🏫</span>المدرب: {nameMap[plan.trainerId] || '...'}</p>
                   )}
-                  <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">{plan.description || '-'}</div>
                   <div className="flex items-center justify-between text-sm mb-3">
-                    <span className="text-gray-600 dark:text-gray-400">الفترة:</span>
+                    <span className="text-gray-600 dark:text-gray-400 flex items-center gap-1"><span className="text-xs">📅</span>الفترة:</span>
                     <span className="text-gray-900 dark:text-white">{new Date(plan.startDate).toLocaleDateString()} {plan.endDate ? `- ${new Date(plan.endDate).toLocaleDateString()}` : ''}</span>
                   </div>
+                  <div className="text-sm text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1"><span className="text-xs">📝</span>{plan.description || '-'}</div>
                   <div>
-                    <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">الوجبات</h5>
+                    <h5 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-1"><span className="text-xs">🍽️</span>الوجبات</h5>
                     {(!plan.meals || plan.meals.length === 0) ? (
                       <p className="text-xs text-gray-500">لا توجد وجبات.</p>
                     ) : (
@@ -271,10 +275,10 @@ const MemberPlansOverview = () => {
                               <span className="text-sm text-gray-900 dark:text-white">{meal.mealName}</span>
                             </div>
                             <div className="text-xs text-gray-700 dark:text-gray-300 text-right">
-                              <div>السعرات: {meal.calories}</div>
-                              <div>الكمية: {meal.quantity}</div>
+                              <div><span className="mr-1">🔥</span>السعرات: {meal.calories}</div>
+                              <div><span className="mr-1">🧪</span>الكمية: {meal.quantity}</div>
                               {meal.notes ? (
-                                <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">ملاحظات: {meal.notes}</div>
+                                <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1"><span className="mr-1">📝</span>ملاحظات: {meal.notes}</div>
                               ) : null}
                             </div>
                           </li>

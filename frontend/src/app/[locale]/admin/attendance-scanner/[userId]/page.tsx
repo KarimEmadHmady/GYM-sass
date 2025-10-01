@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, use } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
@@ -288,10 +288,11 @@ interface TodaySummary {
   }>;
 }
 
-const AttendanceScanner = ({ params }: { params: { userId: string } }) => {
+const AttendanceScanner = ({ params }: { params: Promise<{ userId: string }> }) => {
+  const resolvedParams = use(params);
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const t = useTranslations('AttendanceScanner');
+  // const t = useTranslations('AttendanceScanner'); // Removed to avoid translation errors
   const [barcode, setBarcode] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [lastResult, setLastResult] = useState<AttendanceResult | null>(null);
@@ -342,14 +343,14 @@ const AttendanceScanner = ({ params }: { params: { userId: string } }) => {
     }
     
     // إعادة التوجيه إذا كان userId في الرابط لا يساوي user.id
-    if (params.userId && user?.id && params.userId !== user.id) {
+    if (resolvedParams.userId && user?.id && resolvedParams.userId !== user.id) {
       router.replace(`/ar/admin/attendance-scanner/${user.id}`);
       return;
     }
     
     fetchTodaySummary();
     fetchRecentScans();
-  }, [isAuthenticated, user, router, isLoading, params.userId]);
+  }, [isAuthenticated, user, router, isLoading, resolvedParams.userId]);
 
   // Auto-focus input on component mount
   useEffect(() => {
@@ -545,7 +546,7 @@ const AttendanceScanner = ({ params }: { params: { userId: string } }) => {
           <div className="flex items-center space-x-4">
             <Button
               variant="outline"
-              onClick={() => router.push(`/admin/dashboard/${user?.id || params.userId}`)}
+              onClick={() => router.push(`/admin/dashboard/${user?.id || resolvedParams.userId}`)}
               className="flex items-center space-x-2 cursor-pointer"
             >
               <ArrowLeft className="h-4 w-4" />

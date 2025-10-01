@@ -6,6 +6,7 @@ import { UserService } from '@/services/userService';
 import type { User } from '@/types/models';
 import { useAuth } from '@/hooks/useAuth';
 import * as XLSX from 'xlsx';
+import { queuePayment } from '@/lib/offlineSync';
 
 const AdminPayments = () => {
   const { user } = useAuth();
@@ -30,6 +31,7 @@ const AdminPayments = () => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [offlineAlertOpen, setOfflineAlertOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -99,6 +101,16 @@ const AdminPayments = () => {
     try {
       const dateTime = new Date(form.date + 'T' + (form.time || '00:00'));
       const payload: any = { userId: form.userId, amount: Number(form.amount), date: dateTime, method: form.method, notes: form.notes };
+      // إذا كنا أوفلاين وننشئ دفعة جديدة: خزّن محليًا وسيتم مزامنتها تلقائيًا عند عودة الاتصال
+      if (typeof navigator !== 'undefined' && !navigator.onLine && !editing) {
+        const clientUuid = `${form.userId}-${Date.now()}`;
+        await queuePayment({ clientUuid, ...payload });
+        // إغلاق المودال وإبلاغ المستخدم بشكل بسيط
+        setModalOpen(false);
+        setEditing(null);
+        setOfflineAlertOpen(true);
+        return;
+      }
       if (editing) {
         const updated = await paymentSvc.updatePayment(editing._id, payload);
         setPayments(prev => prev.map(x => x._id === editing._id ? updated : x));
@@ -332,6 +344,30 @@ const AdminPayments = () => {
             <div className="flex items-center justify-end gap-2">
               <button onClick={()=>setConfirmOpen(false)} className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600">إلغاء</button>
               <button onClick={confirmDelete} className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white">تأكيد الحذف</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Offline Alert Modal */}
+      {offlineAlertOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={()=>setOfflineAlertOpen(false)}></div>
+          <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-sm p-6 z-10">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl">📱</div>
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">حفظ أوفلاين</h4>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+              تم حفظ الدفعة مؤقتًا أوفلاين، وسيتم مزامنتها تلقائيًا عند عودة الاتصال بالإنترنت.
+            </p>
+            <div className="flex items-center justify-end gap-2">
+              <button 
+                onClick={()=>setOfflineAlertOpen(false)} 
+                className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                موافق
+              </button>
             </div>
           </div>
         </div>

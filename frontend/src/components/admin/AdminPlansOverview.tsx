@@ -64,6 +64,10 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
   const [createDietMeals, setCreateDietMeals] = useState<Array<{ mealName: string; calories: number; quantity: string; notes?: string }>>([]);
   const [createDietError, setCreateDietError] = useState<string | null>(null);
   const [createDietLoading, setCreateDietLoading] = useState(false);
+  const [searchType, setSearchType] = useState<'member' | 'trainer'>('member');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState('');
+  const [selectedTrainerId, setSelectedTrainerId] = useState('');
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -311,14 +315,40 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
   };
 
   const filteredWorkoutPlans = useMemo(() => {
-    if (!filterUserIds || filterUserIds.size === 0) return workoutPlans;
-    return workoutPlans.filter((p) => filterUserIds.has(p.userId as any));
-  }, [workoutPlans, filterUserIds]);
+    let plans = workoutPlans;
+    if (!filterUserIds || filterUserIds.size === 0) {
+      plans = workoutPlans;
+    } else {
+      plans = workoutPlans.filter((p) => filterUserIds.has(p.userId as any));
+    }
+    // فلترة حسب العضو المختار
+    if (searchType === 'member' && selectedUserId) {
+      plans = plans.filter((p) => p.userId === selectedUserId);
+    }
+    // فلترة حسب المدرب المختار
+    if (searchType === 'trainer' && selectedTrainerId) {
+      plans = plans.filter((p) => (p as any).trainerId === selectedTrainerId);
+    }
+    return plans;
+  }, [workoutPlans, filterUserIds, searchType, selectedUserId, selectedTrainerId]);
 
   const filteredDietPlans = useMemo(() => {
-    if (!filterUserIds || filterUserIds.size === 0) return dietPlans as any[];
-    return (dietPlans as any[]).filter((p: any) => filterUserIds.has(p.userId));
-  }, [dietPlans, filterUserIds]);
+    let plans = dietPlans as any[];
+    if (!filterUserIds || filterUserIds.size === 0) {
+      plans = dietPlans as any[];
+    } else {
+      plans = (dietPlans as any[]).filter((p: any) => filterUserIds.has(p.userId));
+    }
+    // فلترة حسب العضو المختار
+    if (searchType === 'member' && selectedUserId) {
+      plans = plans.filter((p) => p.userId === selectedUserId);
+    }
+    // فلترة حسب المدرب المختار
+    if (searchType === 'trainer' && selectedTrainerId) {
+      plans = plans.filter((p) => (p as any).trainerId === selectedTrainerId);
+    }
+    return plans;
+  }, [dietPlans, filterUserIds, searchType, selectedUserId, selectedTrainerId]);
 
   const currentPlans = activeTab === 'workout' ? filteredWorkoutPlans : filteredDietPlans as any[];
 
@@ -358,7 +388,77 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 sm:mb-0">
             {currentRole === 'trainer' ? 'إدارة الخطط (مدرب)' : t('AdminPlansOverview.title')}
           </h3>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+            {/* بحث وفلتر متطور */}
+            <div className="flex items-center gap-2">
+              <select
+                className="border rounded px-2 py-1 text-sm bg-white dark:bg-gray-900"
+                value={searchType}
+                onChange={e => {
+                  setSearchType(e.target.value as any);
+                  setSearchQuery('');
+                  setSelectedUserId('');
+                  setSelectedTrainerId('');
+                }}
+              >
+                <option value="member">عضو</option>
+                <option value="trainer">مدرب</option>
+              </select>
+              <input
+                className="border rounded px-2 py-2 text-sm bg-white dark:bg-gray-900"
+                placeholder={searchType === 'member' ? 'ابحث عن عضو بالاسم أو الهاتف أو الإيميل' : 'ابحث عن مدرب بالاسم أو الهاتف أو الإيميل'}
+                value={searchQuery}
+                onChange={e => {
+                  setSearchQuery(e.target.value);
+                  setSelectedUserId('');
+                  setSelectedTrainerId('');
+                }}
+              />
+              {searchType === 'member' ? (
+                <select
+                  className="border rounded px-2 py-1 text-sm bg-white dark:bg-gray-900 min-w-[160px]"
+                  value={selectedUserId}
+                  onChange={e => setSelectedUserId(e.target.value)}
+                >
+                  <option value="">كل الأعضاء</option>
+                  {members
+                    .filter((m) => {
+                      const q = searchQuery.trim().toLowerCase();
+                      if (!q) return true;
+                      return (
+                        (m.name || '').toLowerCase().includes(q) ||
+                        (m.phone || '').toLowerCase().includes(q) ||
+                        (m.email || '').toLowerCase().includes(q)
+                      );
+                    })
+                    .map((m) => (
+                      <option key={m._id} value={m._id}>{(m.phone || 'بدون هاتف')} - {m.name}</option>
+                    ))}
+                </select>
+              ) : (
+                <select
+                  className="border rounded px-2 py-1 text-sm bg-white dark:bg-gray-900 min-w-[160px]"
+                  value={selectedTrainerId}
+                  onChange={e => setSelectedTrainerId(e.target.value)}
+                >
+                  <option value="">كل المدربين</option>
+                  {trainers
+                    .filter((t) => {
+                      const q = searchQuery.trim().toLowerCase();
+                      if (!q) return true;
+                      return (
+                        (t.name || '').toLowerCase().includes(q) ||
+                        (t.phone || '').toLowerCase().includes(q) ||
+                        (t.email || '').toLowerCase().includes(q)
+                      );
+                    })
+                    .map((t) => (
+                      <option key={t._id} value={t._id}>{(t.phone || 'بدون هاتف')} - {t.name}</option>
+                    ))}
+                </select>
+              )}
+            </div>
+            {/* أزرار التصدير/إضافة */}
             <div className="flex space-x-2">
               {activeTab === 'workout' ? (
                 <>
@@ -425,7 +525,7 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
             <p className="text-sm text-red-600">{error}</p>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {activeTab === 'workout' && workoutPlans.map((plan) => (
+            {activeTab === 'workout' && filteredWorkoutPlans.map((plan) => (
               <div
                 key={plan._id}
                 className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow"
@@ -479,7 +579,7 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
                 <p className="text-sm text-gray-600 dark:text-gray-400">جاري التحميل...</p>
               ) : dietError ? (
                 <p className="text-sm text-red-600">{dietError}</p>
-              ) : dietPlans.map((plan) => (
+              ) : filteredDietPlans.map((plan) => (
                 <div key={plan._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-4">
                     <h4 className="text-lg font-medium text-gray-900 dark:text-white">{plan.planName}</h4>

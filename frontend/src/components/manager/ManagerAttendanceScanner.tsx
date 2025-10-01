@@ -7,6 +7,7 @@ import { useRouter } from '@/i18n/navigation';
 import { CheckCircle, XCircle, Clock, User, Calendar, QrCode, Scan, Camera, ArrowLeft } from 'lucide-react';
 import QRCodeScanner from '@/components/admin/QRCodeScanner';
 import { attendanceScanService } from '@/services/membershipCardService';
+import { queueAttendance } from '@/lib/offlineSync';
 
 const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
   <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 ${className}`}>
@@ -93,7 +94,6 @@ interface TodaySummary { summary: { date: string; totalActiveMembers: number; to
 const ManagerAttendanceScanner = ({ params }: { params: { userId: string } }) => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-  const t = useTranslations('AttendanceScanner');
   const [barcode, setBarcode] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [lastResult, setLastResult] = useState<AttendanceResult | null>(null);
@@ -102,6 +102,7 @@ const ManagerAttendanceScanner = ({ params }: { params: { userId: string } }) =>
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState<{title: string, message: string, type: 'success' | 'error' | 'warning', data?: any} | null>(null);
+  const [offlineAlertOpen, setOfflineAlertOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const playSound = (type: 'success' | 'error' | 'warning') => {
@@ -156,6 +157,32 @@ const ManagerAttendanceScanner = ({ params }: { params: { userId: string } }) =>
   const handleScan = async (scannedBarcode: string) => {
     if (!scannedBarcode.trim()) return;
     setIsScanning(true); setBarcode(scannedBarcode);
+
+    // إذا كنا أوفلاين: خزّن الحضور محليًا وأظهر رسالة مناسبة
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      try {
+        const clientUuid = `${scannedBarcode}-${Date.now()}`;
+        await queueAttendance({
+          clientUuid,
+          barcode: scannedBarcode,
+          time: new Date().toISOString(),
+          adminId: user?.id
+        });
+        setOfflineAlertOpen(true);
+        fetchTodaySummary();
+        fetchRecentScans();
+      } catch (error) {
+        toast.error('حدث خطأ أثناء حفظ الحضور مؤقتًا.');
+      } finally {
+        setIsScanning(false);
+        setBarcode('');
+        setTimeout(() => {
+          if (inputRef.current) inputRef.current.focus();
+        }, 100);
+      }
+      return;
+    }
+
     try {
       const result = await attendanceScanService.scanBarcode(scannedBarcode);
       setLastResult(result);
@@ -270,6 +297,30 @@ const ManagerAttendanceScanner = ({ params }: { params: { userId: string } }) =>
 
         {popupData && (
           <PopupModal isOpen={showPopup} onClose={() => { setShowPopup(false); setPopupData(null); }} title={popupData.title} message={popupData.message} type={popupData.type} data={popupData.data} />
+        )}
+
+        {/* Offline Alert Modal */}
+        {offlineAlertOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/50" onClick={()=>setOfflineAlertOpen(false)}></div>
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-sm p-6 z-10">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl">📱</div>
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white">حفظ أوفلاين</h4>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+                تم حفظ الحضور مؤقتًا أوفلاين، وسيتم مزامنته تلقائيًا عند عودة الاتصال بالإنترنت.
+              </p>
+              <div className="flex items-center justify-end gap-2">
+                <button 
+                  onClick={()=>setOfflineAlertOpen(false)} 
+                  className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  موافق
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
