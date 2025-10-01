@@ -31,6 +31,7 @@ import dynamic from 'next/dynamic';
 import ManagerReports from '@/components/manager/ManagerReports';
 import AdminMembershipCards from '@/components/admin/AdminMembershipCards';
 import ManagerAttendanceScanner from '@/components/manager/ManagerAttendanceScanner';
+import DashboardSidebar from '@/components/ui/DashboardSidebar';
 const ManagerAddExpense = dynamic(() => import('@/components/manager/ManagerAddExpense'), { ssr: false });
 const ManagerAddRevenue = dynamic(() => import('@/components/manager/ManagerAddRevenue'), { ssr: false });
 
@@ -127,6 +128,14 @@ const ManagerDashboard = ({ params }: { params: Promise<{ userId: string }> }) =
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+            {/* Sidebar */}
+            <DashboardSidebar
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        header={<h2 className="text-lg font-bold text-blue-700 dark:text-blue-200 text-center">لوحة التحكم</h2>}
+        defaultOpen={false}
+      />
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

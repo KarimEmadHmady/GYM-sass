@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef, use } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import { ArrowLeft } from 'lucide-react';
 // Simple UI components
@@ -662,14 +661,19 @@ const AttendanceScanner = ({ params }: { params: Promise<{ userId: string }> }) 
             </CardHeader>
             <CardContent>
               <div className="space-y-2 max-h-64 overflow-y-auto">
-                {recentScans.length > 0 ? (
-                  recentScans.map((scan) => (
+                {(() => {
+                  const validScans = recentScans.filter(scan => scan.userId);
+                  return validScans.length > 0 ? validScans.map((scan) => (
                     <div key={scan._id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
                       <div className="flex items-center space-x-2">
                         {getStatusIcon(scan.status)}
                         <div>
-                          <div className="font-medium text-sm text-gray-900 dark:text-white">{scan.userId.name}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">{scan.userId.barcode}</div>
+                          <div className="font-medium text-sm text-gray-900 dark:text-white">
+                            {scan.userId?.name || 'عضو غير معروف'}
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            {scan.userId?.barcode || 'N/A'}
+                          </div>
                         </div>
                       </div>
                       <div className="text-right">
@@ -677,10 +681,10 @@ const AttendanceScanner = ({ params }: { params: Promise<{ userId: string }> }) 
                         {getStatusBadge(scan.status)}
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center text-gray-500 dark:text-gray-400 text-sm">لا توجد مسوحات حديثة</div>
-                )}
+                  )) : (
+                    <div className="text-center text-gray-500 dark:text-gray-400 text-sm">لا توجد مسوحات حديثة</div>
+                  );
+                })()}
               </div>
             </CardContent>
           </Card>

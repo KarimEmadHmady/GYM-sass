@@ -22,6 +22,7 @@ import MemberTrainer from '@/components/member/MemberTrainer';
 import MemberMessages from '@/components/member/MemberMessages';
 import MemberSettings from '@/components/member/MemberSettings';
 import MemberFeedback from '@/components/member/MemberFeedback';
+import DashboardSidebar from '@/components/ui/DashboardSidebar';
 
 const MemberProfile = ({ params }: { params: Promise<{ userId: string }> }) => {
   const resolvedParams = use(params);
@@ -108,6 +109,13 @@ const MemberProfile = ({ params }: { params: Promise<{ userId: string }> }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
+            <DashboardSidebar
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        header={<h2 className="text-lg font-bold text-blue-700 dark:text-blue-200 text-center">لوحة التحكم</h2>}
+        defaultOpen={false}
+      />
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

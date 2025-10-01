@@ -20,6 +20,7 @@ import TrainerFeedback from '@/components/trainer/TrainerFeedback';
 import TrainerMessages from '@/components/trainer/TrainerMessages';
 import TrainerLoyaltyPoints from '@/components/trainer/TrainerLoyaltyPoints';
 import TrainerScheduledList from '@/components/trainer/TrainerScheduledList';
+import DashboardSidebar from '@/components/ui/DashboardSidebar';
 
 const TrainerDashboard = ({ params }: { params: Promise<{ userId: string }> }) => {
   const resolvedParams = use(params);
@@ -104,6 +105,13 @@ const TrainerDashboard = ({ params }: { params: Promise<{ userId: string }> }) =
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
+        <DashboardSidebar
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        header={<h2 className="text-lg font-bold text-blue-700 dark:text-blue-200 text-center">لوحة التحكم</h2>}
+        defaultOpen={false}
+      />
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

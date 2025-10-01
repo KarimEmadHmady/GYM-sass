@@ -72,43 +72,42 @@ const SubscriptionAlertIndicator: React.FC<SubscriptionAlertIndicatorProps> = ({
   const warningAlerts = alerts.filter(alert => alert.severity === 'warning');
 
   return (
-    <div className="fixed top-4 right-4 z-50">
+    <div className="fixed bottom-[180px] left-4 z-50 flex flex-col items-end gap-2 w-[255px]">
       {/* مؤشر التحذير الرئيسي */}
-      <div className="relative">
-        <div className="bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2 animate-pulse">
-          <div className="w-3 h-3 bg-white rounded-full animate-ping"></div>
-          <span className="font-semibold">
+      <div className="relative w-full ">
+        <div className="bg-red-500 text-white px-2 py-1 rounded-md shadow-lg flex items-center space-x-1 animate-pulse  text-xs min-w-[120px] min-h-[32px] mb-2">
+          <div className="w-2 h-2 bg-white rounded-full animate-ping"></div>
+          <span className="font-semibold text-xs w-full flex items-center justify-center">
             {alerts.length} تحذير اشتراك
           </span>
           <button
             onClick={() => setIsDismissed(true)}
-            className="ml-2 text-white hover:text-gray-200 transition-colors"
+            className="ml-1 text-white hover:text-gray-200 transition-colors p-1.5  "
             title="إغلاق التحذير"
+            style={{ fontSize: '12px' }}
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        
         {/* تفاصيل التحذيرات */}
-        <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800/70 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 max-h-96 overflow-y-auto">
-          <div className="p-4">
-            <h3 className="font-bold text-gray-900 dark:text-white mb-3">
+        <div className="absolute  right-0 mb-2 w-64 bg-white dark:bg-gray-800/80 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 max-h-72 overflow-y-auto text-xs">
+          <div className="p-2">
+            <h3 className="font-bold text-gray-900 dark:text-white mb-2 text-sm text-center">
               تحذيرات الاشتراكات
             </h3>
-            
             {criticalAlerts.length > 0 && (
-              <div className="mb-4">
-                <h4 className="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">
+              <div className="mb-2">
+                <h4 className="text-xs font-semibold text-red-600 dark:text-red-400 mb-1.5 text-center">
                   تحذيرات ضرورية ({criticalAlerts.length})
                 </h4>
                 {criticalAlerts.map((alert, index) => (
-                  <div key={index} className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg mb-2">
-                    <div className="font-medium text-red-900 dark:text-red-100">
+                  <div key={index} className="bg-red-50 dark:bg-red-900/20 p-2 rounded-lg mb-1">
+                    <div className="font-medium text-red-900 dark:text-red-100 text-xs text-center">
                       {alert.userName}
                     </div>
-                    <div className="text-sm text-red-700 dark:text-red-300">
+                    <div className="text-xs text-red-700 dark:text-red-300 text-center">
                       {alert.alertType === 'expiry' && (
                         <span>
                           الاشتراك سينتهي خلال {alert.daysUntilExpiry} أيام
@@ -129,18 +128,17 @@ const SubscriptionAlertIndicator: React.FC<SubscriptionAlertIndicatorProps> = ({
                 ))}
               </div>
             )}
-            
             {warningAlerts.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold text-yellow-600 dark:text-yellow-400 mb-2">
+                <h4 className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 mb-1">
                   تحذيرات  ({warningAlerts.length})
                 </h4>
                 {warningAlerts.map((alert, index) => (
-                  <div key={index} className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg mb-2">
-                    <div className="font-medium text-yellow-900 dark:text-yellow-100">
+                  <div key={index} className="bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded-lg mb-1">
+                    <div className="font-medium text-yellow-900 dark:text-yellow-100 text-xs">
                       {alert.userName}
                     </div>
-                    <div className="text-sm text-yellow-700 dark:text-yellow-300">
+                    <div className="text-xs text-yellow-700 dark:text-yellow-300">
                       {alert.alertType === 'expiry' && (
                         <span>
                           الاشتراك سينتهي خلال {alert.daysUntilExpiry} أيام
