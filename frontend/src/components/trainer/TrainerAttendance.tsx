@@ -135,10 +135,10 @@ const TrainerAttendance = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">التاريخ</th>
-                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">الساعة</th>
-                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">الحالة</th>
-                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">ملاحظات</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-400 uppercase">التاريخ</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-400 uppercase">الساعة</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-400 uppercase">الحالة</th>
+                <th className="px-4 py-2 text-center text-xs font-medium text-gray-400 uppercase">ملاحظات</th>
               </tr>
             </thead>
             <tbody>

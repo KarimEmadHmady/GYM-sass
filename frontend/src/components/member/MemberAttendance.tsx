@@ -131,21 +131,21 @@ const MemberAttendance = () => {
                     className="bg-gray-50 dark:bg-gray-700 rounded-lg shadow p-4 flex flex-col gap-2 border border-gray-200 dark:border-gray-600"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">التاريخ</span>
+                      <span className="text-sm text-gray-400">التاريخ</span>
                       <span className="font-semibold text-gray-900 dark:text-white">{d.toLocaleDateString()}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">الساعة</span>
+                      <span className="text-sm text-gray-400">الساعة</span>
                       <span className="font-semibold text-gray-900 dark:text-white">{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">الحالة</span>
+                      <span className="text-sm text-gray-400">الحالة</span>
                       <span className={`font-semibold ${rec.status === 'present' ? 'text-emerald-600' : rec.status === 'absent' ? 'text-red-600' : 'text-yellow-500'}`}>
                         {rec.status === 'present' ? 'حاضر' : rec.status === 'absent' ? 'غائب' : 'بعذر'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">ملاحظات:</span>
+                      <span className="text-sm text-gray-400">ملاحظات:</span>
                       <div className="text-gray-800 dark:text-gray-200 text-sm mt-1 min-h-[1.5em]">{rec.notes || '-'}</div>
                     </div>
                   </div>

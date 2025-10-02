@@ -157,7 +157,7 @@ const ManagerPlansOverview = () => {
               >
                 <span className="mr-2">{tab.icon}</span>
                 {tab.name}
-                <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 py-1 px-2 rounded-full text-xs">
+                <span className="mx-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 py-1 px-2 rounded-full text-xs">
                   {tab.count}
                 </span>
               </button>

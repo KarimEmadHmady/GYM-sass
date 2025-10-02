@@ -20,6 +20,7 @@ import MemberSubscription from '@/components/member/MemberSubscription';
 import MemberPurchases from '@/components/member/MemberPurchases';
 import MemberTrainer from '@/components/member/MemberTrainer';
 import MemberMessages from '@/components/member/MemberMessages';
+import MemberMessagesChat from '@/components/member/MemberMessagesChat';
 import MemberSettings from '@/components/member/MemberSettings';
 import MemberFeedback from '@/components/member/MemberFeedback';
 import DashboardSidebar from '@/components/ui/DashboardSidebar';
@@ -33,6 +34,7 @@ const MemberProfile = ({ params }: { params: Promise<{ userId: string }> }) => {
   const t = useTranslations('MemberProfile');
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'overview');
+  const [chatMode, setChatMode] = useState(() => searchParams.get('chatMode') !== 'false');
 
   // يمكنك استخدام userId هنا لجلب بيانات أو التحقق
 
@@ -107,6 +109,18 @@ const MemberProfile = ({ params }: { params: Promise<{ userId: string }> }) => {
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  const toggleChatMode = () => {
+    const newChatMode = !chatMode;
+    setChatMode(newChatMode);
+    const params = new URLSearchParams(searchParams.toString());
+    if (newChatMode) {
+      params.delete('chatMode'); // Chat mode is now default, so remove the parameter
+    } else {
+      params.set('chatMode', 'false'); // Only set parameter when switching to normal view
+    }
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
             <DashboardSidebar
@@ -120,9 +134,9 @@ const MemberProfile = ({ params }: { params: Promise<{ userId: string }> }) => {
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 sm:py-6 space-y-3 sm:space-y-0">
-            <div className="w-full sm:w-auto">
+          <div className="w-full sm:w-auto text-center sm:text-left">
               <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                بروفايل العضو
+                بروفايل العضوية
               </h1>
               <p className="mt-1 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                 مرحباً بك، {user?.name}
@@ -153,7 +167,7 @@ const MemberProfile = ({ params }: { params: Promise<{ userId: string }> }) => {
                 </svg>
                 <span className="hidden sm:inline">تسجيل الخروج</span>
               </button>
-              <button
+{/*               <button
                 onClick={handleLocaleSwitch}
                 aria-label="تغيير اللغة"
                 className="bg-blue-600 hover:bg-blue-700 text-white p-2 sm:px-4 sm:py-2 rounded-md text-sm font-medium transition-colors ml-0 sm:ml-2"
@@ -162,7 +176,7 @@ const MemberProfile = ({ params }: { params: Promise<{ userId: string }> }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c1.657 0 3-1.343 3-3S13.657 5 12 5 9 6.343 9 8s1.343 3 3 3zm0 2c-2.21 0-4 1.79-4 4v1h8v-1c0-2.21-1.79-4-4-4z" />
                 </svg>
                 <span className="hidden sm:inline">تغيير اللغة</span>
-              </button>
+              </button> */}
             </div>
 
 
@@ -254,7 +268,21 @@ const MemberProfile = ({ params }: { params: Promise<{ userId: string }> }) => {
 
         {activeTab === 'messages' && (
           <div className="space-y-8">
-            <MemberMessages />
+            {/* Toggle between normal and chat view */}
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={toggleChatMode}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  chatMode
+                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                }`}
+              >
+                {chatMode ? '📋 العرض التقليدي' : '💬 عرض الشات'}
+              </button>
+            </div>
+            
+            {chatMode ? <MemberMessagesChat /> : <MemberMessages />}
           </div>
         )}
 

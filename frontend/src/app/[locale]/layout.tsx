@@ -31,7 +31,7 @@ export default async function LocaleLayout({
   const messages = await getMessages(locale);
 
   return (
-    <html lang="ar">
+    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <body>
         <ReduxProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>

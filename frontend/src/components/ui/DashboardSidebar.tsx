@@ -97,7 +97,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       <div className="md:hidden fixed top-4 right-4 rtl:right-4 rtl:left-auto z-50">
         <button
           onClick={() => setMobileOpen(true)}
-          className="w-11 h-11 flex items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="w-11 h-11 flex items-center justify-center rounded-full border border-gray-200 dark:border-gray-700  dark:backdrop-blur-xs shadow hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer"
           aria-label="Open menu"
         >
           {HamburgerIcon}

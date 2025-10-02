@@ -330,82 +330,86 @@ const MemberMessages = () => {
         {filteredMessages.map((message) => (
           <div
             key={message._id}
-            className={`border rounded-lg p-4 flex flex-col md:flex-row md:items-center gap-0 md:gap-4 shadow-sm transition hover:shadow-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 relative ${!message.read ? 'ring-2 ring-red-200 dark:ring-red-400' : ''}`}
+            className={`border rounded-lg p-4 shadow-sm transition hover:shadow-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 relative ${!message.read ? 'ring-2 ring-red-200 dark:ring-red-400' : ''}`}
           >
-            {/* Sender & Receiver */}
-            <div className="flex-1 flex flex-col sm:flex-row gap-4 items-center sm:items-start text-center sm:text-right justify-center sm:justify-start w-full">
-              <div className="w-full sm:w-auto bg-gray-50 dark:bg-gray-900 rounded p-2 mb-2 sm:mb-0 flex flex-col items-center sm:items-start text-center sm:text-right">
+            {/* المرسل والمستلم جنب بعض في الأعلى */}
+            <div className="flex gap-2 mb-4">
+              {/* المرسل */}
+              <div className="w-1/2 bg-gray-50 dark:bg-gray-900 rounded-lg p-2">
                 <span className="text-xs text-gray-400 mb-1 block">المرسل</span>
-                <div className="flex items-center gap-2 justify-center sm:justify-start">
-                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                    <UserIcon className="w-4 h-4 text-blue-600" />
+                <div className="flex items-center gap-1">
+                  <div className="w-5 h-5 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
+                    <UserIcon className="w-3 h-3 text-blue-600" />
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">{getUserName(message.fromUserId)}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{getUserEmail(message.fromUserId)}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-900 dark:text-white text-[11px] truncate">{getUserName(message.fromUserId)}</p>
+                    <p className="text-[9px] text-gray-500 dark:text-gray-400 truncate">{getUserEmail(message.fromUserId)}</p>
                   </div>
                 </div>
               </div>
-              <div className="w-full sm:w-auto bg-gray-50 dark:bg-gray-900 rounded p-2 flex flex-col items-center sm:items-start text-center sm:text-right">
+              
+              {/* المستلم */}
+              <div className="w-1/2 bg-gray-50 dark:bg-gray-900 rounded-lg p-2">
                 <span className="text-xs text-gray-400 mb-1 block">المستلم</span>
-                <div className="flex items-center gap-2 justify-center sm:justify-start">
-                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                    <UserIcon className="w-4 h-4 text-green-600" />
+                <div className="flex items-center gap-1">
+                  <div className="w-5 h-5 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center flex-shrink-0">
+                    <UserIcon className="w-3 h-3 text-green-600" />
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">{getUserName(message.userId)}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{getUserEmail(message.userId)}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-900 dark:text-white text-[11px] truncate">{getUserName(message.userId)}</p>
+                    <p className="text-[9px] text-gray-500 dark:text-gray-400 truncate">{getUserEmail(message.userId)}</p>
                   </div>
                 </div>
               </div>
             </div>
-            {/* Divider for mobile */}
-            <div className="block md:hidden my-2"></div>
-            {/* Message Preview & Date */}
-            <div className="flex-1 w-full bg-gray-50 dark:bg-gray-900 rounded p-2 mb-2 md:mb-0 flex flex-col items-center sm:items-start text-center sm:text-right">
+
+            {/* عرض الرسالة */}
+            <div className="mb-4">
               <button
                 onClick={() => handleViewMessage(message)}
-                className="flex items-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium transition-colors w-fit mb-2 m-auto sm:m-0"
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium transition-colors"
               >
                 <MessageSquare className="w-4 h-4" />
                 <span>عرض الرسالة</span>
               </button>
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 justify-center sm:justify-start">
-                <Calendar className="w-4 h-4" />
-                <span>{formatDate(message.date)}</span>
-              </div>
             </div>
-            {/* Divider for mobile */}
-            <div className="block md:hidden my-2"></div>
-            {/* Status & Actions */}
-            <div className="flex flex-col items-center sm:items-start gap-2 min-w-[100px] w-full md:w-auto bg-gray-50 dark:bg-gray-900 rounded p-2 text-center sm:text-right">
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+
+            {/* الحالة والأزرار */}
+            <div className="flex items-center justify-between mb-3">
+              {/* الحالة */}
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                 message.read
                   ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                   : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
               }`}>
                 {message.read ? 'مقروءة' : 'غير مقروءة'}
               </span>
-              <div className="flex items-center gap-2 justify-center sm:justify-start">
-                {message.fromUserId === currentUser?.id && (
-                  <>
-                    <button
-                      onClick={() => openEditModal(message)}
-                      className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 rounded"
-                      title="تعديل"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => openDeleteConfirm(message)}
-                      className="p-1 text-red-600 hover:text-red-800 hover:bg-red-100 dark:hover:bg-red-900 rounded"
-                      title="حذف"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </>
-                )}
-              </div>
+              
+              {/* أزرار التعديل والحذف */}
+              {message.fromUserId === currentUser?.id && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => openEditModal(message)}
+                    className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 rounded-lg transition-colors"
+                    title="تعديل"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => openDeleteConfirm(message)}
+                    className="p-2 text-red-600 hover:text-red-800 hover:bg-red-100 dark:hover:bg-red-900 rounded-lg transition-colors"
+                    title="حذف"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* التاريخ في الأسفل */}
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <Calendar className="w-4 h-4" />
+              <span>{formatDate(message.date)}</span>
             </div>
           </div>
         ))}

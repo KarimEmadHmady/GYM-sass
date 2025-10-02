@@ -5,12 +5,15 @@ import { usePermissions } from '@/hooks/usePermissions';
 import type { User as UserModel } from '@/types/models';
 import { UserService } from '@/services/userService';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+import { useRouter, usePathname } from '@/i18n/navigation';
 
 const MemberProfileHeader = () => {
   const { user: authUser } = usePermissions();
   const [user, setUser] = useState<UserModel | null>(null);
   const [trainerName, setTrainerName] = useState<string>('-');
   const userService = new UserService();
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const load = async () => {
@@ -99,6 +102,14 @@ const MemberProfileHeader = () => {
     { name: 'المستخدم', value: usedDays },
     { name: 'المتبقي', value: remainingDays }
   ];
+
+  // Helper to change tab in URL
+  const goToTab = (tab: string) => {
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+    params.set('tab', tab);
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -235,8 +246,8 @@ const MemberProfileHeader = () => {
               <div className="w-full flex justify-center gap-2">
                 {/* زر الرسائل */}
                 <button
-                  className="inline-flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-semibold bg-green-600 text-white dark:bg-green-700 dark:text-green-100 shadow hover:bg-green-700 transition"
-                  onClick={() => console.log("اذهب إلى تابة الرسائل")} // هنا تحط اللينك أو التاب
+                  className="inline-flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-semibold bg-green-600 text-white dark:bg-green-700 dark:text-green-100 shadow hover:bg-green-700 transition cursor-pointer"
+                  onClick={() => goToTab('messages')}
                 >
                   <span className="text-lg">💬</span>
                   <span>الرسائل</span>
@@ -244,8 +255,8 @@ const MemberProfileHeader = () => {
 
                 {/* زر التقييم */}
                 <button
-                  className="inline-flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-semibold bg-yellow-500 text-white dark:bg-yellow-600 dark:text-yellow-100 shadow hover:bg-yellow-600 transition"
-                  onClick={() => console.log("اذهب إلى تابة التقييم")} // هنا تحط اللينك أو التاب
+                  className="inline-flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-semibold bg-yellow-500 text-white dark:bg-yellow-600 dark:text-yellow-100 shadow hover:bg-yellow-600 transition cursor-pointer"
+                  onClick={() => goToTab('feedback')}
                 >
                   <span className="text-lg">⭐</span>
                   <span>التقييم</span>

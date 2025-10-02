@@ -5,5 +5,8 @@ export const routing = defineRouting({
   locales: ['ar', 'en'],
  
   // Used when no locale matches
-  defaultLocale: 'ar'
+  defaultLocale: 'ar',
+  
+  // Disable automatic locale detection to force Arabic as default
+  localeDetection: false
 });
