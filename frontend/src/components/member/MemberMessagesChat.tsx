@@ -46,6 +46,15 @@ const MemberMessagesChat = () => {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    if (messages.length > 0 && trainer && currentUser) {
+      const unread = messages.filter(
+        m => !m.read && m.fromUserId === trainer._id && m.userId === currentUser.id
+      );
+      unread.forEach(m => markAsRead(m._id));
+    }
+  }, [messages, trainer, currentUser]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -152,11 +161,9 @@ const MemberMessagesChat = () => {
 
   const getMessageStatus = (message: Message) => {
     if (isMyMessage(message)) {
-      if (message.read) {
-        return <CheckCheck className="w-4 h-4 text-blue-500" />;
-      } else {
-        return <Check className="w-4 h-4 text-gray-400" />;
-      }
+      return (
+        <CheckCheck className="w-4 h-4" style={{ color: message.read ? '#22c55e' : '#9ca3af' }} />
+      );
     }
     return null;
   };
@@ -266,7 +273,9 @@ const MemberMessagesChat = () => {
                         <div className={`font-semibold text-sm mb-1 ${
                           isMyMessage(message) ? 'text-blue-100' : 'text-gray-600 dark:text-gray-400'
                         }`}>
-                          {message.subject}
+                          {message.subject === 'رسالة من المدرب' && trainer?.name
+                            ? `رسالة من ${trainer.name}`
+                            : message.subject}
                         </div>
                       )}
                       <p className="text-sm">{message.content || message.message}</p>
