@@ -109,7 +109,7 @@ const MemberAttendance = () => {
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">سجلات حضوري</h3>
         <div className="flex items-center gap-2">
           <button onClick={exportToExcel} className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-sm">تصدير</button>
-          <button onClick={openAddModal} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">إضافة سجل</button>
+          {/* <button onClick={openAddModal} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm">إضافة سجل</button> */}
         </div>
       </div>
 
@@ -118,36 +118,41 @@ const MemberAttendance = () => {
       ) : error ? (
         <div className="text-red-600">{error}</div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">التاريخ</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">الساعة</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">الحالة</th>
-                <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase text-start">ملاحظات</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="text-center py-4 text-gray-400">لا توجد سجلات حضور.</td>
-                </tr>
-              ) : (
-                records.map((rec) => {
-                  const d = new Date(rec.date);
-                  return (
-                    <tr key={rec._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <td className="px-4 py-2 whitespace-nowrap">{d.toLocaleDateString()}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{rec.status === 'present' ? 'حاضر' : rec.status === 'absent' ? 'غائب' : 'بعذر'}</td>
-                      <td className="px-4 py-2 whitespace-nowrap">{rec.notes || '-'}</td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+        <div>
+          {records.length === 0 ? (
+            <div className="text-center py-4 text-gray-400">لا توجد سجلات حضور.</div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+              {records.map((rec) => {
+                const d = new Date(rec.date);
+                return (
+                  <div
+                    key={rec._id}
+                    className="bg-gray-50 dark:bg-gray-700 rounded-lg shadow p-4 flex flex-col gap-2 border border-gray-200 dark:border-gray-600"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500">التاريخ</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">{d.toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500">الساعة</span>
+                      <span className="font-semibold text-gray-900 dark:text-white">{d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500">الحالة</span>
+                      <span className={`font-semibold ${rec.status === 'present' ? 'text-emerald-600' : rec.status === 'absent' ? 'text-red-600' : 'text-yellow-500'}`}>
+                        {rec.status === 'present' ? 'حاضر' : rec.status === 'absent' ? 'غائب' : 'بعذر'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">ملاحظات:</span>
+                      <div className="text-gray-800 dark:text-gray-200 text-sm mt-1 min-h-[1.5em]">{rec.notes || '-'}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

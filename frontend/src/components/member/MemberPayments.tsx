@@ -73,7 +73,7 @@ const MemberPayments = () => {
         </div>
         {activeTab === 'payments' && (
           <>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">مدفوعاتي</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">عرض تاريخ مدفوعاتك فقط</p>

@@ -157,33 +157,42 @@ const MemberFeedback = () => {
           {trainer && (
             <button onClick={openAddModal} className="mb-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md text-sm">إرسال تقييم جديد</button>
           )}
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm text-right">
-              <thead>
-                <tr className="bg-gray-100 dark:bg-gray-700">
-                  <th className="py-2 px-3">المدرب</th>
-                  <th className="py-2 px-3">التقييم</th>
-                  <th className="py-2 px-3">التعليق</th>
-                  <th className="py-2 px-3">التاريخ</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div className="mt-4">
+            {feedbacks.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">لا توجد تقييمات بعد.</div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
                 {feedbacks.map(fb => (
-                  <tr key={fb._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onClick={() => { setSelectedFeedback(fb); setShowModal(true); }}>
-                    <td className="py-2 px-3">{getTrainerName(fb.toUserId)}</td>
-                    <td className="py-2 px-3">
+                  <div
+                    key={fb._id}
+                    className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm flex flex-col gap-2 hover:shadow-md transition cursor-pointer dark:hover:bg-gray-700"
+                    dir="rtl"
+                    onClick={() => { setSelectedFeedback(fb); setShowModal(true); }}
+                  >
+                    <div className="flex items-end gap-2 mb-1 flex-row-reverse justify-end text-right">
+                      <span className="font-semibold text-gray-900 dark:text-white">{getTrainerName(fb.toUserId)}</span>
+                      <span className="text-xs text-gray-500">المدرب:</span>
+                    </div>
+                    <div className="flex items-end gap-1 mb-1 flex-row-reverse justify-end text-right">
+                      <span className="mr-2 text-xs text-yellow-600 dark:text-yellow-400 font-bold">{fb.rating}/5</span>
                       {[1,2,3,4,5].map(i => (
                         <Star key={i} size={18} className={
-                          'inline-block mx-0.5 ' + (i <= fb.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300')
+                          'inline-block ' + (i <= fb.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300')
                         } fill={i <= fb.rating ? '#facc15' : 'none'} />
                       ))}
-                    </td>
-                    <td className="py-2 px-3">{fb.comment || '-'}</td>
-                    <td className="py-2 px-3">{new Date(fb.date).toLocaleDateString()}</td>
-                  </tr>
+                    </div>
+                    <div className="mb-1 text-right flex flex-col ">
+                      <span className="text-xs text-gray-500">التعليق:</span>
+                      <div className="text-gray-800 dark:text-gray-200 text-sm mt-1 min-h-[1.5em] break-words text-right w-full" style={{direction: 'rtl'}}>{fb.comment || '-'}</div>
+                    </div>
+                    <div className="flex items-end gap-2 text-xs text-gray-400 mt-2 flex-row-reverse justify-end text-right">
+                      <span>{new Date(fb.date).toLocaleDateString()}</span>
+                      <span>التاريخ:</span>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            )}
           </div>
         </>
       )}

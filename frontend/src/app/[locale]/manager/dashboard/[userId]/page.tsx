@@ -90,7 +90,7 @@ const ManagerDashboard = ({ params }: { params: Promise<{ userId: string }> }) =
   const tabs = [
     { id: 'overview', name: 'نظرة عامة', icon: '📊' },
     { id: 'users', name: 'المستخدمين', icon: '👥', showAlert: true },
-    { id: 'trainers', name: 'المدربون', icon: '🧑‍🏫' },
+    { id: 'trainers', name: 'المدربون', icon: '👨‍🏫' },
     { id: 'sessions', name: 'الحصص', icon: '🏋️' },
     { id: 'plans', name: 'الخطط', icon: '📋' },
     { id: 'reports', name: 'التقارير', icon: '📈' },
@@ -104,7 +104,7 @@ const ManagerDashboard = ({ params }: { params: Promise<{ userId: string }> }) =
     { id: 'messages', name: 'رسائل', icon: '✉️' },
     { id: 'progress', name: 'تقدم العملاء', icon: '📈' },
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
-    { id: 'loyalty', name: 'نقاط الولاء', icon: '🎯' },
+    { id: 'loyalty', name: 'نقاط الولاء', icon: '🎁' },
     { id: 'membership-cards', name: 'بطاقات العضوية', icon: '🪪' },
     { id: 'settings', name: 'الإعدادات', icon: '⚙️' },
     // { id: 'search', name: 'بحث', icon: '🔎' },

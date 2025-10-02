@@ -148,78 +148,56 @@ const MemberInvoices: React.FC = () => {
               </div>
 
               {/* Table */}
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead>
-                    <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-white text-start">
-                        رقم الفاتورة
-                      </th>
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-white text-start">
-                        المبلغ
-                      </th>
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-white text-start">
-                        تاريخ الإصدار
-                      </th>
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-white text-start">
-                        تاريخ الاستحقاق
-                      </th>
-                      <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900 dark:text-white text-start">
-                        الحالة
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {invoices.map((inv, index) => (
-                      <tr 
-                        key={inv._id} 
-                        className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 ${
-                          index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50/50 dark:bg-gray-800/50'
-                        }`}
+              <div>
+                {invoices.length === 0 ? (
+                  <div className="text-center py-4 text-gray-400">لا توجد فواتير.</div>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                    {invoices.map((inv) => (
+                      <div
+                        key={inv._id}
+                        className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-gray-200 dark:border-gray-700 flex flex-col gap-3"
                       >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            <span className="font-mono font-semibold text-gray-900 dark:text-white">
-                              {inv.invoiceNumber}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="font-bold text-lg text-gray-900 dark:text-white">
-                            ج.م {inv.amount.toLocaleString()}
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">رقم الفاتورة</span>
+                          <span className="font-mono font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            {inv.invoiceNumber}
                           </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">المبلغ</span>
+                          <span className="font-bold text-lg text-gray-900 dark:text-white">ج.م {inv.amount.toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">تاريخ الإصدار</span>
+                          <span className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
                             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <span className="text-gray-700 dark:text-gray-300">
-                              {new Date(inv.issueDate).toLocaleDateString('ar-EG')}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
+                            {new Date(inv.issueDate).toLocaleDateString('ar-EG')}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">تاريخ الاستحقاق</span>
+                          <span className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
                             <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            <span className="text-gray-700 dark:text-gray-300">
-                              {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('ar-EG') : '-'}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
+                            {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('ar-EG') : '-'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500">الحالة</span>
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeStyle(inv.status)}`}>
                             {getStatusIcon(inv.status)}
                             {statusLabel(inv.status)}
                           </span>
-                        </td>
-                      </tr>
+                        </div>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
+                )}
               </div>
             </>
           )}

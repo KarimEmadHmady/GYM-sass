@@ -76,15 +76,15 @@ const TrainerDashboard = ({ params }: { params: Promise<{ userId: string }> }) =
 
   const tabs = [
     { id: 'overview', name: 'نظرة عامة', icon: '📊' },
+    { id: 'schedule', name: 'جدول الحصص', icon: '📅' },
     { id: 'clients', name: 'العملاء', icon: '👥' },
+    { id: 'messages', name: 'الرسائل', icon: '✉️' },
     { id: 'plans', name: 'الخطط', icon: '📋' },
     { id: 'progress', name: 'التقدم', icon: '📈' },
     { id: 'attendance', name: 'حضوري', icon: '📝' },
     { id: 'clientSessions', name: 'حصص العملاء', icon: '📅' },
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
-    { id: 'messages', name: 'الرسائل', icon: '✉️' },
     { id: 'loyalty', name: 'نقاط الولاء', icon: '🎁' },
-    { id: 'schedule', name: t('Tabs.schedule'), icon: '📅' },
     { id: 'profile', name: 'الملف الشخصى', icon: '👤' }
   ];
 

@@ -229,7 +229,7 @@ const MemberStatsCards = () => {
           <p className="text-[11px] text-gray-500 dark:text-gray-400">رسائل غير مقروءة</p>
           <p className="text-lg font-bold text-gray-900 dark:text-white mt-0.5">{loading ? '...' : unreadMessages}</p>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 md:col-span-3 xl:col-span-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 col-span-3 xl:col-span-6">
           <div className="flex items-center justify-between">
             <p className="text-[11px] text-gray-500 dark:text-gray-400">نقاط الولاء</p>
             <span className="text-[11px] text-gray-500 dark:text-gray-400">إجمالي</span>

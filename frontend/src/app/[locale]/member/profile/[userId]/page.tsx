@@ -78,17 +78,17 @@ const MemberProfile = ({ params }: { params: Promise<{ userId: string }> }) => {
 
   const tabs = [
     { id: 'overview', name: 'نظرة عامة', icon: '📊' },
-    { id: 'attendance', name: 'الحضور', icon: '📝' },
-    { id: 'payments', name: 'مدفوعات', icon: '💵' },
     { id: 'subscription', name: 'الاشتراك', icon: '📅' },
-    { id: 'purchases', name: 'مشتريات', icon: '🛒' },
-    { id: 'sessions', name: 'الحصص', icon: '🏋️' },
+    { id: 'attendance', name: 'الحضور', icon: '📝' },
     { id: 'plans', name: 'الخطط', icon: '📋' },
+    { id: 'payments', name: 'مدفوعات', icon: '💵' },
+    { id: 'loyalty', name: 'نقاط الولاء', icon: '🎁' },
+    { id: 'purchases', name: 'مشتريات', icon: '🛒' },
+    { id: 'progress', name: 'التقدم', icon: '📈' },
+    { id: 'sessions', name: 'الحصص', icon: '🏋️' },
     { id: 'trainer', name: 'مدربي', icon: '👨‍🏫' },
     { id: 'messages', name: 'الرسائل', icon: '💬' },
-    { id: 'progress', name: 'التقدم', icon: '📈' },
     { id: 'feedback', name: 'التقييمات', icon: '⭐' },
-    { id: 'loyalty', name: 'نقاط الولاء', icon: '⭐' },
     { id: 'settings', name: 'الإعدادات', icon: '⚙️' }
   ];
 
@@ -199,12 +199,14 @@ const MemberProfile = ({ params }: { params: Promise<{ userId: string }> }) => {
           <div className="space-y-8">
             {/* Profile Header */}
             <MemberProfileHeader />
+
+            {/* Quick Actions */}
+            <MemberQuickActions />
             
             {/* Stats Cards */}
             <MemberStatsCards />
             
-            {/* Quick Actions */}
-            <MemberQuickActions />
+
           </div>
         )}
 

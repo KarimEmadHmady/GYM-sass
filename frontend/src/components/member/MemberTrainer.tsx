@@ -74,7 +74,7 @@ const MemberTrainer: React.FC = () => {
               <div className="flex flex-col align-center justify-start gap-2 text-sm">
               <img src={trainer.avatarUrl} alt={trainer.name} className="w-16 h-16 rounded-full object-cover border" />
               <div className="mt-3 flex flex-col align-center justify-start gap-2 text-sm">
-                            <div className="flex items-center justify-between"><span className="text-gray-600 dark:text-gray-400">البريد : </span><span className="text-gray-900 dark:text-white break-all">{trainer.email || '-'}</span></div>
+                            <div className="flex items-center justify-between gap-2"><span className="text-gray-600 dark:text-gray-400">البريد : </span><span className="text-gray-900 dark:text-white break-all">{trainer.email || '-'}</span></div>
                             <div className="flex items-center justify-between"><span className="text-gray-600 dark:text-gray-400">الهاتف : </span><span className="text-gray-900 dark:text-white">{trainer.phone || '-'}</span></div>
                           </div>
               </div>

@@ -196,9 +196,9 @@ const MemberSessionsHistory = () => {
 
       {/* Tabs */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="border-b border-gray-200 dark:border-gray-700">
-          <nav className="flex space-x-8 px-6">
-            {[
+        <div className="px-2 md:px-6 pt-4 pb-2">
+          <nav className="flex flex-row-reverse flex-wrap gap-2 overflow-x-auto scrollbar-hide bg-gray-100 dark:bg-gray-900 rounded-lg p-1">
+            {[ 
               { id: 'upcoming', name: 'المجدولة', count: sessions?.filter(s => s.status === 'مجدولة').length || 0 },
               { id: 'completed', name: 'المكتملة', count: sessions?.filter(s => s.status === 'مكتملة').length || 0 },
               { id: 'cancelled', name: 'الملغاة', count: sessions?.filter(s => s.status === 'ملغاة').length || 0 },
@@ -207,14 +207,14 @@ const MemberSessionsHistory = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-purple-500 text-purple-600 dark:text-purple-400'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                }`}
+                className={`flex-1   min-w-[120px] px-2 py-2 rounded-md text-sm font-medium transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-purple-400 whitespace-nowrap
+                  ${activeTab === tab.id
+                    ? 'bg-purple-600 text-white shadow-md'
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'}
+                `}
               >
-                {tab.name}
-                <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 py-1 px-2 rounded-full text-xs">
+                <span className="mx-2">{tab.name}</span>
+                <span className="ml-2  bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-400 py-0.5 px-2 rounded-full text-xs font-bold">
                   {tab.count}
                 </span>
               </button>
