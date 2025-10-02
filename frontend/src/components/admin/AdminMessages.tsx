@@ -20,6 +20,8 @@ import {
   MessageSquare,
   Download
 } from 'lucide-react';
+import AdminChatBubble from './AdminChatBubble';
+import AdminChatInterface from './AdminChatInterface';
 
 const AdminMessages = () => {
   const { user: currentUser } = useAuth();
@@ -41,6 +43,8 @@ const AdminMessages = () => {
     message: '',
     subject: ''
   });
+  const [showChatBubble, setShowChatBubble] = useState<{user1: string, user2: string} | null>(null);
+  const [viewMode, setViewMode] = useState<'table' | 'chat'>('chat');
 
   // Helper functions
   const getUserName = (userId: string) => {
@@ -224,26 +228,36 @@ const AdminMessages = () => {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
         <div className="flex items-center space-x-3">
           <MessageSquare className="w-8 h-8 text-blue-600" />
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white">إدارة الرسائل</h3>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1 md:space-x-2">
+          <button
+            onClick={() => setViewMode(viewMode === 'table' ? 'chat' : 'table')}
+            className="flex items-center space-x-1 md:space-x-2 px-2 md:px-4 py-1 md:py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs md:text-sm font-medium transition-colors"
+          >
+            <MessageSquare className="w-3 h-3 md:w-4 md:h-4" />
+            <span className="hidden sm:inline">{viewMode === 'table' ? 'عرض الشات' : 'عرض تفاصيل الرسائل'}</span>
+            <span className="sm:hidden">{viewMode === 'table' ? 'شات' : 'جدول'}</span>
+          </button>
           <button
             onClick={handleExportToExcel}
             disabled={filteredMessages.length === 0}
-            className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center space-x-1 md:space-x-2 px-2 md:px-4 py-1 md:py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg text-xs md:text-sm font-medium transition-colors"
           >
-            <Download className="w-4 h-4" />
-            <span>تصدير Excel</span>
+            <Download className="w-3 h-3 md:w-4 md:h-4" />
+            <span className="hidden sm:inline">تصدير Excel</span>
+            <span className="sm:hidden">Excel</span>
           </button>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center space-x-1 md:space-x-2 px-2 md:px-4 py-1 md:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs md:text-sm font-medium transition-colors"
           >
-            <Plus className="w-4 h-4" />
-            <span>رسالة جديدة</span>
+            <Plus className="w-3 h-3 md:w-4 md:h-4" />
+            <span className="hidden sm:inline">رسالة جديدة</span>
+            <span className="sm:hidden">رسالة</span>
           </button>
         </div>
       </div>
@@ -283,8 +297,13 @@ const AdminMessages = () => {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+      {/* Show Chat Interface or Table */}
+      {viewMode === 'chat' ? (
+        <AdminChatInterface />
+      ) : (
+        <>
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
@@ -400,6 +419,13 @@ const AdminMessages = () => {
                       title="حذف"
                     >
                       <Trash2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setShowChatBubble({ user1: message.fromUserId, user2: message.userId })}
+                      className="p-1 text-purple-600 hover:text-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900 rounded"
+                      title="عرض الشات"
+                    >
+                      💬
                     </button>
                   </div>
                 </td>
@@ -700,14 +726,27 @@ const AdminMessages = () => {
         </div>
       )}
 
-      {/* Error Message */}
-      {error && (
-        <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {error}
-          <button onClick={() => setError(null)} className="ml-2 text-red-700 hover:text-red-900">
-            ×
-          </button>
-      </div>
+      {showChatBubble && (
+        <AdminChatBubble
+          user1={showChatBubble.user1}
+          user2={showChatBubble.user2}
+          messages={messages}
+          users={users}
+          currentUser={currentUser ? { ...currentUser, _id: (currentUser as any).id || (currentUser as any)._id } : null}
+          onClose={() => setShowChatBubble(null)}
+        />
+      )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              {error}
+              <button onClick={() => setError(null)} className="ml-2 text-red-700 hover:text-red-900">
+                ×
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
