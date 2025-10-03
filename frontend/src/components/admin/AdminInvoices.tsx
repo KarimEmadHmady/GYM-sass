@@ -489,7 +489,7 @@ const AdminInvoices: React.FC = () => {
               المستخدم ({users.length} مستخدم)
             </label>
             <select
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5  py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8  min-w-[110px] sm:max-w-[160px] w-full"
               value={filters.userId || ""}
               onChange={(e) => onChangeFilter("userId", e.target.value)}
             >
@@ -504,7 +504,7 @@ const AdminInvoices: React.FC = () => {
           <div className="flex flex-col">
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">بحث عن مستخدم</label>
             <input
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] sm:max-w-[160px] w-full"
               placeholder="اكتب اسم/بريد/ID للبحث"
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
@@ -513,7 +513,7 @@ const AdminInvoices: React.FC = () => {
           <div className="flex flex-col">
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">بحث برقم الفاتورة</label>
             <input
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] sm:max-w-[160px] w-full"
               placeholder="مثال: INV-1001"
               value={filters.invoiceNumber || ""}
               onChange={(e) => onChangeFilter("invoiceNumber", e.target.value)}
@@ -522,7 +522,7 @@ const AdminInvoices: React.FC = () => {
           <div className="flex flex-col">
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">الحالة</label>
             <select
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] sm:max-w-[160px] w-full"
               value={filters.status || ""}
               onChange={(e) => onChangeFilter("status", e.target.value as any)}
             >
@@ -536,7 +536,7 @@ const AdminInvoices: React.FC = () => {
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">من تاريخ</label>
             <input
               type="date"
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] sm:max-w-[160px] w-full"
               value={filters.from || ""}
               onChange={(e) => onChangeFilter("from", e.target.value)}
             />
@@ -545,7 +545,7 @@ const AdminInvoices: React.FC = () => {
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">إلى تاريخ</label>
             <input
               type="date"
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] sm:max-w-[160px] w-full"
               value={filters.to || ""}
               onChange={(e) => onChangeFilter("to", e.target.value)}
             />
@@ -553,7 +553,7 @@ const AdminInvoices: React.FC = () => {
           <div className="flex flex-col">
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">الترتيب</label>
             <select
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] sm:max-w-[160px] w-full"
               value={filters.sort || "desc"}
               onChange={(e) => onChangeFilter("sort", e.target.value as any)}
             >

@@ -1,5 +1,4 @@
-
- 'use client';
+'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
@@ -14,6 +13,9 @@ import { userService } from '@/services';
 import * as XLSX from 'xlsx';
 import CustomAlert from '@/components/ui/CustomAlert';
 import { useCustomAlert } from '@/hooks/useCustomAlert';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime);
 
 const AdminFinancialOverview = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -148,7 +150,8 @@ const AdminFinancialOverview = () => {
             amount: invoice.totalAmount || 0,
             date: invoice.createdAt ? new Date(invoice.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
             category: 'invoice',
-            source: 'invoice'
+            source: 'invoice',
+            clientName: invoice.clientName || (userMap[invoice.userId]?.name) || '',
           });
         });
       }
@@ -159,11 +162,13 @@ const AdminFinancialOverview = () => {
           transactions.push({
             id: `payroll_${payroll._id}`,
             type: 'expense',
-            description: `راتب - ${payroll.employeeId || 'موظف'}`,
+            description: '', // سنبنيه عند العرض
             amount: -(payroll.salaryAmount || 0),
             date: payroll.paymentDate ? new Date(payroll.paymentDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
             category: 'payroll',
-            source: 'payroll'
+            source: 'payroll',
+            employeeId: payroll.employeeId,
+            employeeName: userMap[payroll.employeeId]?.name || '',
           });
         });
       }
@@ -178,7 +183,8 @@ const AdminFinancialOverview = () => {
             amount: revenue.amount || 0,
             date: revenue.date ? new Date(revenue.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
             category: revenue.sourceType || 'other',
-            source: 'revenue'
+            source: 'revenue',
+            clientName: revenue.clientName || '',
           });
         });
       }
@@ -193,7 +199,8 @@ const AdminFinancialOverview = () => {
             amount: -(expense.amount || 0),
             date: expense.date ? new Date(expense.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
             category: expense.category || 'other',
-            source: 'expense'
+            source: 'expense',
+            vendorName: expense.vendorName || '',
           });
         });
       }
@@ -622,9 +629,17 @@ const AdminFinancialOverview = () => {
 
   // تحميل البيانات عند تحميل المكون
   useEffect(() => {
-    loadRecentTransactions();
     loadUsers();
+    // لا تحمل المعاملات هنا
   }, []);
+
+  // أعد تحميل المعاملات عندما تتغير بيانات المستخدمين (users)
+  useEffect(() => {
+    if (users.length > 0) {
+      loadRecentTransactions();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [users]);
   
   const summaryData = {
     invoices: {
@@ -657,7 +672,29 @@ const AdminFinancialOverview = () => {
   };
 
   const getCategoryText = (category: string) => {
-    return t(`AdminFinancialOverview.categories.${category}`);
+    const key = `AdminFinancialOverview.categories.${category}`;
+    const translated = t(key);
+    // إذا لم يجد الترجمة أو رجع نفس النص، اعرض اسم الفئة نفسه
+    if (!translated || translated === key) {
+      // اجعل أول حرف كابيتال أو اعرضه كما هو
+      return category.charAt(0).toUpperCase() + category.slice(1);
+    }
+    return translated;
+  };
+
+  // دالة لعرض الوقت بشكل ودي بالعربي
+  const getTimeAgo = (dateString: string) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    if (diffInMinutes < 1) return 'الآن';
+    if (diffInMinutes < 60) return `منذ ${diffInMinutes} دقيقة`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `منذ ${diffInHours} ساعة`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `منذ ${diffInDays} يوم`;
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    return `منذ ${diffInWeeks} أسبوع`;
   };
 
   return (
@@ -944,39 +981,63 @@ const AdminFinancialOverview = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {paginatedTransactions.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className="text-2xl">
-                        {getTransactionIcon(transaction.type)}
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white">
-                          {transaction.description}
-                        </h4>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {getCategoryText(transaction.category)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p
-                        className={`font-medium ${getTransactionColor(
-                          transaction.type,
-                        )}`}
+                  {paginatedTransactions.map((transaction) => {
+                    // تجهيز وصف مختصر
+                    let title = '';
+                    let description = '';
+                    let icon = getTransactionIcon(transaction.type);
+                    let color = transaction.type === 'revenue' ? 'text-green-600' : 'text-red-600';
+                    if (transaction.category === 'invoice') {
+                      title = `فاتورة #${transaction.description?.match(/\d+/)?.[0] || ''}`;
+                      description = transaction.description;
+                      icon = '🧾';
+                      color = 'text-yellow-600';
+                    } else if (transaction.category === 'payroll') {
+                      title = 'راتب';
+                      // عرض اسم الموظف بشكل ذكي
+                      const name = transaction.employeeName || userMap?.[transaction.employeeId]?.name || transaction.employeeId || 'موظف';
+                      description = `راتب - ${name}`;
+                      icon = '🧑‍💼';
+                      color = 'text-indigo-600';
+                    } else if (transaction.type === 'revenue') {
+                      title = 'دفعة مستلمة';
+                      description = transaction.description;
+                      icon = '💰';
+                      color = 'text-green-600';
+                    } else if (transaction.type === 'expense') {
+                      title = 'مصروف';
+                      description = transaction.description;
+                      icon = '💸';
+                      color = 'text-red-600';
+                    }
+                    // اسم العميل أو الموظف إن وجد
+                    let extra = '';
+                    if (transaction.clientName) extra = transaction.clientName;
+                    if (transaction.employeeName) extra = transaction.employeeName;
+                    if (transaction.vendorName) extra = transaction.vendorName;
+
+                    return (
+                      <div
+                        key={transaction.id}
+                        className="flex items-start space-x-4 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700"
                       >
-                        {transaction.amount > 0 ? '+' : ''}ج.م
-                        {transaction.amount.toLocaleString()}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {transaction.date}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${color}`}>
+                          {icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-white">{title}</h4>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{getTimeAgo(transaction.date)}</span>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{description}</p>
+                          {extra && <p className="text-xs text-gray-400 mt-1">{extra}</p>}
+                        </div>
+                        <div className="text-right min-w-[80px]">
+                          <p className={`font-medium ${color}`}>{transaction.amount > 0 ? '+' : ''}ج.م{transaction.amount.toLocaleString()}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
               

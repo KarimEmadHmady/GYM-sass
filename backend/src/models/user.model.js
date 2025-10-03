@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ["admin", "trainer", "member", "manager", "accountant"], default: "member" },
     phone: { type: String, trim: true, match: /^[0-9]{10,15}$/, default: "" },
     dob: { type: Date },
-    avatarUrl: { type: String, default: "https://st4.depositphotos.com/5161043/23536/v/450/depositphotos_235367142-stock-illustration-fitness-logo-design-vector.jpg" },
+    avatarUrl: { type: String, default: "https://img.freepik.com/premium-vector/sports-dumbbell-gymnastics-sketch-isolated_522698-33.jpg" },
     address: { type: String, default: "" },
     balance: { type: Number, default: 0 },
     status: { type: String, enum: ["active", "inactive", "banned"], default: "active" },

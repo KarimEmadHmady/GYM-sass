@@ -667,7 +667,7 @@ const AdminUserModals: React.FC<AdminUserModalsProps> = (props) => {
               />
             ) : (
               <img
-                src="https://st4.depositphotos.com/5161043/23536/v/450/depositphotos_235367142-stock-illustration-fitness-logo-design-vector.jpg"
+                src="https://img.freepik.com/premium-vector/sports-dumbbell-gymnastics-sketch-isolated_522698-33.jpg"
                 alt="User"
                 className="w-20 h-20 rounded-full object-cover border-2 border-gray-300 dark:border-gray-700 shadow mb-2"
               />

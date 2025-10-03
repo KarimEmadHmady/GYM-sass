@@ -72,15 +72,21 @@ const TrainerMessagesChat = () => {
     const handleResize = () => {
       if (window.innerWidth >= 768) { // md breakpoint
         setShowMembersList(true);
-      } else {
-        setShowMembersList(false);
       }
     };
 
-    handleResize(); // Check on mount
+    // On initial mount, show members list even on small screens
+    setShowMembersList(true);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // If members are loaded and we're on desktop (sidebar visible), auto-select first member when none selected
+  useEffect(() => {
+    if (showMembersList && members.length > 0 && !selectedMember) {
+      setSelectedMember(members[0]);
+    }
+  }, [showMembersList, members, selectedMember]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -112,8 +118,12 @@ const TrainerMessagesChat = () => {
       
       setMembers(filteredMembers);
       
-      // اختيار أول عضو افتراضياً
-      if (filteredMembers.length > 0 && !selectedMember) {
+      // لا تقم باختيار أول عضو تلقائياً على الشاشات الصغيرة
+      if (
+        filteredMembers.length > 0 &&
+        !selectedMember &&
+        (typeof window === 'undefined' || window.innerWidth >= 768)
+      ) {
         setSelectedMember(filteredMembers[0]);
       }
       

@@ -262,7 +262,7 @@ const AdminExpenses: React.FC = () => {
           <div className="flex flex-col">
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">التصنيف</label>
             <input
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] sm:max-w-[160px] w-full"
               placeholder="مثال: rent"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
@@ -272,7 +272,7 @@ const AdminExpenses: React.FC = () => {
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">أدنى مبلغ</label>
             <input
               type="number"
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] sm:max-w-[160px] w-full"
               placeholder="0"
               value={minAmount}
               onChange={(e) => setMinAmount(e.target.value)}
@@ -282,7 +282,7 @@ const AdminExpenses: React.FC = () => {
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">أقصى مبلغ</label>
             <input
               type="number"
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] sm:max-w-[160px] w-full"
               placeholder="10000"
               value={maxAmount}
               onChange={(e) => setMaxAmount(e.target.value)}
@@ -292,7 +292,7 @@ const AdminExpenses: React.FC = () => {
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">من تاريخ</label>
             <input
               type="date"
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] sm:max-w-[160px] w-full"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
             />
@@ -301,7 +301,7 @@ const AdminExpenses: React.FC = () => {
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">إلى تاريخ</label>
             <input
               type="date"
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] sm:max-w-[160px] w-full"
               value={to}
               onChange={(e) => setTo(e.target.value)}
             />
@@ -309,7 +309,7 @@ const AdminExpenses: React.FC = () => {
           <div className="flex flex-col">
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">الترتيب</label>
             <select
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] sm:max-w-[160px] w-full"
               value={sort}
               onChange={(e) => setSort(e.target.value as SortOrder)}
             >
@@ -321,7 +321,7 @@ const AdminExpenses: React.FC = () => {
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">الحد</label>
             <input
               type="number"
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] sm:max-w-[160px] w-full"
               placeholder="20"
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value || 0))}
@@ -331,7 +331,7 @@ const AdminExpenses: React.FC = () => {
             <label className="text-xs text-gray-600 dark:text-gray-300 mb-1">التخطي</label>
             <input
               type="number"
-              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] max-w-[160px]"
+              className="px-1.5 py-0.5 rounded border dark:bg-gray-900 text-xs w-full h-8 min-w-[110px] sm:max-w-[160px] w-full"
               placeholder="0"
               value={skip}
               onChange={(e) => setSkip(Number(e.target.value || 0))}
@@ -339,7 +339,7 @@ const AdminExpenses: React.FC = () => {
           </div>
           <div className="flex items-end">
             <button
-              className="w-full px-1.5 py-0.5 rounded bg-blue-600 text-white text-xs h-8 min-w-[110px] max-w-[160px]"
+              className="w-full px-1.5 py-0.5 rounded bg-blue-600 text-white text-xs h-8 min-w-[110px] sm:max-w-[160px] w-full"
               onClick={loadList}
               disabled={loading}
             >
@@ -348,7 +348,7 @@ const AdminExpenses: React.FC = () => {
           </div>
           <div className="flex items-end">
             <button
-              className="w-full px-1.5 py-0.5 rounded border text-xs h-8 min-w-[110px] max-w-[160px]"
+              className="w-full px-1.5 py-0.5 rounded border text-xs h-8 min-w-[110px] sm:max-w-[160px] w-full"
               onClick={() => { setSkip(0); loadSummary(); }}
               disabled={loading}
             >

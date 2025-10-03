@@ -265,7 +265,7 @@ const AdminSearch = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2 ">
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">البحث المتقدم</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">ابحث في جميع المعاملات المالية بمرونة عالية</p>
@@ -476,24 +476,24 @@ const AdminSearch = () => {
       {/* Results */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap">
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
               نتائج البحث ({Math.min(endIndex, totalCount).toLocaleString()} / {totalCount.toLocaleString()})
             </h4>
             {/* مربع مجموع المبالغ */}
-            <div className="flex items-center gap-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded px-4 py-2 font-bold text-base shadow-sm">
-              <span className="text-2xl">💰</span>
+            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-1 sm:gap-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded px-2 sm:px-4 py-1 sm:py-2 font-bold text-sm sm:text-base shadow-sm text-center sm:text-right">
+              <span className="text-lg sm:text-2xl">💰</span>
               <span>المجموع:</span>
-              <span className="ltr:ml-2 rtl:mr-2">ج.م{totalAmount.toLocaleString()}</span>
+              <span className="ltr:ml-1 sm:ltr:ml-2 rtl:mr-1 sm:rtl:mr-2">ج.م{totalAmount.toLocaleString()}</span>
             </div>
-            <div className="flex items-center gap-2">
-              {loading && <span className="text-sm text-blue-600">جاري البحث...</span>}
+            <div className="flex items-center gap-1 sm:gap-2 mt-1 sm:mt-0">
+              {loading && <span className="text-xs sm:text-sm text-blue-600">جاري البحث...</span>}
               {results.length > 0 && (
                 <button
                   onClick={handleExportToExcel}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm"
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-xs sm:text-sm"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-3 h-3 sm:w-4 sm:h-4" />
                   تصدير Excel
                 </button>
               )}
