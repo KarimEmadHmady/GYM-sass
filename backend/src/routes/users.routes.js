@@ -13,13 +13,13 @@ import {
 
 const router = express.Router();
 
-router.get('/', authenticate,  authorizeRole(['admin','manager', 'trainer']), getAllUsers);
-router.put('/role', authenticate, authorizeRole(['admin','manager']), updateUserRole);
-router.get('/my-clients', authenticate, authorizeRole(['admin','manager', 'trainer']), getMyClients);
+router.get('/', authenticate,  authorizeRole(['admin','manager', 'trainer','accountant']), getAllUsers);
+router.put('/role', authenticate, authorizeRole(['admin','manager','accountant']), updateUserRole);
+router.get('/my-clients', authenticate, authorizeRole(['admin','manager', 'trainer','accountant']), getMyClients);
 router.get('/:id', authenticate, getUserById);
 
 router.put('/:id', authenticate, updateUserById);
-router.delete('/:id', authenticate,  authorizeRole(['admin','manager']), deleteUserById);
+router.delete('/:id', authenticate,  authorizeRole(['admin','manager','accountant']), deleteUserById);
 router.delete('/:id/hard', authenticate, authorizeAdmin, deleteUserByIdHard);
 
 export default router;

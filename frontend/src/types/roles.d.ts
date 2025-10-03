@@ -1,6 +1,6 @@
 // Roles and Permissions Types
 
-export type UserRole = 'admin' | 'trainer' | 'member' | 'manager';
+export type UserRole = 'admin' | 'trainer' | 'member' | 'manager' | 'accountant';
 
 export type SubscriptionStatus = 'active' | 'frozen' | 'expired' | 'cancelled';
 
@@ -16,6 +16,7 @@ export interface RolePermissions {
   trainer: string[];
   member: string[];
   manager: string[];
+  accountant: string[];
 }
 
 // Navigation items for different roles
@@ -32,6 +33,7 @@ export interface RoleNavigation {
   trainer: NavigationItem[];
   member: NavigationItem[];
   manager: NavigationItem[];
+  accountant: NavigationItem[];
 }
 
 // Dashboard layout configuration

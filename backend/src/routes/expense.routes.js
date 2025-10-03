@@ -7,12 +7,12 @@ import { authorizeRole } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
-router.post('/', authenticate, authorizeRole(['admin','manager']), validateCreateExpense, createExpense);
-router.get('/', authenticate, authorizeAdmin, validateListExpense, getExpenses);
-router.get('/summary', authenticate, authorizeAdmin, validateListExpense, getExpenseSummary);
-router.get('/:id', authenticate, authorizeAdmin, getExpenseById);
-router.put('/:id', authenticate, authorizeAdmin, updateExpense);
-router.delete('/:id', authenticate, authorizeAdmin, deleteExpense);
+router.post('/', authenticate, authorizeRole(['admin','manager','accountant']), validateCreateExpense, createExpense);
+router.get('/', authenticate, authorizeRole(['admin','accountant']), validateListExpense, getExpenses);
+router.get('/summary', authenticate, authorizeRole(['admin','accountant']), validateListExpense, getExpenseSummary);
+router.get('/:id', authenticate, authorizeRole(['admin','accountant']), getExpenseById);
+router.put('/:id', authenticate, authorizeRole(['admin','accountant']), updateExpense);
+router.delete('/:id', authenticate, authorizeRole(['admin','accountant']), deleteExpense);
 
 export default router;
 

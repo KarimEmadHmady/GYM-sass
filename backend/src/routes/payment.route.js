@@ -12,18 +12,18 @@ import { authorizeRole } from '../middlewares/role.middleware.js';
 const router = express.Router();
 
 // ➕ إنشاء دفعة جديدة
-router.post('/', authenticate, authorizeRole(['admin','manager']), createPayment);
+router.post('/', authenticate, authorizeRole(['admin','manager','accountant']), createPayment);
 
 // جلب جميع الدفعات
-router.get('/', authenticate, authorizeRole(['admin','manager']), getAllPayments);
+router.get('/', authenticate, authorizeRole(['admin','manager','accountant']), getAllPayments);
 
 // 📄 جلب جميع الدفعات لمستخدم معين
-router.get('/:userId', authenticate, authorizeRole(['admin','manager','member']), getPaymentsByUser);
+router.get('/:userId', authenticate, authorizeRole(['admin','manager','member','accountant']), getPaymentsByUser);
 
 // ✏️ تعديل دفعة
-router.put('/:id', authenticate, authorizeRole(['admin','manager']), updatePayment);
+router.put('/:id', authenticate, authorizeRole(['admin','manager','accountant']), updatePayment);
 
 // 🗑️ حذف دفعة
-router.delete('/:id', authenticate, authorizeAdmin, deletePayment);
+router.delete('/:id', authenticate, authorizeRole(['admin','accountant']), deletePayment);
 
 export default router;

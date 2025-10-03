@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true, minlength: 2, maxlength: 100 },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true, match: /^\S+@\S+\.\S+$/ },
     passwordHash: { type: String, required: true },
-    role: { type: String, enum: ["admin", "trainer", "member", "manager"], default: "member" },
+    role: { type: String, enum: ["admin", "trainer", "member", "manager", "accountant"], default: "member" },
     phone: { type: String, trim: true, match: /^[0-9]{10,15}$/, default: "" },
     dob: { type: Date },
     avatarUrl: { type: String, default: "https://st4.depositphotos.com/5161043/23536/v/450/depositphotos_235367142-stock-illustration-fitness-logo-design-vector.jpg" },

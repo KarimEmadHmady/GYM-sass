@@ -1,5 +1,5 @@
 import express from "express";
-import { authenticate, authorizeAdmin } from '../middlewares/auth.middleware.js';
+import { authenticate } from '../middlewares/auth.middleware.js';
 import {
     createPurchase,
     getPurchases,
@@ -13,21 +13,21 @@ import { authorizeRole } from '../middlewares/role.middleware.js';
 const router = express.Router();
 
 // إنشاء عملية شراء جديدة
-router.post("/", authenticate,  authorizeRole(['admin','manager']), createPurchase);
+router.post("/", authenticate,  authorizeRole(['admin','manager','accountant']), createPurchase);
 
 // جلب كل المشتريات
-router.get("/", authenticate,  authorizeRole(['admin','manager']), getPurchases);
+router.get("/", authenticate,  authorizeRole(['admin','manager','accountant']), getPurchases);
 
 // جلب كل المشتريات لمستخدم محدد عبر userId (لـ admin/manager)
-router.get("/user/:userId", authenticate,  authorizeRole(['admin','manager','member']), getPurchasesByUserId);
+router.get("/user/:userId", authenticate,  authorizeRole(['admin','manager','member','accountant']), getPurchasesByUserId);
 
 // جلب عملية شراء واحدة
-router.get("/:id", authenticate,  authorizeRole(['admin','manager']), getPurchase);
+router.get("/:id", authenticate,  authorizeRole(['admin','manager','accountant']), getPurchase);
 
 // تحديث عملية شراء
-router.put("/:id", authenticate, authorizeAdmin, updatePurchase);
+router.put("/:id", authenticate, authorizeRole(['admin','accountant']), updatePurchase);
 
 // حذف عملية شراء
-router.delete("/:id", authenticate, authorizeAdmin, deletePurchase);
+router.delete("/:id", authenticate, authorizeRole(['admin','accountant']), deletePurchase);
 
 export default router;

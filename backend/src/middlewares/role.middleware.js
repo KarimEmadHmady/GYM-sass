@@ -8,8 +8,8 @@ export const authorizeRole = (roles) => {
   };
 
 export const authorizeInvoiceAccess = (req, res, next) => {
-  // إذا كان المستخدم admin أو manager، يمكنه الوصول لجميع الفواتير
-  if (req.user.role === 'admin' || req.user.role === 'manager') {
+  // إذا كان المستخدم admin أو manager، accountant يمكنه الوصول لجميع الفواتير
+  if (req.user.role === 'admin' || req.user.role === 'manager' || req.user.role === 'accountant') {
     return next();
   }
   

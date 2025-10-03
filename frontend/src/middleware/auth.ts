@@ -102,7 +102,8 @@ export function getRoleBasedRedirect(role: UserRole, userId?: string): string {
     admin: '/admin/dashboard',
     trainer: '/trainer/dashboard', 
     member: '/member/profile',
-    manager: '/manager/dashboard'
+    manager: '/manager/dashboard',
+    accountant: '/accountant/dashboard'
   };
   const base = roleRedirects[role] || '/dashboard';
   return userId ? `${base}/${userId}` : base;

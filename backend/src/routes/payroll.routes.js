@@ -3,6 +3,7 @@ import { authenticate, authorizeAdmin } from "../middlewares/auth.middleware.js"
 import { createPayroll, getPayrolls, getPayrollById, updatePayroll, deletePayroll } from "../controllers/payroll.controller.js";
 import { getPayrollSummaryService } from "../services/payroll.service.js";
 import { validateCreatePayroll, validateListPayroll } from "../validators/payroll.validator.js";
+import { authorizeRole } from '../middlewares/role.middleware.js';
 
 const router = express.Router();
 
@@ -13,9 +14,9 @@ router.use((req, res, next) => {
   next();
 });
 
-router.post('/', authenticate, authorizeAdmin, validateCreatePayroll, createPayroll);
-router.get('/', authenticate, authorizeAdmin, validateListPayroll, getPayrolls);
-router.get('/summary', authenticate, authorizeAdmin, async (req, res) => {
+router.post('/', authenticate, authorizeRole(['admin','accountant']), validateCreatePayroll, createPayroll);
+router.get('/', authenticate, authorizeRole(['admin','accountant']), validateListPayroll, getPayrolls);
+router.get('/summary', authenticate, authorizeRole(['admin','accountant']), async (req, res) => {
   try {
     const summary = await getPayrollSummaryService({ ...req.query });
     res.status(200).json(summary);
@@ -23,9 +24,9 @@ router.get('/summary', authenticate, authorizeAdmin, async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 });
-router.get('/:id', authenticate, authorizeAdmin, getPayrollById);
-router.put('/:id', authenticate, authorizeAdmin, updatePayroll);
-router.delete('/:id', authenticate, authorizeAdmin, deletePayroll);
+router.get('/:id', authenticate, authorizeRole(['admin','accountant']), getPayrollById);
+router.put('/:id', authenticate, authorizeRole(['admin','accountant']), updatePayroll);
+router.delete('/:id', authenticate, authorizeRole(['admin','accountant']), deletePayroll);
 
 export default router;
 

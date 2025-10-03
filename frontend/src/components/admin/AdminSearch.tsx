@@ -224,6 +224,9 @@ const AdminSearch = () => {
   const totalPages = Math.max(1, Math.ceil((results?.length || 0) / filters.limit));
   const visibleResults = results.slice(startIndex, endIndex);
 
+  // حساب مجموع المبالغ في النتائج بعد الفلترة
+  const totalAmount = results.reduce((sum, r) => sum + (typeof r.amount === 'number' ? r.amount : 0), 0);
+
   // تصدير البيانات إلى Excel
   const handleExportToExcel = () => {
     const exportData = results.map((result) => {
@@ -477,6 +480,12 @@ const AdminSearch = () => {
             <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
               نتائج البحث ({Math.min(endIndex, totalCount).toLocaleString()} / {totalCount.toLocaleString()})
             </h4>
+            {/* مربع مجموع المبالغ */}
+            <div className="flex items-center gap-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded px-4 py-2 font-bold text-base shadow-sm">
+              <span className="text-2xl">💰</span>
+              <span>المجموع:</span>
+              <span className="ltr:ml-2 rtl:mr-2">ج.م{totalAmount.toLocaleString()}</span>
+            </div>
             <div className="flex items-center gap-2">
               {loading && <span className="text-sm text-blue-600">جاري البحث...</span>}
               {results.length > 0 && (
