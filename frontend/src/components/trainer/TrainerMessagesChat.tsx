@@ -48,6 +48,12 @@ const TrainerMessagesChat = () => {
     }
   }, [selectedMember]);
 
+  // مرر للأسفل عند تغيير العضو المختار
+  useEffect(() => {
+    scrollToBottom();
+  }, [selectedMember]);
+
+  // مرر للأسفل عند تغيير الرسائل
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -252,10 +258,17 @@ const TrainerMessagesChat = () => {
     );
   }
 
+  // تعديل: sidebar دائمًا ظاهر في md وما فوق
   return (
-    <div className="flex h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 relative overflow-hidden">
+    <div className="flex h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 relative overflow-hidden flex-col md:flex-row">
       {/* Members List Sidebar */}
-      <div className={`${showMembersList ? 'w-full md:w-80' : 'w-0'} transition-all duration-300 overflow-hidden border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 ${showMembersList ? 'absolute md:relative z-10 md:z-auto h-full' : ''}`}>
+      <div
+        className={`
+          transition-all duration-300 overflow-hidden border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900
+          w-full md:w-80
+          ${showMembersList ? 'absolute z-10 h-full md:static md:z-auto md:block' : 'hidden md:block'}
+        `}
+      >
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <h3 className="font-semibold text-gray-900 dark:text-white">الأعضاء ({members.length})</h3>
           <button
@@ -265,7 +278,6 @@ const TrainerMessagesChat = () => {
             <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </button>
         </div>
-        
         <div className="overflow-y-auto h-full">
           {members.map((member) => {
             const unreadCount = getUnreadCount(member._id);
@@ -274,7 +286,7 @@ const TrainerMessagesChat = () => {
                 key={member._id}
                 onClick={() => {
                   setSelectedMember(member);
-                  setShowMembersList(false); // Hide on mobile after selection
+                  if (window.innerWidth < 768) setShowMembersList(false); // Hide on mobile after selection
                 }}
                 className={`p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
                   selectedMember?._id === member._id ? 'bg-blue-50 dark:bg-blue-900/20 border-r-4 border-r-blue-500' : ''
@@ -301,59 +313,58 @@ const TrainerMessagesChat = () => {
           })}
         </div>
       </div>
-
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0">
         {selectedMember ? (
           <>
-            {/* Chat Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-              <div className="flex items-center gap-3">
+            {/* Chat Header - Fixed on mobile */}
+            <div className="flex items-center justify-between p-2 md:p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex-shrink-0">
+              <div className="flex items-center gap-2 md:gap-3">
                 <button
                   onClick={() => setShowMembersList(true)}
-                  className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors md:hidden"
+                  className="p-1 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors md:hidden"
                 >
-                  <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
                 </button>
-                
                 <button
                   onClick={() => setShowMembersList(!showMembersList)}
-                  className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors hidden md:block"
+                  className="p-1 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors hidden md:block"
                 >
                   {showMembersList ? (
-                    <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
                   ) : (
-                    <Users className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <Users className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
                   )}
                 </button>
-                
-                <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm md:text-base">
                   {selectedMember.name?.charAt(0)}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">{selectedMember.name}</h3>
-                  <p className="text-sm text-green-500">عضو</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">{selectedMember.name}</h3>
+                  <p className="text-xs md:text-sm text-green-500">عضو</p>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-2">
-                <button className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
-                  <Phone className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <div className="flex items-center gap-1 md:gap-2">
+                <button className="p-1 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
+                  <Phone className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
                 </button>
-                <button className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
-                  <Video className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <button className="p-1 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
+                  <Video className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
                 </button>
-                <button className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
-                  <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                <button className="p-1 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
+                  <MoreVertical className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
                 </button>
               </div>
             </div>
-
             {/* Messages Container */}
             <div 
               ref={chatContainerRef}
-              className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900"
-              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23f3f4f6" fill-opacity="0.1"%3E%3Cpath d="m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }}
+              className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900 scrollbar-hide"
+              style={{ 
+                backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23f3f4f6\" fill-opacity=\"0.1\"%3E%3Cpath d=\"m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
+              }}
             >
               {messages.length === 0 ? (
                 <div className="text-center py-12">
@@ -364,7 +375,6 @@ const TrainerMessagesChat = () => {
                 messages.map((message, index) => {
                   const showDate = index === 0 || 
                     formatDate(messages[index - 1].date) !== formatDate(message.date);
-                  
                   return (
                     <div key={message._id}>
                       {/* Date Separator */}
@@ -375,7 +385,6 @@ const TrainerMessagesChat = () => {
                           </span>
                         </div>
                       )}
-                      
                       {/* Message Bubble */}
                       <div 
                         className={`flex ${isMyMessage(message) ? 'justify-end' : 'justify-start'} mb-2`}
@@ -401,7 +410,6 @@ const TrainerMessagesChat = () => {
                             )}
                             <p className="text-sm">{message.content || message.message}</p>
                           </div>
-                          
                           {/* Message Time and Status */}
                           <div className={`flex items-center justify-end gap-1 mt-1 ${
                             isMyMessage(message) ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
@@ -409,7 +417,6 @@ const TrainerMessagesChat = () => {
                             <span className="text-xs">{formatTime(message.date)}</span>
                             {getMessageStatus(message)}
                           </div>
-
                           {/* Message Actions (Hidden by default, shown on hover) */}
                           {isMyMessage(message) && (
                             <div className="absolute top-0 left-0 transform -translate-x-full opacity-0 group-hover:opacity-100 transition-opacity">
@@ -445,9 +452,8 @@ const TrainerMessagesChat = () => {
               )}
               <div ref={messagesEndRef} />
             </div>
-
             {/* Message Input */}
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="flex-1 relative">
                   <input

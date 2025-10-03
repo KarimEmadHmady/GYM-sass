@@ -5,7 +5,7 @@ import { SessionSchedule } from '@/types';
 import { SessionScheduleService } from '@/services/sessionScheduleService';
 import { userService } from '@/services';
 import { useAuth } from '@/hooks/useAuth';
-import { Calendar, Clock, User as UserIcon, MapPin, CheckCircle2 } from 'lucide-react';
+import { Calendar, Clock, User as UserIcon, MapPin, CheckCircle2, ChevronLeft, ChevronRight, FileText, Users, DollarSign } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 const sessionScheduleService = new SessionScheduleService();
@@ -15,6 +15,8 @@ const TrainerScheduledList = () => {
   const [loading, setLoading] = useState(true);
   const [sessions, setSessions] = useState<SessionSchedule[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const getCurrentTrainerId = () => {
     if (authUser) {
@@ -82,6 +84,17 @@ const TrainerScheduledList = () => {
     );
   }
 
+  // حساب البيانات للصفحات
+  const totalPages = Math.ceil(sessions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentSessions = sessions.slice(startIndex, endIndex);
+
+  // تغيير الصفحة
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   // Helper to export scheduled sessions to Excel
   const handleExport = () => {
     const data = sessions.map(session => ({
@@ -100,74 +113,140 @@ const TrainerScheduledList = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-          <CheckCircle2 className="w-5 h-5 text-blue-600" />
-          الحصص المجدولة
-        </h3>
-        <div className="flex items-center gap-2">
-          <span className="text-sm px-3 py-2 rounded-[5px] bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
-            {sessions.length} حصة
-          </span>
-          <button
-            onClick={handleExport}
-            className="px-3 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition-colors"
-          >
-            تصدير البيانات
-          </button>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
+            <h3 className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-white">الحصص المجدولة</h3>
+          </div>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <span className="text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 flex items-center gap-1">
+              <Users className="w-3 h-3 sm:w-4 sm:h-4" />
+              {sessions.length} حصة
+            </span>
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs sm:text-sm transition-colors"
+            >
+              <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">تصدير البيانات</span>
+              <span className="sm:hidden">تصدير</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-3">
-        {sessions.map((session) => (
-          <div key={session._id} className="relative border border-gray-200 dark:border-gray-700 rounded-md p-4 hover:shadow-sm transition-shadow overflow-hidden">
-            {/* Left accent bar */}
-            <span className="absolute left-0 top-0 h-full w-1 bg-blue-500" />
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              {/* Main info */}
-              <div className="flex items-start gap-4">
-                <div className="text-2xl">{session.sessionType === 'شخصية' ? '👤' : session.sessionType === 'جماعية' ? '👥' : session.sessionType === 'أونلاين' ? '💻' : '🥗'}</div>
-                <div>
-                  <p className="text-gray-900 dark:text-white font-medium">
-                    {session.sessionType}
-                  </p>
-                  <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                      <Calendar className="w-4 h-4 text-blue-600" />
-                      <span>{new Date(session.date).toLocaleDateString('ar-EG')}</span>
+      <div className="p-3 sm:p-6">
+        {currentSessions.length === 0 ? (
+          <div className="text-center py-6 sm:py-8">
+            <CheckCircle2 className="w-8 h-8 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-2 sm:mb-3" />
+            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">لا توجد حصص مجدولة</p>
+          </div>
+        ) : (
+          <div className="space-y-3 sm:space-y-4">
+            {currentSessions.map((session) => (
+              <div key={session._id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 sm:gap-4">
+                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-sm">
+                      <span className="text-white font-bold text-sm sm:text-lg">
+                        {session.sessionType === 'شخصية' ? '👤' : session.sessionType === 'جماعية' ? '👥' : session.sessionType === 'أونلاين' ? '💻' : '🥗'}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                      <Clock className="w-4 h-4 text-emerald-600" />
-                      <span>{session.startTime} - {session.endTime}</span>
+                    <div>
+                      <h4 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white">{session.sessionType}</h4>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
+                        <div className="flex items-center gap-1 sm:gap-2 text-gray-600 dark:text-gray-400">
+                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
+                          <span className="text-xs sm:text-sm">{new Date(session.date).toLocaleDateString('ar-EG')}</span>
+                        </div>
+                        <div className="flex items-center gap-1 sm:gap-2 text-gray-600 dark:text-gray-400">
+                          <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-600" />
+                          <span className="text-xs sm:text-sm">{session.startTime} - {session.endTime}</span>
+                        </div>
+                      </div>
+                      {(session.location || (typeof session.price === 'number')) && (
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
+                          {session.location && (
+                            <div className="flex items-center gap-1 sm:gap-2 text-gray-600 dark:text-gray-400">
+                              <MapPin className="w-3 h-3 sm:w-4 sm:h-4 text-pink-600" />
+                              <span className="text-xs sm:text-sm">{session.location}</span>
+                            </div>
+                          )}
+                          {typeof session.price === 'number' && (
+                            <div className="flex items-center gap-1 sm:gap-2 text-gray-600 dark:text-gray-400">
+                              <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
+                              <span className="text-xs sm:text-sm font-medium text-green-600 dark:text-green-400">
+                                ج.م {session.price}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    {session.location && (
-                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                        <MapPin className="w-4 h-4 text-pink-600" />
-                        <span>{session.location}</span>
-                      </div>
-                    )}
-                    {typeof session.price === 'number' && (
-                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200">
-                          ج.م {session.price}
-                        </span>
-                      </div>
-                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex px-2 sm:px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                      مجدولة
+                    </span>
                   </div>
                 </div>
               </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-              {/* Status badge */}
-              <div className="flex items-center gap-2 md:self-start">
-                <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                  مجدولة
-                </span>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="px-3 sm:px-6 py-3 sm:py-4 border-t border-gray-200 dark:border-gray-600">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0">
+            <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
+              عرض {startIndex + 1} إلى {Math.min(endIndex, sessions.length)} من {sessions.length} حصة
+            </div>
+            
+            <div className="flex items-center gap-1 sm:gap-2">
+              {/* Previous Button */}
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+              >
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">السابق</span>
+              </button>
+
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors ${
+                      page === currentPage
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
               </div>
+
+              {/* Next Button */}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+              >
+                <span className="hidden sm:inline">التالي</span>
+                <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+              </button>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

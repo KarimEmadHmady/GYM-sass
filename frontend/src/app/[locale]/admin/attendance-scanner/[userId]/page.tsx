@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, use } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from '@/i18n/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 // Simple UI components
 const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
   <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 ${className}`}>
@@ -541,18 +541,18 @@ const AttendanceScanner = ({ params }: { params: Promise<{ userId: string }> }) 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center space-x-4">
             <Button
               variant="outline"
               onClick={() => router.push(`/admin/dashboard/${user?.id || resolvedParams.userId}`)}
               className="flex items-center space-x-2 cursor-pointer"
             >
-              <ArrowLeft className="h-4 w-4" />
-              <span>العودة للداشبورد</span>
+              <ArrowRight className="h-4 w-4" />
+              <span className="sm:text-xl text-sm ">العودة للداشبورد</span>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">ماسح الحضور</h1>
+              <h1 className="sm:text-3xl font-bold text-gray-900 dark:text-white">ماسح الحضور</h1>
               <p className="text-gray-600 dark:text-gray-300">امسح باركود الأعضاء لتسجيل الحضور</p>
             </div>
           </div>

@@ -239,7 +239,7 @@ const TrainerClientsOverview = () => {
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900 dark:text-white">{client.name}</h4>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{client.email}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">{client.email}</p>
                 </div>
               </div>
               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(client.status)}`}>

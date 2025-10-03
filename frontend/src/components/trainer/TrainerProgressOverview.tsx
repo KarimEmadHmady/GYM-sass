@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import type { User } from '@/types/models';
 import { UserService } from '@/services/userService';
 import { ProgressService } from '@/services/progressService';
+import { ChevronLeft, ChevronRight, Users, TrendingUp, FileText } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 const TrainerProgressOverview = () => {
@@ -13,6 +14,8 @@ const TrainerProgressOverview = () => {
   const [clients, setClients] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [progressModalClient, setProgressModalClient] = useState<User | null>(null);
   const [progressModalLoading, setProgressModalLoading] = useState(false);
   const [progressModalList, setProgressModalList] = useState<any[]>([]);
@@ -48,6 +51,17 @@ const TrainerProgressOverview = () => {
     };
     fetchClients();
   }, [currentTrainerId]);
+
+  // حساب البيانات للصفحات
+  const totalPages = Math.ceil(clients.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentClients = clients.slice(startIndex, endIndex);
+
+  // تغيير الصفحة
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   // Helper to export clients table to Excel
   const handleExport = () => {
@@ -91,50 +105,74 @@ const TrainerProgressOverview = () => {
     <div className="space-y-6">
       {/* Overall Stats */}
       <div className="flex justify-center my-4">
-  <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-xl shadow border border-blue-200 dark:border-blue-700 p-4 flex flex-col items-center w-full max-w-xs">
-    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white text-xl shadow mb-2">
-      👥
-    </div>
-    <p className="text-2xl font-bold text-blue-700 dark:text-blue-200 mb-1">{clients.length}</p>
-    <p className="text-xs font-medium text-gray-700 dark:text-gray-300">إجمالي العملاء</p>
-  </div>
-</div>
-
-     <div className="flex justify-end mb-2 px-2">
-        <button
-          onClick={handleExport}
-          className="px-3 py-2 bg-green-600 text-white rounded-md text-sm hover:bg-green-700 transition-colors"
-        >
-          تصدير البيانات
-        </button>
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-xl shadow border border-blue-200 dark:border-blue-700 p-4 flex flex-col items-center w-full max-w-xs">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white shadow mb-2">
+            <Users className="w-5 h-5" />
+          </div>
+          <p className="text-2xl font-bold text-blue-700 dark:text-blue-200 mb-1">{clients.length}</p>
+          <p className="text-xs font-medium text-gray-700 dark:text-gray-300">إجمالي العملاء</p>
+        </div>
       </div>
-      {/* Client Progress Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            تقدم العملاء
-          </h3>
+
+      {/* Client Progress Cards */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                تقدم العملاء
+              </h3>
+            </div>
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors"
+            >
+              <FileText className="w-4 h-4" />
+              تصدير البيانات
+            </button>
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-300 text-center">الاسم</th>
-                <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-300 text-center">البريد الإلكتروني</th>
-                <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-300 text-center">رقم الهاتف</th>
-                <th className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-300 text-center">سجلات التقدم</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {clients.map((client) => (
-                <tr key={client._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-3 py-2 text-sm text-center">{client.name}</td>
-                  <td className="px-3 py-2 text-sm text-center">{client.email}</td>
-                  <td className="px-3 py-2 text-sm text-center">{client.phone || '-'}</td>
-                  <td className="px-3 py-2 text-sm text-center">
+        <div className="p-6">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-3"></div>
+              <p className="text-gray-500 dark:text-gray-400">جاري التحميل...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-red-500 text-xl">!</span>
+              </div>
+              <p className="text-red-500 dark:text-red-400">{error}</p>
+            </div>
+          ) : currentClients.length === 0 ? (
+            <div className="text-center py-8">
+              <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-500 dark:text-gray-400">لا يوجد عملاء</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {currentClients.map((client) => (
+                <div key={client._id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-sm">
+                        <span className="text-white font-bold text-lg">
+                          {client.name?.charAt(0) || '?'}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{client.name}</h4>
+                        <p className="text-[7px] sm:text-sm text-gray-500 dark:text-gray-400">{client.email}</p>
+                        {client.phone && (
+                          <p className="text-xs text-gray-400 dark:text-gray-500">{client.phone}</p>
+                        )}
+                      </div>
+                    </div>
                     <button
-                      className="text-blue-600 hover:underline"
+                      className="flex items-center gap-1 px-2 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[10px] font-medium transition-colors"
                       onClick={async () => {
                         setProgressModalClient(client);
                         setProgressModalLoading(true);
@@ -148,13 +186,66 @@ const TrainerProgressOverview = () => {
                           setProgressModalLoading(false);
                         }
                       }}
-                    >سجلات التقدم</button>
-                  </td>
-                </tr>
+                    >
+                      <TrendingUp className="w-4 h-4" />
+                      سجلات التقدم
+                    </button>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-600">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-700 dark:text-gray-300">
+                عرض {startIndex + 1} إلى {Math.min(endIndex, clients.length)} من {clients.length} عميل
+              </div>
+              
+              <div className="flex items-center gap-2">
+                {/* Previous Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                  السابق
+                </button>
+
+                {/* Page Numbers */}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        page === currentPage
+                          ? 'bg-blue-600 text-white'
+                          : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+                >
+                  التالي
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       {progressModalClient && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">

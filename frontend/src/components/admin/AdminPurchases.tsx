@@ -110,9 +110,9 @@ const AdminPurchases = () => {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">المشتريات</h3>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <select
             className="rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white p-[4px] text-sm"
             value={selectedUserId}
@@ -188,7 +188,7 @@ const AdminPurchases = () => {
               <div>
                 عرض {startIndex + 1} إلى {endIndex} من {filtered.length} نتيجة
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   className="px-3 py-1 rounded border border-gray-300 dark:border-gray-700 disabled:opacity-50"
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}

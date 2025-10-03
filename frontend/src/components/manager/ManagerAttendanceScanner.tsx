@@ -217,11 +217,11 @@ const ManagerAttendanceScanner = ({ params }: { params: { userId: string } }) =>
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center space-x-4">
 
             <div className="flex flex-col items-center justify-center gap-2">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">ماسح الحضور</h1>
+              <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white">ماسح الحضور</h1>
               <p className="text-gray-600 dark:text-gray-300">امسح باركود الأعضاء لتسجيل الحضور</p>
             </div>
           </div>

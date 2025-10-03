@@ -161,6 +161,18 @@ time, mark, audio, video {
   );
 }
 
+/* Hide scrollbar for chat messages */
+.scrollbar-hide {
+  /* Firefox */
+  scrollbar-width: none;
+  /* IE and Edge */
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 .animate-first,
 .animate-second,
 .animate-third,

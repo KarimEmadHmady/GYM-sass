@@ -578,7 +578,7 @@ const AdminLoyalty = () => {
       {/* التبويبات */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div className="border-b border-gray-200 dark:border-gray-700">
-          <nav className="flex space-x-8 px-6">
+          <nav className="flex space-x-8 px-6 flex-wrap gap-2">
             {[
               { id: 'rewards', name: 'إدارة الجوائز', icon: '🎁' },
               { id: 'redemptions', name: 'الاستبدالات', icon: '🔄' },

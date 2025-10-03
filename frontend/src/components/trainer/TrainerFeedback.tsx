@@ -65,37 +65,44 @@ const TrainerFeedback = () => {
       ) : feedbacks.length === 0 ? (
         <div className="text-center py-8 text-gray-500">لا توجد تقييمات بعد.</div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm text-right">
-            <thead>
-              <tr className="bg-gray-100 dark:bg-gray-700">
-                <th className="py-2 px-3 text-center">المرسل</th>
-                <th className="py-2 px-3 text-center">التقييم</th>
-                <th className="py-2 px-3 text-center">التعليق</th>
-                <th className="py-2 px-3 text-center">التاريخ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {feedbacks.map(fb => (
-                <tr key={fb._id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onClick={() => { setSelectedFeedback(fb); setShowModal(true); }}>
-                  <td className="py-2 px-3 text-center">{getUserName(fb.fromUserId)}</td>
-                  <td className="py-2 px-3 text-center">
-                    {[1,2,3,4,5].map(i => (
-                      <Star key={i} size={18} className={
-                        'inline-block mx-0.5 ' + (i <= fb.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300')
-                      } fill={i <= fb.rating ? '#facc15' : 'none'} />
-                    ))}
-                  </td>
-                  <td className="py-2 px-3 text-center">{fb.comment || '-'}</td>
-                  <td className="py-2 px-3 text-center">{new Date(fb.date).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="space-y-4">
+          {feedbacks.map(fb => (
+            <div 
+              key={fb._id} 
+              className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer transition-colors"
+              onClick={() => { setSelectedFeedback(fb); setShowModal(true); }}
+            >
+              <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                    {getUserName(fb.fromUserId).charAt(0)}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{getUserName(fb.fromUserId)}</h4>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(fb.date).toLocaleDateString('ar-EG')}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  {[1,2,3,4,5].map(i => (
+                    <Star key={i} size={16} className={
+                      'inline-block ' + (i <= fb.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300')
+                    } fill={i <= fb.rating ? '#facc15' : 'none'} />
+                  ))}
+                  <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400 mr-1">{fb.rating}/5</span>
+                </div>
+              </div>
+              
+              {fb.comment && (
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{fb.comment}</p>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
       {showModal && selectedFeedback && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 bg-opacity-40">
           <div className="bg-gradient-to-br from-yellow-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-2xl shadow-2xl p-8 w-full max-w-lg relative border border-yellow-200 dark:border-gray-700">
             <button onClick={() => setShowModal(false)} className="absolute left-4 top-4 bg-white dark:bg-gray-800 rounded-full shadow p-1 hover:bg-red-100 dark:hover:bg-red-900 transition-colors"><X size={22} className="text-gray-400 hover:text-red-500" /></button>
             <div className="flex items-center gap-2 mb-6">

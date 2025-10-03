@@ -201,29 +201,29 @@ const MemberMessagesChat = () => {
   return (
     <div className="flex flex-col h-[600px] bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
       {/* Chat Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+      <div className="flex items-center justify-between p-2 md:p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm md:text-base">
             {trainer.name?.charAt(0)}
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">{trainer.name}</h3>
-            <p className="text-sm text-green-500">متصل</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white text-sm md:text-base">{trainer.name}</h3>
+            <p className="text-xs md:text-sm text-green-500">متصل</p>
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
-            <Phone className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+        <div className="flex items-center gap-1 md:gap-2">
+          <button className="p-1 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
+            <Phone className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
           </button>
-          <button className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
-            <Video className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <button className="p-1 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors">
+            <Video className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
           </button>
           <button 
             onClick={() => setShowChatActions(!showChatActions)}
-            className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors relative"
+            className="p-1 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors relative"
           >
-            <MoreVertical className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <MoreVertical className="w-4 h-4 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
           </button>
         </div>
       </div>

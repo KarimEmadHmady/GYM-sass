@@ -390,7 +390,7 @@ const AdminPlansOverview = ({ filterUserIds }: AdminPlansOverviewProps = {}) => 
           </h3>
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
             {/* بحث وفلتر متطور */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap justify-center">
               <select
                 className="border rounded px-2 py-1 text-sm bg-white dark:bg-gray-900"
                 value={searchType}

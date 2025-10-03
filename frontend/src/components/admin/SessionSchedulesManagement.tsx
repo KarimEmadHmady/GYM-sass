@@ -423,7 +423,7 @@ const SessionSchedulesManagement = ({
               <p className="text-sm text-gray-600 dark:text-gray-400">إجمالي الإيرادات</p>
               <p className="text-xl font-bold text-green-600 dark:text-green-400">ج.م {totalRevenue}</p>
             </div>
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 flex-wrap gap-2">
             {/* فلتر التاريخ */}
             <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-2 flex-col justify-center gap-2"> 

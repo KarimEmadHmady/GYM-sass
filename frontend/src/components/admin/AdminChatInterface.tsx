@@ -46,9 +46,10 @@ const AdminChatInterface = () => {
     }
   }, [currentUser]);
 
+  // مرر للأسفل عند تغيير المحادثة المختارة
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [selectedConversation]);
 
   // Show conversations list on desktop by default, on mobile show it first
   useEffect(() => {
@@ -307,19 +308,19 @@ const AdminChatInterface = () => {
                     setShowConversationsList(true);
                     setSelectedConversation(null); // إلغاء اختيار المحادثة للعودة إلى القائمة
                   }}
-                  className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors md:hidden"
+                  className="p-1 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors md:hidden"
                 >
-                  <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <ArrowLeft className="w-3 h-3 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
                 </button>
                 
                 <button
                   onClick={() => setShowConversationsList(!showConversationsList)}
-                  className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors hidden md:block"
+                  className="p-1 md:p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors hidden md:block"
                 >
                   {showConversationsList ? (
-                    <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <ArrowLeft className="w-3 h-3 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
                   ) : (
-                    <Users className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <Users className="w-3 h-3 md:w-5 md:h-5 text-gray-600 dark:text-gray-400" />
                   )}
                 </button>
                 
@@ -330,7 +331,7 @@ const AdminChatInterface = () => {
                   {selectedConversation.user2.name?.charAt(0)}
                 </div>
                 <div className="min-w-0">
-                  <h3 className="font-semibold text-gray-900 dark:text-white text-sm md:text-base truncate">
+                  <h3 className="font-semibold text-gray-900 dark:text-white text-[12px] md:text-base truncate">
                     {selectedConversation.user1.name} &amp; {selectedConversation.user2.name}
                   </h3>
                   <p className="text-xs md:text-sm text-green-500">محادثة</p>
