@@ -6,7 +6,7 @@ const AnnouncementBar: React.FC = () => (
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 animate-bounce">
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
       </svg>
-      Hurry up! <span className="font-semibold">25% OFF</span> on 6-month membership - Limited Time Only
+       <span className="font-semibold">خصم 25%</span> على اشتراك 6 أشهر - لفترة محدودة
     </span>
   </div>
 );

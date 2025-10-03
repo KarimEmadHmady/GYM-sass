@@ -19,7 +19,7 @@ const AnimatedSection: React.FC = () => {
         delay={150}
         animateBy="words"
         direction="top"
-        className={`text-4xl font-bold my-10 ${isArabic ? 'font-cairo' : ''}`}
+        className={`text-4xl text-white font-bold my-10 ${isArabic ? 'font-cairo' : ''}`}
       />
       <GlowingEffectDemo />
       <CurvedLoop marqueeText={content.marqueeText} />

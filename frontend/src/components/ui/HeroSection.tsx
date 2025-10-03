@@ -15,7 +15,6 @@ const HeroSection: React.FC = () => {
     features: isArabic ? [
       '🏋️‍♂️ معدات حديثة ومتطورة',
       '👨‍💼 مدربين محترفين معتمدين',
-      '📱 تطبيق ذكي لتتبع التقدم',
       '🕐 فتح 24/7',
       '🧘‍♀️ دروس جماعية متنوعة',
       '💪 برامج تدريب شخصية'
@@ -30,52 +29,47 @@ const HeroSection: React.FC = () => {
   };
 
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden mt-[-25px]">
+    <section id="hero" className="relative min-h-[80vh] flex items-center justify-center overflow-hidden mt-[-25px]">
       {/* Banner Background Image */}
       <div className="absolute inset-0 w-full h-full z-0">
-        <Image
-          src="/banner.jpg"
-          alt="Banner"
-          fill
-          className="object-cover opacity-40" // opacity for transparency
-          priority
+        <video
+          className="w-full h-[100%] object-cover"
+          src="/gym v2.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden="true"
         />
       </div>
-      {/* Overlay (optional, for extra dimming) */}
-      {/* <div className="absolute inset-0 bg-black/20 z-10" /> */}
+      {/* Video Overlay */}
+      <div className="absolute inset-0 bg-black/20 z-10" />
       <div className="w-full max-w-6xl px-4 relative z-20">
         <div className=" p-8 md:p-12 ">
           <div className="flex flex-col md:flex-row items-center justify-center gap-8">
  
             {/* النص */}
             <div className="w-full md:w-2/3 text-center space-y-6 order-1 md:order-2 mx-auto">
-              <h1 className={`text-6xl md:text-8xl font-bold text-white drop-shadow-2xl ${isArabic ? 'font-cairo' : ''}`}>
+              <h1 className={`text-4xl sm:text-5xl md:text-8xl font-bold text-white drop-shadow-2xl ${isArabic ? 'font-cairo' : ''}`}>
                 <span className="bg-clip-text text-transparent bg-gradient-to-b from-white/90 to-white/30">
                   {content.title}
                 </span>
               </h1>
-              <p className={`text-xl md:text-2xl text-white/80 leading-relaxed ${isArabic ? 'font-cairo' : ''}`}>
+              <p className={`text-xl md:text-2xl  text-white/80 leading-relaxed ${isArabic ? 'font-cairo' : ''}`}>
                 {content.subtitle}
               </p>
               {/* المميزات */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 place-items-center justify-items-center">
                 {content.features.map((feature, index) => (
-                  <div key={index} className={`flex items-center space-x-2 text-white/70 ${isArabic ? 'font-cairo' : ''}`}>
+                  <div key={index} className={`flex items-center justify-center space-x-2 text-white/70 ${isArabic ? 'font-cairo' : ''}`}>
                     <span className="text-lg">{feature}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
-          {/* أزرار الإجراءات */}
-{/*           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12">
-            <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-full border border-blue-500/30 hover:from-blue-700 hover:to-blue-800 transition-all duration-300 hover:scale-105 shadow-lg">
-              {content.getStarted}
-            </button>
-            <button className="px-8 py-4 bg-transparent text-white font-semibold rounded-full border border-white/50 hover:bg-white/10 transition-all duration-300 hover:scale-105">
-              {content.learnMore}
-            </button>
-          </div> */}
+
         </div>
       </div>
     </section>

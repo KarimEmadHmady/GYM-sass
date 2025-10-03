@@ -13,7 +13,6 @@ import CalculatorsSection from '@/components/ui/calculators/CalculatorsSection';
 
 import { VortexDemo } from '@/components/ui/VortexDemo';
 import { SparklesPreview } from '@/components/ui/SparklesPreview';
-import { InfiniteMovingCardsDemo } from '@/components/ui/InfiniteMovingCardsDemo';
 import { CardSpotlightDemo } from '@/components/ui/CardSpotlightDemo';
 import { CompareDemo } from '@/components/ui/CompareDemo';
 import { BackgroundGradientAnimation } from '@/components/ui/background-gradient-animation';
@@ -36,15 +35,25 @@ export default function HomePage() {
               containerClassName="fixed inset-0 -z-10"
             />
       <AnnouncementBar />
-      <HeroSection />
-      <AnimatedSection />
-      <CalculatorsSection />
-      <InfiniteMovingCardsDemo />
+      <section id="home" className="scroll-mt-24">
+        <HeroSection />
+      </section>
+      <section id="services" className="scroll-mt-24">
+        <AnimatedSection />
+      </section>
+      <section id="pricing" className="scroll-mt-24">
+        <CalculatorsSection />
+      </section>
+
       <CompareDemo/>
-      <ContactSection />
+      <section id="contact" className="scroll-mt-24">
+        <ContactSection />
+      </section>
       <SparklesPreview />
       <SocialSidebar />
-      <CardSpotlightDemo />
+      <section id="plans" className="scroll-mt-24">
+        <CardSpotlightDemo />
+      </section>
       <VortexDemo />
       <FooterSection />
       <FloatingActions />

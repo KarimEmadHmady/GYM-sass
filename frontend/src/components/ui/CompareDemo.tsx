@@ -13,28 +13,28 @@ type CompareCard = {
 export function CompareDemo({
   cards = [
     {
-      firstImage: "/1.png",
-      secondImage: "/2.png",
+      firstImage: "/image/1/New Project.png",
+      secondImage: "/image/1/New Project (1).png",
     },
     {
-      firstImage: "/3.png",
-      secondImage: "/4.png",
+      firstImage: "/image/2/New Project.png",
+      secondImage: "/image/2/New Project (1).png",
     },
     {
-      firstImage: "/5.png",
-      secondImage: "/6.png",
+      firstImage: "/image/3/New Project.png",
+      secondImage: "/image/3/New Project (1).png",
     },
     {
-        firstImage: "/7.png",
-        secondImage: "/8.png",
+      firstImage: "/image/4/New Project.png",
+      secondImage: "/image/4/New Project (1).png",
       },
       {
-        firstImage: "/9.png",
-        secondImage: "/10.png",
+        firstImage: "/image/5/New Project.png",
+        secondImage: "/image/5/New Project (1).png",
       },
       {
-        firstImage: "/11.png",
-        secondImage: "/12.png",
+        firstImage: "/image/6/New Project.png",
+        secondImage: "/image/6/New Project (1).png",
       },
   ],
 }: {
@@ -50,9 +50,9 @@ export function CompareDemo({
             key={idx}
             firstImage={item.firstImage}
             secondImage={item.secondImage}
-            firstImageClassName={item.firstImageClassName ?? "object-cover object-left-top"}
-            secondImageClassname={item.secondImageClassname ?? "object-cover object-left-top"}
-            className={item.className ?? "h-[250px] w-[260px] md:h-[400px] md:w-[320px]"}
+            firstImageClassName={item.firstImageClassName ?? "object-contain w-full h-full"}
+            secondImageClassname={item.secondImageClassname ?? "object-contain w-full h-full"}
+            className={item.className ?? "w-full max-w-[320px] aspect-[4/3] md:max-w-[360px] md:aspect-[4/3]"}
             slideMode={item.slideMode ?? "hover"}
           />
         ))}

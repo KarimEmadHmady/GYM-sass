@@ -3,20 +3,21 @@ import React from "react";
 import { SparklesCore } from "./sparkles";
 
 export function SparklesPreview() {
+  const isArabic = typeof window !== 'undefined' && window.location.pathname.includes('/ar');
   return (
     <div className="h-[40rem] w-full bg-black flex flex-col items-center justify-center overflow-hidden rounded-md">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-center relative z-20">
         <div className="text-center">
           <div className="md:text-7xl text-3xl lg:text-9xl font-bold text-yellow-400 mb-2">250+</div>
-          <div className="text-white/70 text-sm md:text-lg">Active Members</div>
+          <div className="text-white/70 text-sm md:text-lg">{isArabic ? 'الأعضاء النشطون' : 'Active Members'}</div>
         </div>
         <div className="text-center">
           <div className="md:text-7xl text-3xl lg:text-9xl font-bold text-green-400 mb-2">4+</div>
-          <div className="text-white/70 text-sm md:text-lg">Expert Trainers</div>
+          <div className="text-white/70 text-sm md:text-lg">{isArabic ? 'المدربون الخبراء' : 'Expert Trainers'}</div>
         </div>
         <div className="text-center">
           <div className="md:text-7xl text-3xl lg:text-9xl font-bold text-blue-400 mb-2">24/7</div>
-          <div className="text-white/70 text-sm md:text-lg">Support Available</div>
+          <div className="text-white/70 text-sm md:text-lg">{isArabic ? 'دعم متاح 24/7' : 'Support Available'}</div>
         </div>
       </div>
       <div className="w-[40rem] h-40 relative">

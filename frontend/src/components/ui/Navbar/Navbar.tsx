@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
+import Image from 'next/image';
 import { cn } from "@/lib/utils";
 import { IconMenu2, IconX, IconLanguage } from "@tabler/icons-react";
 import {
@@ -90,23 +91,34 @@ export default function GymNavbar() {
     }
   };
 
-  // Navigation items using translations
+  // Navigation items using translations (hash anchors on home page)
   const navigationItems = [
-    { name: t('home'), link: '/' },
-    { name: t('services'), link: '/services' },
-    { name: t('pricing'), link: '/pricing' },
-    { name: t('trainers'), link: '/trainers' },
-    { name: t('contact'), link: '/contact' }
+    { name: t('home'), hash: '#home' },
+    { name: t('services'), hash: '#services' },
+    { name: locale === 'ar' ? 'حساب اللياقة البدنية' : 'Fitness Calculators', hash: '#pricing' },
+    { name: locale === 'ar' ? 'خطط الاشتراك' : 'Subscription Plans', hash: '#plans' },
+    { name: t('contact'), hash: '#contact' }
   ];
 
   const mobileNavigationItems = [
-    { name: t('home'), link: '/' },
-    { name: t('services'), link: '/services' },
-    { name: t('pricing'), link: '/pricing' },
-    { name: t('trainers'), link: '/trainers' },
-    { name: t('contact'), link: '/contact' },
+    { name: t('home'), hash: '#home' },
+    { name: t('services'), hash: '#services' },
+    { name: locale === 'ar' ? 'حساب اللياقة البدنية' : 'Fitness Calculators', hash: '#pricing' },
+    { name: locale === 'ar' ? 'خطط الاشتراك' : 'Subscription Plans', hash: '#plans' },
+    { name: t('contact'), hash: '#contact' },
     { name: t('login'), link: '/login' }
   ];
+
+  const isOnHome = cleanPathname === '/';
+
+  const handleScrollTo = (hash: string) => {
+    if (typeof window === 'undefined') return;
+    const id = hash.replace('#', '');
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   // إخفاء الـ navbar إذا لم يكن في الصفحات المسموحة
   if (!shouldShowNavbar) {
@@ -131,7 +143,7 @@ export default function GymNavbar() {
   return (
     <motion.div
       ref={ref}
-      className={cn("sticky inset-x-0 top-20 z-40 w-full navbar-no-border navbar-container", `language-${locale}`)}
+      className={cn("sticky inset-x-0 top-9 lg:top-20 z-40 w-full navbar-no-border navbar-container", `language-${locale}`)}
     >
       {/* Desktop Navigation */}
       <motion.div
@@ -161,8 +173,7 @@ export default function GymNavbar() {
           href="/"
           className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
         >
-            <span className="font-bold text-[25px] text-gray-900 dark:text-white font-cairo">Coach Gym</span>
-
+            <Image src="/logo.png" alt="Coach Gym" width={180} height={48} className="h-12 w-auto" />
         </Link>
 
         {/* Navigation Items */}
@@ -172,11 +183,19 @@ export default function GymNavbar() {
           style={{ pointerEvents: 'none' }}
         >
           {navigationItems.map((item, idx) => (
-            <Link
+            <a
               onMouseEnter={() => setHovered(idx)}
-              className="relative px-4 py-2 text-neutral-600 dark:text-neutral-300"
+              className="relative px-4 py-2 text-white dark:text-neutral-300 cursor-pointer"
               key={`link-${idx}`}
-              href={item.link}
+              href={item.hash}
+              onClick={(e) => {
+                e.preventDefault();
+                if (isOnHome) {
+                  handleScrollTo(item.hash);
+                } else {
+                  router.push('/' + item.hash, { locale });
+                }
+              }}
               style={{ pointerEvents: 'auto' }}
             >
               {hovered === idx && (
@@ -186,7 +205,7 @@ export default function GymNavbar() {
                 />
               )}
               <span className={cn("relative z-20", locale === 'ar' ? 'font-cairo' : '')}>{item.name}</span>
-            </Link>
+            </a>
           ))}
         </motion.div>
 
@@ -223,14 +242,13 @@ export default function GymNavbar() {
         className="relative z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-col items-center justify-between bg-transparent px-0 py-2 lg:hidden"
       >
         {/* Mobile Header */}
-        <div className="flex w-full flex-row items-center justify-between">
+        <div className="flex w-full flex-row items-center justify-between ">
           {/* Logo */}
           <Link
             href="/"
             className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
           >
-
-            <span className="font-bold text-lg text-gray-900 dark:text-white font-cairo">Coach Gym</span>
+            <Image src="/logo.png" alt="Coach Gym" width={150} height={46} className="h-9 w-auto" />
           </Link>
 
           {/* Language Toggle and Mobile Menu Button */}
@@ -293,21 +311,47 @@ export default function GymNavbar() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1, duration: 0.3 }}
                       >
-                        <Link
-                          href={item.link}
-                          className={cn(
-                            "flex items-center px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 font-medium",
-                            locale === 'ar' ? 'font-cairo' : ''
-                          )}
-                          onClick={handleMobileMenuClose}
-                        >
-                          <span className="text-lg">{item.name}</span>
-                          <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </div>
-                        </Link>
+                        {('hash' in item && item.hash) ? (
+                          <a
+                            href={item.hash as string}
+                            className={cn(
+                              "flex items-center px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 font-medium",
+                              locale === 'ar' ? 'font-cairo' : ''
+                            )}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (isOnHome) {
+                                handleScrollTo(item.hash as string);
+                              } else {
+                                router.push('/' + (item.hash as string), { locale });
+                              }
+                              handleMobileMenuClose();
+                            }}
+                          >
+                            <span className="text-lg">{item.name}</span>
+                            <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </div>
+                          </a>
+                        ) : (
+                          <Link
+                            href={(item as any).link}
+                            className={cn(
+                              "flex items-center px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 font-medium",
+                              locale === 'ar' ? 'font-cairo' : ''
+                            )}
+                            onClick={handleMobileMenuClose}
+                          >
+                            <span className="text-lg">{item.name}</span>
+                            <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </div>
+                          </Link>
+                        )}
                       </motion.div>
                     ))}
                   </div>
@@ -409,17 +453,17 @@ const MobileNavToggle = ({
     >
       {/* Animated hamburger lines */}
       <span
-        className={`w-6 h-0.5 bg-black dark:bg-white rounded-full transition-all duration-300 ease-in-out transform ${
+        className={`w-6 h-0.5 bg-white dark:bg-white rounded-full transition-all duration-300 ease-in-out transform ${
           isOpen ? 'rotate-45 translate-y-2' : ''
         }`}
       />
       <span
-        className={`w-[50%] h-0.5 bg-black dark:bg-white rounded-full transition-all duration-300 ease-in-out my-1 ${
+        className={`w-[50%] h-0.5 bg-white dark:bg-white rounded-full transition-all duration-300 ease-in-out my-1 ${
           isOpen ? 'opacity-0 scale-0' : ''
         }`}
       />
       <span
-        className={`w-6 h-0.5 bg-black dark:bg-white rounded-full transition-all duration-300 ease-in-out transform ${
+        className={`w-6 h-0.5 bg-white dark:bg-white rounded-full transition-all duration-300 ease-in-out transform ${
           isOpen ? '-rotate-45 -translate-y-2' : ''
         }`}
       />

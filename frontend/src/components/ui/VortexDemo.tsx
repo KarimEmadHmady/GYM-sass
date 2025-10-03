@@ -10,8 +10,7 @@ export function VortexDemo() {
     subtitle: isArabic 
       ? 'انضم إلى أفضل جيم في المنطقة واحصل على جسم أحلامك مع مدربين محترفين ومعدات حديثة'
       : 'Join the best gym in the area and get your dream body with professional trainers and modern equipment',
-    primaryButton: isArabic ? 'ابدأ الآن مجاناً' : 'Start Free Trial',
-    secondaryButton: isArabic ? 'شاهد الجيم' : 'View Gym',
+    primaryButton: isArabic ? 'ابدأ الآن ' : 'Start Now',
     features: isArabic ? [
       'مدربين محترفين معتمدين',
       'أحدث معدات التدريب',
@@ -52,12 +51,13 @@ export function VortexDemo() {
         </div>
         
         <div className="flex flex-col sm:flex-row items-center gap-4 mt-8">
-          <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 rounded-xl text-white font-bold text-lg shadow-[0px_4px_0px_0px_#FFFFFF40_inset] hover:shadow-[0px_6px_0px_0px_#FFFFFF40_inset] transform hover:scale-105 active:scale-95">
+          <a
+            href="tel:+201113081409"
+            className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 rounded-xl text-white font-bold text-lg shadow-[0px_4px_0px_0px_#FFFFFF40_inset] hover:shadow-[0px_6px_0px_0px_#FFFFFF40_inset] transform hover:scale-105 active:scale-95"
+          >
             {content.primaryButton}
-          </button>
-          <button className="px-8 py-4 border-2 border-white/30 text-white hover:bg-white/10 transition-all duration-300 rounded-xl font-semibold text-lg backdrop-blur-sm">
-            {content.secondaryButton}
-          </button>
+          </a>
+
         </div>
         
         {/* Additional CTA Text */}

@@ -14,17 +14,15 @@ const FooterSection: React.FC = () => {
     cardio: isArabic ? '🏃‍♀️ كارديو' : '🏃‍♀️ Cardio',
     
     contactUs: isArabic ? 'تواصل معنا' : 'Contact Us',
-    address: isArabic ? '📍 123 شارع اللياقة، الجيزة، مصر' : '📍 123 Fitness Street, Giza, Egypt',
-    phone: isArabic ? '📞 +20 123 456 7890' : '📞 +20 123 456 7890',
+    address: isArabic ? '📍المنيرة، إمبابة، الجيزة شارع المطار' : '📍 123 Fitness Street, Giza, Egypt',
+    phone: isArabic ? '📞 +20 11 130 814 09' : '📞 +20 11 130 814 09',
     email: isArabic ? '✉️ info@coachgym.com' : '✉️ info@coachgym.com',
-    website: isArabic ? '🌐 www.coachgym.com' : '🌐 www.coachgym.com',
     
     workingHours: isArabic ? 'ساعات العمل' : 'Working Hours',
-    satThurs: isArabic ? 'السبت - الخميس:' : 'Saturday - Thursday:',
-    satThursTime: '6:00 AM - 11:00 PM',
-    friday: isArabic ? 'الجمعة:' : 'Friday:',
-    fridayTime: '8:00 AM - 8:00 PM',
-    holidayNote: isArabic ? '*ساعات العطلات قد تختلف' : '*Holiday hours may vary',
+    satThurs: isArabic ? 'يوميًا:' : 'Daily:',
+    satThursTime: '10:00 AM - 4:00 AM',
+    friday: '',
+    fridayTime: '',
     
     ourServices: isArabic ? 'خدماتنا' : 'Our Services',
     personalTraining: isArabic ? '💪 تدريب شخصي' : '💪 Personal Training',
@@ -32,8 +30,6 @@ const FooterSection: React.FC = () => {
     yogaPilates: isArabic ? '🧘‍♀️ يوغا وبيلاتس' : '🧘‍♀️ Yoga & Pilates',
     nutritionCounseling: isArabic ? '🥗 استشارة تغذية' : '🥗 Nutrition Counseling',
     bodyComposition: isArabic ? '📊 تحليل تكوين الجسم' : '📊 Body Composition Analysis',
-    swimmingPool: isArabic ? '🏊‍♂️ مسبح' : '🏊‍♂️ Swimming Pool',
-    freeParking: isArabic ? '🅿️ موقف سيارات مجاني' : '🅿️ Free Parking',
     lockerRooms: isArabic ? '🚿 غرف تبديل الملابس' : '🚿 Locker Rooms',
     
     copyright: isArabic ? `© ${new Date().getFullYear()} كوتش جيم. جميع الحقوق محفوظة.` : `© ${new Date().getFullYear()} Coach Gym. All rights reserved.`
@@ -69,7 +65,6 @@ const FooterSection: React.FC = () => {
               <p className={isArabic ? 'font-cairo' : ''}>{content.address}</p>
               <p className={isArabic ? 'font-cairo' : ''}>{content.phone}</p>
               <p className={isArabic ? 'font-cairo' : ''}>{content.email}</p>
-              <p className={isArabic ? 'font-cairo' : ''}>{content.website}</p>
             </div>
           </div>
 
@@ -83,12 +78,7 @@ const FooterSection: React.FC = () => {
                 <span className={isArabic ? 'font-cairo' : ''}>{content.satThurs}</span>
                 <span className="font-semibold">{content.satThursTime}</span>
               </div>
-              <div className="flex justify-between">
-                <span className={isArabic ? 'font-cairo' : ''}>{content.friday}</span>
-                <span className="font-semibold">{content.fridayTime}</span>
-              </div>
               <div className={`pt-2 text-xs text-white/50 ${isArabic ? 'font-cairo' : ''}`}>
-                {content.holidayNote}
               </div>
             </div>
           </div>
@@ -104,8 +94,6 @@ const FooterSection: React.FC = () => {
               <p className={isArabic ? 'font-cairo' : ''}>{content.yogaPilates}</p>
               <p className={isArabic ? 'font-cairo' : ''}>{content.nutritionCounseling}</p>
               <p className={isArabic ? 'font-cairo' : ''}>{content.bodyComposition}</p>
-              <p className={isArabic ? 'font-cairo' : ''}>{content.swimmingPool}</p>
-              <p className={isArabic ? 'font-cairo' : ''}>{content.freeParking}</p>
               <p className={isArabic ? 'font-cairo' : ''}>{content.lockerRooms}</p>
             </div>
           </div>
