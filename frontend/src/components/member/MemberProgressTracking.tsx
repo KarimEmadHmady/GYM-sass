@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { ProgressService } from '@/services/progressService';
 
@@ -11,6 +11,12 @@ const MemberProgressTracking = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const progressService = new ProgressService();
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchProgress = async () => {
@@ -19,6 +25,8 @@ const MemberProgressTracking = () => {
       try {
         const list = await progressService.getUserProgress(userId);
         setProgressList(list);
+        setTotalRecords(list.length);
+        setTotalPages(Math.ceil(list.length / itemsPerPage));
       } catch {
         setError('تعذر جلب سجلات التقدم');
       } finally {
@@ -26,7 +34,33 @@ const MemberProgressTracking = () => {
       }
     };
     if (userId) fetchProgress();
-  }, [userId]);
+  }, [userId, itemsPerPage]);
+
+  // Pagination handlers
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  };
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  };
+
+  // Paginated items
+  const paginatedItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return progressList.slice(startIndex, endIndex);
+  }, [progressList, currentPage, itemsPerPage]);
 
   return (
     <div className="space-y-6">
@@ -35,11 +69,12 @@ const MemberProgressTracking = () => {
         <div className="text-center py-8">جاري التحميل...</div>
       ) : error ? (
         <div className="text-center text-red-600 py-8">{error}</div>
-      ) : progressList.length === 0 ? (
+      ) : paginatedItems.length === 0 ? (
         <div className="text-center py-8 text-gray-500">لا يوجد سجلات تقدم بعد</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {progressList.map((p) => (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {paginatedItems.map((p) => (
             <div key={p._id} className="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-5 flex flex-col gap-2">
               <div className="flex items-center gap-2 mb-2">
                 <span className="inline-block w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-200 text-base">📅</span>
@@ -99,6 +134,64 @@ const MemberProgressTracking = () => {
               </div>
             </div>
           ))}
+          </div>
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <button
+                onClick={goToPrevPage}
+                disabled={currentPage === 1}
+                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                السابق
+              </button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => goToPage(pageNum)}
+                      className={`px-3 py-2 rounded-md text-sm ${
+                        currentPage === pageNum
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              <button
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                التالي
+              </button>
+            </div>
+          )}
+          
+          {/* Pagination Info */}
+          {totalRecords > 0 && (
+            <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+              عرض {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, totalRecords)} من {totalRecords} سجل تقدم
+            </div>
+          )}
         </div>
       )}
     </div>

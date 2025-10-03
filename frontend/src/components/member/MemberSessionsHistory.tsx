@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { SessionSchedule } from '@/types';
 import { SessionScheduleService } from '@/services/sessionScheduleService';
 import CustomAlert from '@/components/ui/CustomAlert';
@@ -15,6 +15,12 @@ const MemberSessionsHistory = () => {
   const [sessions, setSessions] = useState<SessionSchedule[]>([]);
   const [loading, setLoading] = useState(true);
   const [trainerNames, setTrainerNames] = useState<Record<string, string>>({});
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const itemsPerPage = 10;
 
   // Get current member ID from auth context or localStorage
   const getCurrentMemberId = () => {
@@ -159,16 +165,55 @@ const MemberSessionsHistory = () => {
     return result;
   };
 
-  const filteredSessions = sessions?.filter(session => {
-    if (activeTab === 'upcoming') {
-      return session.status === 'مجدولة';
-    } else if (activeTab === 'completed') {
-      return session.status === 'مكتملة';
-    } else if (activeTab === 'cancelled') {
-      return session.status === 'ملغاة';
+  const filteredSessions = useMemo(() => {
+    const filtered = sessions?.filter(session => {
+      if (activeTab === 'upcoming') {
+        return session.status === 'مجدولة';
+      } else if (activeTab === 'completed') {
+        return session.status === 'مكتملة';
+      } else if (activeTab === 'cancelled') {
+        return session.status === 'ملغاة';
+      }
+      return true;
+    }) || [];
+    
+    // Update pagination info when filtered data changes
+    setTotalRecords(filtered.length);
+    setTotalPages(Math.ceil(filtered.length / itemsPerPage));
+    
+    return filtered;
+  }, [sessions, activeTab, itemsPerPage]);
+
+  // Pagination handlers
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
     }
-    return true;
-  }) || [];
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  };
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  };
+
+  // Paginated items
+  const paginatedSessions = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredSessions.slice(startIndex, endIndex);
+  }, [filteredSessions, currentPage, itemsPerPage]);
+
+  // Reset to first page when tab changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   if (loading) {
     return (
@@ -225,7 +270,7 @@ const MemberSessionsHistory = () => {
         {/* Sessions List */}
         <div className="p-6">
           <div className="space-y-4">
-            {filteredSessions.map((session) => (
+            {paginatedSessions.map((session) => (
               <div
                 key={session._id}
                 className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
@@ -281,6 +326,63 @@ const MemberSessionsHistory = () => {
               </div>
             ))}
           </div>
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <button
+                onClick={goToPrevPage}
+                disabled={currentPage === 1}
+                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                السابق
+              </button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => goToPage(pageNum)}
+                      className={`px-3 py-2 rounded-md text-sm ${
+                        currentPage === pageNum
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              <button
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                التالي
+              </button>
+            </div>
+          )}
+          
+          {/* Pagination Info */}
+          {totalRecords > 0 && (
+            <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+              عرض {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, totalRecords)} من {totalRecords} جلسة
+            </div>
+          )}
         </div>
       </div>
 

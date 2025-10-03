@@ -116,24 +116,24 @@ const MemberProfileHeader = () => {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left: Avatar + Basic Info */}
         <div className="flex items-start space-x-4">
-          <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+          <div className="w-15 h-15 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
             {derived.name.charAt(0)}
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center text-gray-900 dark:text-white">
-              <span className="text-base mr-2" aria-hidden>👤</span>
+              <span className="text-base mx-2" aria-hidden>👤</span>
               <h2 className="text-lg font-semibold leading-tight">{derived.name}</h2>
             </div>
             <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
-              <span className="text-base mr-2" aria-hidden>✉️</span>
+              <span className="text-base mx-2" aria-hidden>✉️</span>
               <span className="truncate max-w-[16rem]">{derived.email}</span>
             </div>
             <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm">
-              <span className="text-base mr-2" aria-hidden>📞</span>
+              <span className="text-base mx-2" aria-hidden>📞</span>
               <span className="truncate max-w-[16rem]">{derived.phone}</span>
             </div>
             <div className="flex items-center text-gray-700 dark:text-gray-300 text-sm">
-              <span className="text-base mr-2" aria-hidden>🎖️</span>
+              <span className="text-base mx-2" aria-hidden>🎖️</span>
               <span className={`inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold rounded-full text-white ${getMembershipColor(derived.membershipType)}`}>
                 {derived.membershipType}
               </span>

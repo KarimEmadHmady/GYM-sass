@@ -255,10 +255,10 @@ const MemberPlansOverview = () => {
                     </h4>
                   </div>
                   {plan.trainerId && (
-                    <p className="text-xs text-gray-500 mb-1 flex items-center gap-1"><span className="text-xs">🧑‍🏫</span>المدرب: {nameMap[plan.trainerId] || '...'}</p>
+                    <p className="text-xs text-gray-500 mb-1 flex items-center gap-1 "><span className="text-xs">🧑‍🏫</span>المدرب: {nameMap[plan.trainerId] || '...'}</p>
                   )}
-                  <div className="flex items-center justify-between text-sm mb-3">
-                    <span className="text-gray-600 dark:text-gray-400 flex items-center gap-1"><span className="text-xs">📅</span>الفترة:</span>
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span className="text-gray-600 dark:text-gray-400 flex items-center gap-1 my-2"><span className="text-xs">📅</span>الفترة:</span>
                     <span className="text-gray-900 dark:text-white">{new Date(plan.startDate).toLocaleDateString()} {plan.endDate ? `- ${new Date(plan.endDate).toLocaleDateString()}` : ''}</span>
                   </div>
                   <div className="text-sm text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1"><span className="text-xs">📝</span>{plan.description || '-'}</div>

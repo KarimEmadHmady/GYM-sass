@@ -14,18 +14,36 @@ const MemberAttendance = () => {
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const itemsPerPage = 10;
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [adding, setAdding] = useState(false);
   const [addForm, setAddForm] = useState<any>({ date: '', time: '', status: 'present', notes: '' });
 
-  const load = async () => {
+  const load = async (page: number = currentPage) => {
     if (!currentUserId) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await svc.getUserAttendance(currentUserId, { page: 1, limit: 200 });
-      setRecords(Array.isArray(res) ? res : (res?.data || []));
+      const res = await svc.getUserAttendance(currentUserId, { page, limit: itemsPerPage });
+      const data = Array.isArray(res) ? res : (res?.data || []);
+      setRecords(data);
+      
+      // Update pagination info
+      if (res && typeof res === 'object' && 'total' in res) {
+        const total = res.total as number;
+        setTotalRecords(total);
+        setTotalPages(Math.ceil(total / itemsPerPage));
+      } else {
+        // Fallback if API doesn't return total count
+        setTotalRecords(data.length);
+        setTotalPages(Math.ceil(data.length / itemsPerPage));
+      }
     } catch (e: any) {
       setError(e?.message || 'تعذر جلب سجلات الحضور');
     } finally {
@@ -60,12 +78,33 @@ const MemberAttendance = () => {
         status: addForm.status,
         notes: addForm.notes,
       });
-      setRecords(prev => [created, ...prev]);
+      // Reload current page to show updated data
+      await load(currentPage);
       setAddModalOpen(false);
     } catch (e: any) {
       alert(e?.message || 'فشل الإضافة');
     } finally {
       setAdding(false);
+    }
+  };
+
+  // Pagination handlers
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      load(page);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  };
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
     }
   };
 
@@ -151,6 +190,63 @@ const MemberAttendance = () => {
                   </div>
                 );
               })}
+            </div>
+          )}
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-center gap-2">
+              <button
+                onClick={goToPrevPage}
+                disabled={currentPage === 1}
+                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                السابق
+              </button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => goToPage(pageNum)}
+                      className={`px-3 py-2 rounded-md text-sm ${
+                        currentPage === pageNum
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              <button
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                التالي
+              </button>
+            </div>
+          )}
+          
+          {/* Pagination Info */}
+          {totalRecords > 0 && (
+            <div className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
+              عرض {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, totalRecords)} من {totalRecords} سجل
             </div>
           )}
         </div>

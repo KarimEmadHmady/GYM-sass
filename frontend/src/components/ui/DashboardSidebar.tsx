@@ -51,10 +51,10 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   // Sidebar content
   const sidebarContent = (
     <div className={`flex flex-col h-full bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-800 shadow-lg rtl:right-0 rtl:left-auto transition-all duration-300 ${open ? 'w-56' : 'w-14'} relative`}>
-      {/* Toggle button (desktop only) */}
+      {/* Toggle button (desktop only) - Fixed at middle right of sidebar */}
       <button
         type="button"
-        className="hidden md:flex items-center justify-center absolute top-1/2 left-0 rtl:left-auto rtl:right-0 -translate-y-1/2 -translate-x-1/2 z-20 w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors"
+        className="hidden md:flex items-center justify-center absolute top-1/2 right-0 rtl:right-auto rtl:left-0 -translate-y-1/2 translate-x-1/2 rtl:-translate-x-1/2 z-20 w-9 h-9 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors"
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? 'إغلاق القائمة' : 'فتح القائمة'}
       >

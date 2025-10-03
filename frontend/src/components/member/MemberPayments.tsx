@@ -21,19 +21,36 @@ const MemberPayments = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const itemsPerPage = 10;
 
   const [search, setSearch] = useState('');
   const [method, setMethod] = useState<'all' | Payment['method']>('all');
   const [activeTab, setActiveTab] = useState<'payments' | 'invoices'>('payments');
 
-  const load = async () => {
+  const load = async (page: number = currentPage) => {
     if (!currentUserId) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await svc.getPaymentsByUser(currentUserId, { page: 1, limit: 200 });
+      const res = await svc.getPaymentsByUser(currentUserId, { page, limit: itemsPerPage });
       const arr = Array.isArray(res) ? res as any : (res as any)?.data || [];
       setPayments(arr);
+      
+      // Update pagination info
+      if (res && typeof res === 'object' && 'total' in res) {
+        const total = res.total as number;
+        setTotalRecords(total);
+        setTotalPages(Math.ceil(total / itemsPerPage));
+      } else {
+        // Fallback if API doesn't return total count
+        setTotalRecords(arr.length);
+        setTotalPages(Math.ceil(arr.length / itemsPerPage));
+      }
     } catch (e: any) {
       setError(e?.message || 'تعذر جلب المدفوعات');
     } finally {
@@ -42,6 +59,26 @@ const MemberPayments = () => {
   };
 
   useEffect(() => { if (isAuthenticated && currentUserId) load(); /* eslint-disable-next-line */ }, [isAuthenticated, currentUserId]);
+
+  // Pagination handlers
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      load(page);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      goToPage(currentPage + 1);
+    }
+  };
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) {
+      goToPage(currentPage - 1);
+    }
+  };
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -118,6 +155,63 @@ const MemberPayments = () => {
                     </div>
                   );
                 })
+              )}
+              
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="col-span-1 md:col-span-3 mt-6 flex items-center justify-center gap-2">
+                  <button
+                    onClick={goToPrevPage}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    السابق
+                  </button>
+                  
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => goToPage(pageNum)}
+                          className={`px-3 py-2 rounded-md text-sm ${
+                            currentPage === pageNum
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  <button
+                    onClick={goToNextPage}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    التالي
+                  </button>
+                </div>
+              )}
+              
+              {/* Pagination Info */}
+              {totalRecords > 0 && (
+                <div className="col-span-1 md:col-span-3 mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                  عرض {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, totalRecords)} من {totalRecords} مدفوع
+                </div>
               )}
             </div>
           </>
