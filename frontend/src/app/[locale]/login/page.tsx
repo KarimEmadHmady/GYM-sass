@@ -177,7 +177,7 @@ const LoginPage: React.FC = () => {
                 EN
               </button>
               <a
-                href="mailto:support@example.com"
+                href="tel:+201113081409"
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
               >
                 تواصل معنا

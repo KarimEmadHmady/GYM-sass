@@ -329,7 +329,7 @@ export default function GymNavbar() {
                             }}
                           >
                             <span className="text-lg">{item.name}</span>
-                            <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -339,13 +339,15 @@ export default function GymNavbar() {
                           <Link
                             href={(item as any).link}
                             className={cn(
-                              "flex items-center px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 font-medium",
-                              locale === 'ar' ? 'font-cairo' : ''
+                              "flex items-center justify-center px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 font-medium",
+                              locale === 'ar' ? 'font-cairo' : '',
+                              (item as any).link === '/login' &&
+                                "bg-gradient-to-r  from-blue-600 to-blue-500 text-white shadow-lg hover:from-blue-700 hover:to-blue-600 hover:text-white"
                             )}
                             onClick={handleMobileMenuClose}
                           >
                             <span className="text-lg">{item.name}</span>
-                            <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
@@ -364,9 +366,7 @@ export default function GymNavbar() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.4, duration: 0.3 }}
                       >
-                        <button className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg">
-                          {locale === 'ar' ? 'ابدأ الآن' : 'Get Started'}
-                        </button>
+
                       </motion.div>
                       
                       <motion.div
@@ -374,9 +374,12 @@ export default function GymNavbar() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5, duration: 0.3 }}
                       >
-                        <button className="w-full px-4 py-3 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-800 transition-all duration-200">
+                        <a
+                          href="tel:+20113081409"
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-800 transition-all duration-200 flex items-center justify-center"
+                        >
                           {locale === 'ar' ? 'تواصل معنا' : 'Contact Us'}
-                        </button>
+                        </a>
                       </motion.div>
                     </div>
                   </div>
