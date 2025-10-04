@@ -6,7 +6,7 @@ export const routing = defineRouting({
 
   // Used when no locale matches
   defaultLocale: 'ar',
-  
-  // Enable automatic locale detection
-  localeDetection: true
+
+  // اجعلها false ليتم تجاهل لغة المتصفح
+  localeDetection: false
 });
