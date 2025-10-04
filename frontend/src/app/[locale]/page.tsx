@@ -1,6 +1,4 @@
 // src/app/[locale]/page.tsx
-'use client'
-
 import AnnouncementBar from '@/components/ui/AnnouncementBar';
 import HeroSection from '@/components/ui/HeroSection';
 import AnimatedSection from '@/components/ui/AnimatedSection';
