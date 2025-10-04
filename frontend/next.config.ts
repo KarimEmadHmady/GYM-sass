@@ -1,8 +1,11 @@
-import {NextConfig} from 'next';
-import createNextIntlPlugin from 'next-intl/plugin';
- 
-const nextConfig: NextConfig = {
-  // Ensure Arabic is the default locale for redirects
+// next.config.ts
+const withPWA = require('next-pwa');
+const createNextIntlPlugin = require('next-intl/plugin');
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+const nextConfig = {
+  reactStrictMode: true,
   async redirects() {
     return [
       {
@@ -13,6 +16,14 @@ const nextConfig: NextConfig = {
     ];
   },
 };
- 
-const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
-export default withNextIntl(nextConfig);
+
+// إعدادات PWA
+const pwaConfig = withPWA({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development', // تعطيل PWA في التطوير
+});
+
+// دمج الإضافات: PWA أولاً ثم next-intl
+module.exports = pwaConfig(withNextIntl(nextConfig));
