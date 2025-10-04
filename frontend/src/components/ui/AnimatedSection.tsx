@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import BlurText from './Sec-home/BlurText';
 import { GlowingEffectDemo } from './Sec-home/GlowingEffectDemo';

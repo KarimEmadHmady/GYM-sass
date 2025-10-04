@@ -1,3 +1,4 @@
+"use client";
 import React from 'react';
 import { MapPin, Mail, Phone, Clock, Users, Trophy } from 'lucide-react';
 
