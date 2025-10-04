@@ -41,7 +41,7 @@ const AdminDashboard = ({ params }: { params: Promise<{ userId: string }> }) => 
   const locale = useLocale();
   const t = useTranslations('AdminDashboard');
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'overview');
+  const [activeTab, setActiveTab] = useState(() => searchParams?.get('tab') || 'overview');
 
   // يمكنك استخدام userId هنا لجلب بيانات أو التحقق
 
@@ -64,7 +64,7 @@ const AdminDashboard = ({ params }: { params: Promise<{ userId: string }> }) => 
 
   // Keep state in sync if URL query changes externally
   useEffect(() => {
-    const tabFromQuery = searchParams.get('tab');
+    const tabFromQuery = searchParams?.get('tab');
     if (tabFromQuery && tabFromQuery !== activeTab) {
       setActiveTab(tabFromQuery);
     }
@@ -107,14 +107,14 @@ const AdminDashboard = ({ params }: { params: Promise<{ userId: string }> }) => 
   // زر تبديل اللغة
   const otherLocale = locale === 'ar' ? 'en' : 'ar';
   const handleLocaleSwitch = () => {
-    const paramsString = searchParams.toString();
+    const paramsString = searchParams?.toString() || '';
     const pathWithQuery = paramsString ? `${pathname}?${paramsString}` : pathname;
     router.push(pathWithQuery, { locale: otherLocale });
   };
 
   const handleTabChange = (id: string) => {
     setActiveTab(id);
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() || '');
     params.set('tab', id);
     router.push(`${pathname}?${params.toString()}`);
   };

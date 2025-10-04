@@ -6,15 +6,6 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig = {
   reactStrictMode: true,
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/ar',
-        permanent: false,
-      },
-    ];
-  },
 };
 
 // إعدادات PWA
