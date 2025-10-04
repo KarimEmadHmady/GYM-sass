@@ -467,7 +467,7 @@ const SessionSchedulesManagement = ({
       {/* Tabs */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 ">
         <div className="border-b border-gray-200 dark:border-gray-700">
-          <nav className="flex space-x-8 px-6 justify-center">
+          <nav className="flex space-x-8 px-6 justify-center flex-wrap ">
             {(viewMode === 'overview' ? [
               { id: 'today', name: 'اليوم', count: sessions?.filter(s => new Date(s.date).toISOString().split('T')[0] === new Date().toISOString().split('T')[0]).length || 0 },
               { id: 'upcoming', name: 'المجدولة', count: sessions?.filter(s => s.status === 'مجدولة').length || 0 },
@@ -676,11 +676,11 @@ const SessionSchedulesManagement = ({
         {/* Pagination Controls */}
         {totalPages > 1 && (
           <div className="bg-white dark:bg-gray-800 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap">
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 عرض {startIndex + 1} إلى {Math.min(endIndex, filteredSessions.length)} من {filteredSessions.length} نتيجة
               </div>
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-4 flex-wrap">
                 <div className="flex items-center space-x-2">
                   <label className="text-sm text-gray-700 dark:text-gray-300">عدد العناصر:</label>
                   <select

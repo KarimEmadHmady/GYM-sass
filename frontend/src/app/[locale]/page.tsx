@@ -1,3 +1,4 @@
+'use client';
 // src/app/[locale]/page.tsx
 import AnnouncementBar from '@/components/ui/AnnouncementBar';
 import HeroSection from '@/components/ui/HeroSection';
@@ -15,7 +16,44 @@ import { CardSpotlightDemo } from '@/components/ui/CardSpotlightDemo';
 import { CompareDemo } from '@/components/ui/CompareDemo';
 import { BackgroundGradientAnimation } from '@/components/ui/background-gradient-animation';
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 export default function HomePage() {
+  const router = useRouter();
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const isExpired = payload.exp ? payload.exp * 1000 < Date.now() : false;
+        const userId = payload.id || payload.userId || payload._id;
+        if (!isExpired && userId) {
+          const locale = typeof window !== 'undefined' ? window.location.pathname.split('/')[1] || 'ar' : 'ar';
+          router.replace(`/${locale}/admin/dashboard/${userId}`);
+          return;
+        }
+      } catch (e) {
+        // التوكن غير صالح
+      }
+    }
+    setCheckingAuth(false);
+  }, [router]);
+
+  if (checkingAuth) {
+    return (
+      <div style={{ minHeight: '100vh' }} className="flex flex-col z-50 items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="flex flex-col items-center gap-4">
+          <img src="/logo.png" alt="Logo" className="w-20 h-15 mb-2 drop-shadow-lg" />
+          <div className="w-12 h-12 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-lg font-bold text-blue-700 dark:text-blue-200">جاري التحميل ...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
             <BackgroundGradientAnimation

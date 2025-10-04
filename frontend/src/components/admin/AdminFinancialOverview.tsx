@@ -744,7 +744,8 @@ const AdminFinancialOverview = () => {
       {/* Tabs */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="border-b border-gray-200 dark:border-gray-700">
-          <nav className="flex space-x-8 px-6">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex space-x-8 px-6 mb-[85px]">
             {[
               {
                 id: 'overview',
@@ -796,6 +797,70 @@ const AdminFinancialOverview = () => {
               </button>
             ))}
           </nav>
+          {/* Mobile Navigation */}
+          <div className="md:hidden">
+            <div className="overflow-x-auto hide-scrollbar w-full pb-3 mb-[85px]">
+              <nav className="flex flex-row space-x-2 px-4 py-2 min-w-max">
+                {[
+                  {
+                    id: 'overview',
+                    name: 'نظرة عامة',
+                    icon: '📊',
+                    shortName: 'نظرة عامة',
+                  },
+                  {
+                    id: 'transactions',
+                    name: 'المعاملات الأخيرة',
+                    icon: '💳',
+                    shortName: 'المعاملات',
+                  },
+                  {
+                    id: 'reports',
+                    name: 'التقارير',
+                    icon: '📈',
+                    shortName: 'التقارير',
+                  },
+                  {
+                    id: 'invoices',
+                    name: 'الفواتير',
+                    icon: '🧾',
+                    shortName: 'الفواتير',
+                  },
+                  {
+                    id: 'payroll',
+                    name: 'الرواتب',
+                    icon: '🧑\u200d💼',
+                    shortName: 'الرواتب',
+                  },
+                  {
+                    id: 'revenue',
+                    name: 'الإيرادات',
+                    icon: '💹',
+                    shortName: 'الإيرادات',
+                  },
+                  {
+                    id: 'expenses',
+                    name: 'المصروفات',
+                    icon: '💸',
+                    shortName: 'المصروفات',
+                  },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex-shrink-0 py-2 px-3 border-b-2 font-medium text-xs transition-colors whitespace-nowrap rounded-t-lg ${
+                      activeTab === tab.id
+                        ? 'border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                    }`}
+                  >
+                    <span className="mr-1 text-sm">{tab.icon}</span>
+                    <span className="text-xs">{tab.shortName}</span>
+                  </button>
+                ))}
+              </nav>
+            </div>
+          </div>
         </div>
 
         <div className="p-6">
@@ -1683,6 +1748,15 @@ const AdminFinancialOverview = () => {
         message={alertState.message}
         onClose={hideAlert}
       />
+      <style jsx global>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 };
