@@ -46,6 +46,11 @@ export const ROLE_PERMISSIONS: RolePermissions = {
     'reports:read',
     'payroll:read', 'payroll:write',
     'loyalty:read', 'loyalty:write'
+  ],
+  accountant: [
+    'financial:read', 'financial:write',
+    'payroll:read', 'payroll:write',
+    'reports:read'
   ]
 };
 
@@ -260,6 +265,28 @@ export const ROLE_NAVIGATION: RoleNavigation = {
       href: '/manager/reports',
       icon: 'bar-chart'
     }
+  ],
+  accountant: [
+    {
+      label: 'Dashboard',
+      href: '/accountant/dashboard',
+      icon: 'dashboard'
+    },
+    {
+      label: 'Financial',
+      href: '/accountant/financial',
+      icon: 'dollar-sign',
+      children: [
+        { label: 'Expenses', href: '/accountant/financial/expenses' },
+        { label: 'Revenue', href: '/accountant/financial/revenue' },
+        { label: 'Payroll', href: '/accountant/financial/payroll' }
+      ]
+    },
+    {
+      label: 'Reports',
+      href: '/accountant/reports',
+      icon: 'bar-chart'
+    }
   ]
 };
 
@@ -284,6 +311,11 @@ export const DASHBOARD_CONFIGS = {
     title: 'Manager Dashboard',
     description: 'Oversee gym operations',
     basePath: '/manager'
+  },
+  accountant: {
+    title: 'Accountant Dashboard',
+    description: 'Manage financial records and reports',
+    basePath: '/accountant'
   }
 };
 

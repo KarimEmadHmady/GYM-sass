@@ -25,7 +25,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: 'admin' | 'trainer' | 'member' | 'manager' | 'accountant';
 }
 
 export interface AuthState {

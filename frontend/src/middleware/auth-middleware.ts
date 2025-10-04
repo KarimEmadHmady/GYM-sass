@@ -102,7 +102,8 @@ export function getRoleBasedRedirect(role: UserRole): string {
     admin: '/admin/dashboard',
     trainer: '/trainer/dashboard', 
     member: '/member/profile',
-    manager: '/manager/dashboard'
+    manager: '/manager/dashboard',
+    accountant: '/accountant/dashboard'
   };
   
   return roleRedirects[role] || '/dashboard';

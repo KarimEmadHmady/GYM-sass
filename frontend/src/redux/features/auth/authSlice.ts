@@ -85,7 +85,10 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.error = null;
         if (action.payload.user) {
-          state.user = action.payload.user;
+          state.user = {
+            ...action.payload.user,
+            role: action.payload.user.role as User['role'],
+          };
         }
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -105,7 +108,10 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
         state.error = null;
         if (action.payload.user) {
-          state.user = action.payload.user;
+          state.user = {
+            ...action.payload.user,
+            role: action.payload.user.role as User['role'],
+          };
         }
       })
       .addCase(registerUser.rejected, (state, action) => {
